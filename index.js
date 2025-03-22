@@ -26,9 +26,9 @@ require('dotenv').config();
 
 const app = express();
 const isLocal = process.env.NODE_ENV !== 'production';
-const BOT_TOKEN = process.env.TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8'; // Явный fallback
+const BOT_TOKEN = process.env.TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8';
 const bot = new TelegramBot(BOT_TOKEN, { polling: isLocal });
-const ADMIN_ID = process.env.ADMIN_ID || '942851377';
+const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE';
 
 let lastMessageId = {};
 
@@ -65,11 +65,9 @@ const setupWebhook = async () => {
     console.log(`Попытка установить webhook: ${WEBHOOK_URL}`);
 
     try {
-        // Удаляем старый webhook
         const deleteResponse = await axios.get(`${telegramApi}/deleteWebhook`);
         console.log('Старый webhook удалён:', deleteResponse.data);
 
-        // Устанавливаем новый webhook
         const setResponse = await axios.get(`${telegramApi}/setWebHook?url=${WEBHOOK_URL}`);
         if (setResponse.data.ok) {
             console.log(`Webhook успешно установлен: ${WEBHOOK_URL}`);
@@ -86,13 +84,19 @@ const setupWebhook = async () => {
 // Синхронизация товаров
 const syncProducts = async () => {
     try {
-        await Product.deleteMany({});
-        console.log('Коллекция products очищена');
-        for (const productData of initialProducts) {
-            const newProduct = await Product.create(productData);
-            console.log('Добавлен новый товар:', newProduct);
+        const existingProducts = await Product.find();
+        if (existingProducts.length === 0) {
+            console.log('Товаров в базе нет, синхронизируем...');
+            await Product.deleteMany({});
+            console.log('Коллекция products очищена');
+            for (const productData of initialProducts) {
+                const newProduct = await Product.create(productData);
+                console.log('Добавлен новый товар:', newProduct);
+            }
+            console.log('Товары синхронизированы');
+        } else {
+            console.log('Товары уже присутствуют в базе:', existingProducts.length);
         }
-        console.log('Товары синхронизированы');
     } catch (error) {
         console.error('Ошибка синхронизации товаров:', error.message);
     }
@@ -100,14 +104,19 @@ const syncProducts = async () => {
 
 // API для получения товаров
 app.get('/api/products', async (req, res) => {
+    console.log('Получен запрос на /api/products');
     try {
         const products = await Product.find();
-        console.log('Найденные товары для API:', products);
+        console.log('Найденные товары:', products);
+        if (!products || products.length === 0) {
+            console.log('Товары не найдены в базе данных');
+            return res.status(404).json({ error: 'Товары не найдены' });
+        }
         const productsWithReviews = await Promise.all(products.map(async (product) => {
             const reviews = await Review.find({ productId: product._id, isApproved: true });
             return { ...product.toObject(), reviews };
         }));
-        console.log('Отправка данных товаров клиенту:', productsWithReviews);
+        console.log('Отправка данных клиенту:', productsWithReviews);
         res.json({ products: productsWithReviews, total: products.length });
     } catch (error) {
         console.error('Ошибка API /api/products:', error.message);

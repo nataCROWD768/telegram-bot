@@ -2,27 +2,27 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=385, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Витрина</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>Витрина</h1>
-            <input type="text" id="search-input" class="search-input" placeholder="Поиск...">
-        </header>
-        <main>
-            <section id="showcase">
-                <div id="product-list" class="product-grid"></div>
-            </section>
-            <section id="product-detail" style="display: none;">
-                <div id="product-detail-content" class="card"></div>
-            </section>
-        </main>
-        <div id="scroll-top-btn">↑</div>
+        <div id="showcase">
+            <div class="search-bar">
+                <input type="text" id="search-input" placeholder="Поиск...">
+            </div>
+            <div class="product-grid" id="product-list"></div>
+            <a href="#" id="scroll-top-btn" class="scroll-top-btn">↑</a>
+        </div>
+        <div id="product-detail" style="display: none;">
+            <div id="product-detail-content"></div>
+            <a href="#" onclick="document.getElementById('product-detail').style.display='none'; document.getElementById('showcase').style.display='block'; return false;" class="btn waves-effect waves-light">Назад</a>
+        </div>
     </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="script.js"></script>
 </body>
 </html>

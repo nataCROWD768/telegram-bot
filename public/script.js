@@ -1,13 +1,14 @@
 Telegram.WebApp.ready();
 
 let allProducts = [];
-const API_URL = 'https://telegram-bot-gmut.onrender.com/api/products'; // Замените на ваш реальный URL
+const API_URL = 'https://telegram-bot-gmut.onrender.com/api/products'; // Указываем точный URL
 
 function loadProducts(products) {
     console.log('Загрузка продуктов:', products);
     const productList = document.getElementById('product-list');
     if (!productList) {
-        console.error('Элемент #product-list не найден');
+        console.error('Элемент #product-list не найден в HTML');
+        Telegram.WebApp.showAlert('Ошибка: контейнер для товаров не найден');
         return;
     }
     productList.innerHTML = '';
@@ -126,7 +127,6 @@ function showProductDetail(product) {
     });
 }
 
-// Загрузка данных и настройка интерфейса
 console.log('Отправка запроса к:', API_URL);
 fetch(API_URL, {
     method: 'GET',
@@ -147,7 +147,6 @@ fetch(API_URL, {
         console.log('Товары для отображения:', allProducts);
         loadProducts(allProducts);
 
-        // Настройка поиска
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
             searchInput.addEventListener('input', () => {
@@ -162,9 +161,8 @@ fetch(API_URL, {
             console.error('Элемент #search-input не найден');
         }
 
-        // Настройка кнопки "вверх"
         const scrollTopBtn = document.getElementById('scroll-top-btn');
-        if (allProducts.length > 8) { // Показывать кнопку, если больше 8 товаров
+        if (allProducts.length > 8) {
             window.addEventListener('scroll', () => {
                 scrollTopBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
             });
@@ -172,7 +170,7 @@ fetch(API_URL, {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         } else {
-            scrollTopBtn.style.display = 'none'; // Скрыть кнопку, если товаров мало
+            scrollTopBtn.style.display = 'none';
         }
     })
     .catch(error => {
