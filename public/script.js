@@ -1,6 +1,7 @@
 Telegram.WebApp.ready();
 
 let allProducts = [];
+const API_URL = window.location.origin + '/api/products'; // Абсолютный URL
 
 function loadProducts(products) {
     console.log('Загрузка продуктов:', products);
@@ -125,7 +126,7 @@ function showProductDetail(product) {
     });
 }
 
-fetch('/api/products')
+fetch(API_URL)
     .then(response => {
         console.log('Ответ от /api/products:', response.status);
         if (!response.ok) {
@@ -157,7 +158,7 @@ fetch('/api/products')
     .catch(error => {
         console.error('Ошибка загрузки товаров:', error);
         const productList = document.getElementById('product-list');
-        if (productList) productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки товаров</p>';
+        if (productList) productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки товаров: ' + error.message + '</p>';
         Telegram.WebApp.showAlert('Ошибка загрузки товаров: ' + error.message);
     });
 
