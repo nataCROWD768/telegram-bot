@@ -80,7 +80,7 @@ app.get('/api/products', async (req, res) => {
             const reviews = await Review.find({ productId: product._id, isApproved: true });
             return { ...product.toObject(), reviews };
         }));
-        console.log('Отправка данных товаров:', productsWithReviews); // Отладка
+        console.log('Отправка данных товаров:', productsWithReviews);
         res.json({ products: productsWithReviews, total: products.length });
     } catch (error) {
         console.error('Ошибка API /api/products:', error.message);
@@ -118,11 +118,9 @@ bot.on('message', async (msg) => {
             showProfile(bot, chatId);
             break;
         case 'Витрина':
-            await bot.sendMessage(chatId, '', {
+            await bot.sendMessage(chatId, '🛒 Открыть витрину:', {
                 reply_markup: {
-                    keyboard: [[{ text: 'Открыть витрину', web_app: { url: `${webAppUrl}/index.html` } }]],
-                    resize_keyboard: true,
-                    one_time_keyboard: true
+                    inline_keyboard: [[{ text: 'Перейти', web_app: { url: `${webAppUrl}/index.html` } }]]
                 }
             });
             break;
