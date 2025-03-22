@@ -248,6 +248,7 @@ app.post(`/bot${token}`, (req, res) => {
 bot.on('web_app_data', async (msg) => {
     const chatId = msg.chat.id;
     const data = JSON.parse(msg.web_app_data.data);
+    console.log('Получены данные от Web App:', data); // Логирование для отладки
 
     if (data.type === 'order') {
         const { productId, quantity } = data;
@@ -271,6 +272,25 @@ bot.on('web_app_data', async (msg) => {
 
         await bot.sendMessage(chatId, `✅ Заказ оформлен! Товар: ${product.name}, Сумма: ${order.totalPrice} руб.`);
     }
+
+    if (data.type === 'review') {
+        const { productId, rating, comment } = data;
+        if (!rating || rating < 1 || rating > 5 || !comment) {
+            await bot.sendMessage(chatId, '❌ Неверный формат отзыва');
+            return;
+        }
+
+        await Review.create({
+            userId: chatId,
+            username: msg.from.username,
+            productId,
+            rating,
+            comment
+        });
+
+        await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+    }
+});
 
     if (data.type === 'review') {
         const { productId, rating, comment } = data;

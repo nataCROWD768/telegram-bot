@@ -8,20 +8,21 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <div class="container">
+    <div id="showcase" class="container">
         <header>
             <h1>🛒 Магазин товаров</h1>
         </header>
+        <input type="text" id="search-input" placeholder="Поиск товаров..." class="search-input">
         <div id="product-list" class="product-grid"></div>
         <button id="scroll-top-btn" class="scroll-top-btn">⬆️ Наверх</button>
     </div>
 
-    <!-- Модальное окно для карточки товара -->
-    <div id="product-modal" class="modal">
-        <div class="modal-content">
-            <span id="close-modal" class="close">&times;</span>
-            <div id="modal-body"></div>
-        </div>
+    <div id="product-detail" class="container" style="display: none;">
+        <header>
+            <button id="back-btn" class="back-btn">← Назад</button>
+            <h1>Товар</h1>
+        </header>
+        <div id="product-detail-content"></div>
     </div>
 
     <script src="/script.js"></script>
