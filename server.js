@@ -23,26 +23,39 @@ const Visit             = require('./models/visit');
 const Product           = require('./models/product');
 const Order             = require('./models/order');
 const Review            = require('./models/review');
+require('dotenv').config();
 
 const app               = express();
-const bot               = new TelegramBot(token);
+const isLocal           = process.env.NODE_ENV !== 'production';
+const bot               = new TelegramBot(token, { polling: isLocal });
 
 app.use(express.json());
 
-mongoose.connect(process.env.MONGODB_URI);
+// Проверка и подключение MongoDB
+const mongoUri          = process.env.MONGODB_URI;
+if (!mongoUri || (!mongoUri.startsWith('mongodb://') && !mongoUri.startsWith('mongodb+srv://'))) {
+    console.error('Ошибка: MONGODB_URI не задан или имеет неверный формат');
+    process.exit(1);
+}
+mongoose.connect(mongoUri).then(() => {
+    console.log('MongoDB подключен');
+}).catch(err => {
+    console.error('Ошибка подключения к MongoDB:', err.message);
+    process.exit(1);
+});
 
-// Настройка Webhook с правильной асинхронностью
-const WEBHOOK_URL       = `https://${process.env.RENDER_APP_NAME}.onrender.com/bot${token}`;
+// Настройка Webhook только для production
 const setupWebhook      = async () => {
+    if (isLocal) {
+        console.log('Локальный режим: используется polling');
+        return;
+    }
+
+    const WEBHOOK_URL   = `https://${process.env.RENDER_APP_NAME}.onrender.com/bot${token}`;
     try {
-        const webhookInfo = await bot.getWebhookInfo();
-        if (webhookInfo.url !== WEBHOOK_URL) {
-            await bot.deleteWebhook(); // Очищаем старый webhook
-            await bot.setWebHook(WEBHOOK_URL);
-            console.log(`Webhook установлен: ${WEBHOOK_URL}`);
-        } else {
-            console.log('Webhook уже установлен корректно');
-        }
+        await bot.deleteWebhook(); // Удаляем старый webhook
+        await bot.setWebHook(WEBHOOK_URL); // Устанавливаем новый
+        console.log(`Webhook установлен: ${WEBHOOK_URL}`);
     } catch (error) {
         console.error('Ошибка при установке Webhook:', error.message);
     }
@@ -199,10 +212,10 @@ const initData = async () => {
     }
 };
 
-// Запуск сервера после настройки
+// Запуск сервера
 const startServer = async () => {
-    await setupWebhook();  // Устанавливаем webhook перед запуском
-    await initData();      // Инициализируем данные
+    await setupWebhook();
+    await initData();
 
     app.get('/', (req, res) => res.send('Bot is running'));
     const PORT = process.env.PORT || 3000;
