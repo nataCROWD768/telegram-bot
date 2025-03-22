@@ -64,22 +64,24 @@ const setupWebhook      = async () => {
     try {
         console.log('Удаление старого webhook...');
         const deleteResponse = await axios.get(`${telegramApi}/deleteWebhook`);
-        console.log('Ответ от deleteWebhook:', deleteResponse.data);
+        console.log('Ответ от deleteWebhook:', JSON.stringify(deleteResponse.data));
 
-        console.log('Установка нового webhook...');
+        console.log(`Установка нового webhook на ${WEBHOOK_URL}...`);
         const setResponse = await axios.get(`${telegramApi}/setWebHook?url=${WEBHOOK_URL}`);
-        console.log('Ответ от setWebHook:', setResponse.data);
+        console.log('Ответ от setWebHook:', JSON.stringify(setResponse.data));
 
         if (setResponse.data.ok) {
             console.log(`Webhook успешно установлен: ${WEBHOOK_URL}`);
         } else {
-            console.error('Не удалось установить webhook:', setResponse.data);
+            console.error('Не удалось установить webhook:', setResponse.data.description);
+            process.exit(1);
         }
     } catch (error) {
         console.error('Ошибка при установке Webhook:', error.message);
         if (error.response) {
-            console.error('Детали ошибки:', error.response.data);
+            console.error('Детали ошибки:', JSON.stringify(error.response.data));
         }
+        process.exit(1);
     }
 };
 
@@ -197,49 +199,54 @@ app.post(`/bot${token}`, (req, res) => {
 
 // Инициализация тестовых данных
 const initData = async () => {
-    if (await Product.countDocuments() === 0) {
-        await Product.create([
-            {
-                name:           'Продукт 1',
-                description:    'Качественный товар',
-                category:       'Электроника',
-                clientPrice:    1000,
-                clubPrice:      800,
-                image:          './public/product1.jpg',
-                certificates:   ['./public/cert1.jpg'],
-                stock:          10
-            },
-            {
-                name:           'Продукт 2',
-                description:    'Еще один товар',
-                category:       'Бытовая техника',
-                clientPrice:    1500,
-                clubPrice:      1200,
-                image:          './public/product2.jpg',
-                certificates:   ['./public/cert2.jpg'],
-                stock:          5
-            },
-            {
-                name:           'Продукт 3',
-                description:    'Третий товар',
-                category:       'Электроника',
-                clientPrice:    2000,
-                clubPrice:      1600,
-                image:          './public/product3.jpg',
-                certificates:   ['./public/cert3.jpg'],
-                stock:          8
-            },
-            {
-                name:           'Продукт 4',
-                description:    'Четвертый товар',
-                category:       'Бытовая техника',
-                clientPrice:    2500,
-                clubPrice:      2000,
-                image:          './public/product4.jpg',
-                certificates:   ['./public/cert4.jpg'],
-                stock:          7
-            }
-        ]);
+    try {
+        if (await Product.countDocuments() === 0) {
+            await Product.create([
+                {
+                    name:           'Продукт 1',
+                    description:    'Качественный товар',
+                    category:       'Электроника',
+                    clientPrice:    1000,
+                    clubPrice:      800,
+                    image:          './public/product1.jpg',
+                    certificates:   ['./public/cert1.jpg'],
+                    stock:          10
+                },
+                {
+                    name:           'Продукт 2',
+                    description:    'Еще один товар',
+                    category:       'Бытовая техника',
+                    clientPrice:    1500,
+                    clubPrice:      1200,
+                    image:          './public/product2.jpg',
+                    certificates:   ['./public/cert2.jpg'],
+                    stock:          5
+                },
+                {
+                    name:           'Продукт 3',
+                    description:    'Третий товар',
+                    category:       'Электроника',
+                    clientPrice:    2000,
+                    clubPrice:      1600,
+                    image:          './public/product3.jpg',
+                    certificates:   ['./public/cert3.jpg'],
+                    stock:          8
+                },
+                {
+                    name:           'Продукт 4',
+                    description:    'Четвертый товар',
+                    category:       'Бытовая техника',
+                    clientPrice:    2500,
+                    clubPrice:      2000,
+                    image:          './public/product4.jpg',
+                    certificates:   ['./public/cert4.jpg'],
+                    stock:          7
+                }
+            ]);
+            console.log('Тестовые данные инициализированы');
+        }
+    } catch (error) {
+        console.error('Ошибка при инициализации данных:', error.message);
     }
 };
 
