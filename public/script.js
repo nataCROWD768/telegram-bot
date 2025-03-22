@@ -13,7 +13,7 @@ function loadProducts(products) {
 
     if (!products || products.length === 0) {
         console.log('Товары отсутствуют');
-        productList.innerHTML = '<p>Товары не найдены</p>';
+        productList.innerHTML = '<p style="text-align: center; color: #888;">Товары не найдены</p>';
         return;
     }
 
@@ -128,7 +128,10 @@ function showProductDetail(product) {
 fetch('/api/products')
     .then(response => {
         console.log('Ответ от /api/products:', response.status);
-        if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
+        if (!response.ok) {
+            console.error('Ошибка ответа сервера:', response.status, response.statusText);
+            throw new Error(`HTTP ошибка: ${response.status}`);
+        }
         return response.json();
     })
     .then(data => {
@@ -154,8 +157,8 @@ fetch('/api/products')
     .catch(error => {
         console.error('Ошибка загрузки товаров:', error);
         const productList = document.getElementById('product-list');
-        if (productList) productList.innerHTML = '<p>Ошибка загрузки товаров</p>';
-        Telegram.WebApp.showAlert('Ошибка загрузки товаров');
+        if (productList) productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки товаров</p>';
+        Telegram.WebApp.showAlert('Ошибка загрузки товаров: ' + error.message);
     });
 
 window.addEventListener('scroll', () => {
