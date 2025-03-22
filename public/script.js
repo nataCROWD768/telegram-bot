@@ -37,7 +37,7 @@ function loadProducts(products) {
                     productId,
                     quantity: parseInt(quantity)
                 }));
-                Telegram.WebApp.close();
+                Telegram.WebApp.showAlert('Заказ отправлен!');
             }
         });
     });
@@ -86,6 +86,7 @@ function showProductDetail(product) {
             </div>
             <textarea id="review-comment" rows="4" placeholder="Ваш отзыв..."></textarea>
             <button class="submit-btn" data-id="${product._id}">Отправить отзыв</button>
+            <div id="review-status" style="color: #27ae60; margin-top: 10px;"></div>
         </div>
     `;
 
@@ -105,7 +106,7 @@ function showProductDetail(product) {
                 productId,
                 quantity: parseInt(quantity)
             }));
-            Telegram.WebApp.close();
+            Telegram.WebApp.showAlert('Заказ отправлен!');
         }
     });
 
@@ -126,6 +127,7 @@ function showProductDetail(product) {
         const productId = product._id;
         const rating = parseInt(detailContent.querySelector('.rating-stars').getAttribute('data-rating'));
         const comment = document.getElementById('review-comment').value.trim();
+        const status = document.getElementById('review-status');
 
         if (rating > 0 && comment) {
             Telegram.WebApp.sendData(JSON.stringify({
@@ -134,7 +136,10 @@ function showProductDetail(product) {
                 rating,
                 comment
             }));
-            Telegram.WebApp.close();
+            status.textContent = 'Отзыв отправлен! Ожидает модерации.';
+            document.getElementById('review-comment').value = '';
+            stars.forEach(s => s.classList.remove('filled'));
+            detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
         } else {
             Telegram.WebApp.showAlert('Пожалуйста, выберите рейтинг и введите комментарий');
         }

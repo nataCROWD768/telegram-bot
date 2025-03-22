@@ -275,20 +275,29 @@ bot.on('web_app_data', async (msg) => {
 
     if (data.type === 'review') {
         const { productId, rating, comment } = data;
+        console.log('Попытка сохранить отзыв:', { productId, rating, comment });
+
         if (!rating || rating < 1 || rating > 5 || !comment) {
+            console.log('Ошибка валидации отзыва');
             await bot.sendMessage(chatId, '❌ Неверный формат отзыва');
             return;
         }
 
-        await Review.create({
-            userId: chatId,
-            username: msg.from.username,
-            productId,
-            rating,
-            comment
-        });
-
-        await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+        try {
+            const review = await Review.create({
+                userId: chatId,
+                username: msg.from.username || 'Аноним',
+                productId,
+                rating,
+                comment,
+                isApproved: false // По умолчанию отзыв требует модерации
+            });
+            console.log('Отзыв сохранён:', review);
+            await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+        } catch (error) {
+            console.error('Ошибка при сохранении отзыва:', error.message);
+            await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва');
+        }
     }
 });
 
