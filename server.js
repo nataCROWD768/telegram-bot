@@ -14,10 +14,7 @@ const Review = require('./models/review');
 const app = express();
 const bot = new TelegramBot(token, { polling: true });
 
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-});
+mongoose.connect(process.env.MONGODB_URI);
 
 // Обработка старта
 bot.onText(/\/start/, async (msg) => {
@@ -38,7 +35,7 @@ bot.on('message', (msg) => {
       showProfile(bot, chatId);
       break;
     case 'Витрина':
-      showCatalog(bot, chatId);
+      showCatalog(bot, chatId); // Здесь вызывается обновленная функция
       break;
     case 'Бонусы и продукт':
       bot.sendMessage(chatId, 'Информация о бонусах (в разработке)');
@@ -109,6 +106,16 @@ const initData = async () => {
         image: './public/product2.jpg',
         certificates: ['./public/cert2.jpg'],
         stock: 5
+      },
+      {
+        name: 'Продукт 3',
+        description: 'Третий товар',
+        category: 'Электроника',
+        clientPrice: 2000,
+        clubPrice: 1600,
+        image: './public/product3.jpg',
+        certificates: ['./public/cert3.jpg'],
+        stock: 8
       }
     ]);
   }

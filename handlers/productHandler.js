@@ -4,37 +4,55 @@ const Review = require('../models/review');
 
 module.exports = {
   showProducts: async (bot, chatId, category = null) => {
-    const query = category ? { category } : {};
-    const products = await Product.find(query);
+    try {
+      const query = category ? { category } : {};
+      const products = await Product.find(query);
 
-    if (products.length === 0) {
-      bot.sendMessage(chatId, 'Товары в этой категории отсутствуют');
-      return;
-    }
-
-    await bot.sendMessage(chatId, 'Выберите товар:', {
-      reply_markup: {
-        inline_keyboard: [
-          ...products.map(product => [{
-            text: `${product.name} (${product.clubPrice} руб.) ★ ${product.averageRating.toFixed(1)}`,
-            callback_data: `product_${product._id}`
-          }]),
-          [{ text: 'Категории', callback_data: 'categories' }]
-        ]
+      if (products.length === 0) {
+        bot.sendMessage(chatId, 'Товары в этой категории отсутствуют');
+        return;
       }
-    });
+
+      // Группировка продуктов по 3 в ряд
+      const keyboard = [];
+      for (let i = 0; i < products.length; i += 3) {
+        const row = products.slice(i, i + 3).map(product => ({
+          text: `${product.name} (${product.clubPrice} руб.) ★ ${product.averageRating.toFixed(1)}`,
+          callback_data: `product_${product._id}`
+        }));
+        keyboard.push(row);
+      }
+      // Добавляем кнопку "Категории" в отдельной строке
+      keyboard.push([{ text: 'Категории', callback_data: 'categories' }]);
+
+      await bot.sendMessage(chatId, 'Выберите товар:', {
+        reply_markup: {
+          inline_keyboard: keyboard
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      bot.sendMessage(chatId, 'Ошибка при загрузке витрины');
+    }
   },
 
   showCategories: async (bot, chatId) => {
-    const categories = await Product.distinct('category');
-    bot.sendMessage(chatId, 'Выберите категорию:', {
-      reply_markup: {
-        inline_keyboard: [
-          ...categories.map(cat => [{ text: cat, callback_data: `cat_${cat}` }]),
-          [{ text: 'Все товары', callback_data: 'all_products' }]
-        ]
-      }
-    });
+    try {
+      const categories = await Product.distinct('category');
+      const keyboard = [
+        ...categories.map(cat => [{ text: cat, callback_data: `cat_${cat}` }]),
+        [{ text: 'Все товары', callback_data: 'all_products' }]
+      ];
+
+      bot.sendMessage(chatId, 'Выберите категорию:', {
+        reply_markup: {
+          inline_keyboard: keyboard
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      bot.sendMessage(chatId, 'Ошибка при загрузке категорий');
+    }
   },
 
   handleCallback: async (bot, callbackQuery) => {
@@ -82,6 +100,8 @@ ${reviews.length > 0 ? reviewsText : 'Отзывов пока нет'}
       if (product.certificates.length > 0) {
         const media = product.certificates.map(cert => ({ type: 'photo', media: cert }));
         await bot.sendMediaGroup(chatId, media);
+      } else {
+        bot.sendMessage(chatId, 'Сертификаты отсутствуют');
       }
     }
 
@@ -144,10 +164,11 @@ ${reviews.length > 0 ? reviewsText : 'Отзывов пока нет'}
       });
     }
 
-    if (data === 'categories') this.showCategories(bot, chatId);
-    if (data.startsWith('cat_')) this.showProducts(bot, chatId, data.split('_')[1]);
-    if (data === 'all_products') this.showProducts(bot, chatId);
-    if (data === 'back_to_products') this.showProducts(bot, chatId);
+    // Исправленные вызовы с использованием module.exports
+    if (data === 'categories') module.exports.showCategories(bot, chatId);
+    if (data.startsWith('cat_')) module.exports.showProducts(bot, chatId, data.split('_')[1]);
+    if (data === 'all_products') module.exports.showProducts(bot, chatId);
+    if (data === 'back_to_products') module.exports.showProducts(bot, chatId);
   },
 
   searchProducts: async (bot, chatId, query) => {
@@ -161,6 +182,21 @@ ${reviews.length > 0 ? reviewsText : 'Отзывов пока нет'}
       bot.sendMessage(chatId, 'Ничего не найдено');
       return;
     }
-    this.showProducts(bot, chatId, products);
+    // Используем ту же логику отображения по 3 в ряд
+    const keyboard = [];
+    for (let i = 0; i < products.length; i += 3) {
+      const row = products.slice(i, i + 3).map(product => ({
+        text: `${product.name} (${product.clubPrice} руб.) ★ ${product.averageRating.toFixed(1)}`,
+        callback_data: `product_${product._id}`
+      }));
+      keyboard.push(row);
+    }
+    keyboard.push([{ text: 'Категории', callback_data: 'categories' }]);
+
+    await bot.sendMessage(chatId, 'Результаты поиска:', {
+      reply_markup: {
+        inline_keyboard: keyboard
+      }
+    });
   }
 };
