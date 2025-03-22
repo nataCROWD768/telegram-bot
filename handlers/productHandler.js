@@ -3,24 +3,42 @@ const Order             = require('../models/order');
 const Review            = require('../models/review');
 
 module.exports = {
-  showProducts: async (bot, chatId) => {
-    const webAppUrl = `https://${process.env.RENDER_APP_NAME}.onrender.com/`;
-    await bot.sendMessage(chatId, '🛒 Открываем витрину товаров...', {
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: 'Перейти в витрину', web_app: { url: webAppUrl } }]
-        ]
-      }
-    });
-  },
-
-  showCategories: async (bot, chatId) => {
-    // Оставляем как есть, если нужно
-  },
-
   handleCallback: async (bot, callbackQuery) => {
     const chatId    = callbackQuery.message.chat.id;
     const data      = callbackQuery.data;
+
+    if (data.startsWith('product_')) {
+      const productId = data.split('_')[1];
+      const product   = await Product.findById(productId);
+      const reviews   = await Review.find({ productId, isApproved: true }).limit(3);
+
+      let reviewsText = '\n*Последние отзывы:*\n';
+      reviews.forEach(r => {
+        reviewsText += `@${r.username}: ${r.rating}/5 - ${r.comment}\n`;
+      });
+
+      const caption = `
+                *${product.name}* (${product.category})
+                
+                ${product.description}
+                
+                Клиентская цена: ${product.clientPrice} руб.
+                Клубная цена: ${product.clubPrice} руб.
+                Рейтинг: ★ ${product.averageRating.toFixed(1)}
+                ${reviews.length > 0 ? reviewsText : 'Отзывов пока нет'}
+            `;
+
+      await bot.sendPhoto(chatId, product.image, {
+        caption,
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [
+            [{ text: `Заказать (${product.clubPrice} руб.)`, callback_data: `order_${product._id}` }],
+            [{ text: 'Оставить отзыв', callback_data: `review_${product._id}` }]
+          ]
+        }
+      });
+    }
 
     if (data.startsWith('order_')) {
       const productId = data.split('_')[1];
@@ -83,6 +101,36 @@ module.exports = {
   },
 
   searchProducts: async (bot, chatId, query) => {
-    // Можно оставить текстовый поиск или интегрировать в Web App
+    try {
+      const products = await Product.find({
+        $or: [
+          { name: { $regex: query, $options: 'i' } },
+          { description: { $regex: query, $options: 'i' } }
+        ]
+      }).limit(10);
+
+      if (products.length === 0) {
+        await bot.sendMessage(chatId, '🔍 Ничего не найдено');
+        return;
+      }
+
+      let message = '*Результаты поиска:*\n\n';
+      products.forEach((product, index) => {
+        message += `${index + 1}. *${product.name}*\n`;
+        message += `Клиентская: ${product.clientPrice} руб.\n`;
+        message += `Клубная: ${product.clubPrice} руб.\n`;
+        message += `Рейтинг: ★ ${product.averageRating.toFixed(1)}\n\n`;
+      });
+
+      await bot.sendMessage(chatId, message, {
+        parse_mode: 'Markdown',
+        reply_markup: {
+          inline_keyboard: [[{ text: '📋 Категории', callback_data: 'categories' }]]
+        }
+      });
+    } catch (error) {
+      console.error(error);
+      await bot.sendMessage(chatId, '❌ Ошибка при поиске');
+    }
   }
 };
