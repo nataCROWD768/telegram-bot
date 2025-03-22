@@ -8,15 +8,15 @@ body {
 
 .container {
     width: 100%;
-    padding: 10px; /* Уменьшен отступ для экономии пространства */
+    padding: 5px; /* Минимальный внешний отступ */
     box-sizing: border-box;
 }
 
 header {
-    padding: 10px;
+    padding: 8px;
     text-align: center;
-    border-radius: 0 0 10px 10px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 8px 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -26,53 +26,54 @@ header {
 
 h1 {
     color: white;
-    font-size: 20px; /* Уменьшен шрифт заголовка */
+    font-size: 18px; /* Уменьшенный заголовок */
     margin: 0;
 }
 
 .search-input {
     width: 100%;
-    padding: 8px;
-    margin: 8px 0;
+    padding: 6px;
+    margin: 5px 0;
     border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 12px; /* Уменьшен шрифт поиска */
+    border-radius: 4px;
+    font-size: 12px;
     box-sizing: border-box;
 }
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr)); /* 5 столбцов, равномерно растягиваются */
-    gap: 8px; /* Уменьшенный отступ между карточками */
-    padding: 8px 0;
+    grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 столбца, адаптивная ширина */
+    gap: 4px; /* Минимальный отступ между карточками */
+    padding: 5px 0;
     width: 100%;
     box-sizing: border-box;
 }
 
 .product-card {
-    width: 100%; /* Карточка занимает всю доступную ширину столбца */
+    width: 100%;
     background-color: #fff;
-    border-radius: 8px;
+    border-radius: 6px;
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); /* Лёгкая тень для красоты */
 }
 
 .product-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .product-card img {
     width: 100%;
-    height: 80px; /* Фиксированная высота изображения */
-    object-fit: cover; /* Изображение обрезается без искажения */
-    border-radius: 8px 8px 0 0;
+    height: 70px; /* Компактная высота изображения */
+    object-fit: cover;
+    border-radius: 6px 6px 0 0;
 }
 
 .product-card .card-content {
-    padding: 6px !important; /* Уменьшенный отступ внутри карточки */
+    padding: 4px !important; /* Минимальный внутренний отступ */
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -80,9 +81,9 @@ h1 {
 }
 
 .product-card h3 {
-    font-size: 12px; /* Компактный шрифт названия */
+    font-size: 11px; /* Уменьшенный шрифт названия */
     font-weight: 500;
-    margin: 3px 0;
+    margin: 2px 0;
     color: #222;
     white-space: nowrap;
     overflow: hidden;
@@ -92,7 +93,7 @@ h1 {
 .product-card .prices {
     font-size: 10px; /* Уменьшенный шрифт цен */
     margin: 2px 0;
-    line-height: 1.2;
+    line-height: 1.1;
 }
 
 .product-card .club-price {
@@ -103,7 +104,7 @@ h1 {
 .product-card .client-price {
     color: #7f8c8d;
     text-decoration: line-through;
-    margin-left: 4px;
+    margin-left: 3px;
 }
 
 .product-card .rating {
@@ -113,14 +114,15 @@ h1 {
 }
 
 .product-card .order-btn {
-    margin-top: 4px;
-    font-size: 10px; /* Компактный шрифт кнопки */
-    padding: 4px 8px; /* Компактная кнопка */
+    margin-top: 3px;
+    font-size: 10px; /* Уменьшенный шрифт кнопки */
+    padding: 3px 6px; /* Компактный размер кнопки */
     background-color: #ff4081;
-    border-radius: 4px;
+    border-radius: 3px;
     color: white;
     text-align: center;
     transition: background-color 0.3s ease;
+    line-height: 1.2;
 }
 
 .product-card .order-btn:hover {
@@ -129,17 +131,17 @@ h1 {
 
 .scroll-top-btn {
     position: fixed;
-    bottom: 15px;
-    right: 15px;
+    bottom: 10px;
+    right: 10px;
     background-color: #ff4081;
     color: white;
     border-radius: 50%;
-    width: 40px; /* Уменьшен размер кнопки */
-    height: 40px;
-    line-height: 40px;
+    width: 35px;
+    height: 35px;
+    line-height: 35px;
     text-align: center;
-    font-size: 20px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    font-size: 18px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
     display: none;
 }
@@ -151,32 +153,32 @@ h1 {
 
 /* Карточка товара */
 #product-detail .card {
-    padding: 10px;
-    margin-top: 10px;
+    padding: 8px;
+    margin-top: 5px;
 }
 
 #product-detail img {
     max-width: 100%;
     height: auto;
-    border-radius: 8px;
+    border-radius: 6px;
 }
 
 #product-detail h2 {
-    font-size: 18px; /* Уменьшен шрифт заголовка */
-    margin: 8px 0;
+    font-size: 16px;
+    margin: 6px 0;
     color: #222;
 }
 
 #product-detail .description {
-    font-size: 12px; /* Уменьшен шрифт описания */
+    font-size: 12px;
     color: #555;
-    margin: 8px 0;
-    line-height: 1.4;
+    margin: 6px 0;
+    line-height: 1.3;
 }
 
 #product-detail .prices {
-    font-size: 14px; /* Уменьшен шрифт цен */
-    margin: 8px 0;
+    font-size: 12px;
+    margin: 6px 0;
 }
 
 #product-detail .club-price {
@@ -187,57 +189,57 @@ h1 {
 #product-detail .client-price {
     color: #7f8c8d;
     text-decoration: line-through;
-    margin-left: 8px;
+    margin-left: 6px;
 }
 
 #product-detail .rating {
     color: #f39c12;
-    font-size: 12px; /* Уменьшен шрифт рейтинга */
-    margin: 8px 0;
+    font-size: 12px;
+    margin: 6px 0;
 }
 
 #product-detail .reviews {
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 #product-detail .reviews h3 {
-    font-size: 14px; /* Уменьшен шрифт заголовка отзывов */
-    margin-bottom: 8px;
+    font-size: 13px;
+    margin-bottom: 6px;
 }
 
 #product-detail .review {
     border-top: 1px solid #eee;
-    padding: 8px 0;
+    padding: 6px 0;
 }
 
 #product-detail .review .username {
     font-weight: 600;
     color: #3498db;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 #product-detail .review .rating {
     color: #f39c12;
-    font-size: 12px;
+    font-size: 11px;
 }
 
 #product-detail .review-form {
-    margin-top: 15px;
+    margin-top: 10px;
 }
 
 #product-detail .review-form h3 {
-    font-size: 14px; /* Уменьшен шрифт заголовка формы */
-    margin-bottom: 8px;
+    font-size: 13px;
+    margin-bottom: 6px;
 }
 
 #product-detail .review-form .rating-stars {
     display: flex;
-    gap: 4px;
-    margin: 8px 0;
+    gap: 3px;
+    margin: 6px 0;
 }
 
 #product-detail .review-form .star {
-    font-size: 20px; /* Уменьшен размер звёзд */
+    font-size: 18px;
     color: #ddd;
     cursor: pointer;
 }
@@ -248,21 +250,21 @@ h1 {
 
 #product-detail .review-form textarea {
     width: 100%;
-    padding: 6px;
-    margin: 4px 0;
+    padding: 5px;
+    margin: 3px 0;
     border: 1px solid #ddd;
-    border-radius: 6px;
-    font-size: 12px; /* Уменьшен шрифт текста */
+    border-radius: 4px;
+    font-size: 12px;
     box-sizing: border-box;
 }
 
 #product-detail .review-form .submit-btn,
 #product-detail .order-btn {
-    margin: 4px 0;
-    font-size: 12px; /* Уменьшен шрифт кнопок */
-    padding: 6px 10px;
+    margin: 3px 0;
+    font-size: 12px;
+    padding: 5px 8px;
     background-color: #ff4081;
-    border-radius: 4px;
+    border-radius: 3px;
     color: white;
     transition: background-color 0.3s ease;
 }
@@ -276,8 +278,8 @@ h1 {
     background-color: transparent;
     color: white;
     border: none;
-    font-size: 16px; /* Уменьшен шрифт кнопки назад */
+    font-size: 14px;
     cursor: pointer;
     position: absolute;
-    left: 10px;
+    left: 8px;
 }

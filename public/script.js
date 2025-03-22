@@ -3,12 +3,12 @@ Telegram.WebApp.ready();
 let allProducts = [];
 
 function loadProducts(products) {
-    console.log('Загрузка продуктов в витрине:', products); // Отладка
+    console.log('Загрузка продуктов в витрине:', products);
     const productList = document.getElementById('product-list');
     productList.innerHTML = '';
 
     if (!products || products.length === 0) {
-        console.log('Товары отсутствуют'); // Отладка
+        console.log('Товары отсутствуют');
         productList.innerHTML = '<p>Товары не найдены</p>';
         return;
     }
@@ -183,14 +183,14 @@ function showProductDetail(product) {
 
 fetch('/api/products')
     .then(response => {
-        console.log('Ответ от /api/products:', response.status); // Отладка
+        console.log('Ответ от /api/products:', response.status);
         if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
         return response.json();
     })
     .then(data => {
-        console.log('Получены данные от API:', data); // Отладка
+        console.log('Получены данные от API:', data);
         allProducts = data.products || [];
-        console.log('Массив товаров для отображения:', allProducts); // Отладка
+        console.log('Массив товаров для отображения:', allProducts);
         loadProducts(allProducts);
 
         const searchInput = document.getElementById('search-input');
