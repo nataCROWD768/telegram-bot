@@ -91,11 +91,7 @@ function showProductDetail(product) {
         </div>
     `;
 
-    document.getElementById('back-btn').addEventListener('click', () => {
-        detail.style.display = 'none';
-        showcase.style.display = 'block';
-    });
-
+    // Стрелка убрана из HTML, обработчик не нужен
     const stars = detailContent.querySelectorAll('.rating-stars .star');
     stars.forEach(star => {
         star.addEventListener('click', () => {

@@ -1,5 +1,5 @@
 body {
-    font-family: 'Playfair Display', serif;
+    font-family: 'JetBrains Mono', monospace; /* Стильный шрифт для программистов */
     background-color: #f7f7f7;
     margin: 0;
     padding: 0;
@@ -13,39 +13,44 @@ body {
 }
 
 header {
-    padding: 10px;
+    padding: 12px;
     text-align: center;
-    border-radius: 0 0 12px 12px;
+    background-color: #0088cc; /* Цвет Telegram */
+    color: white;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    position: relative;
-    background-color: #ff4081;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 h1 {
-    color: white;
     font-size: 20px;
     margin: 0;
     font-weight: 500;
+    letter-spacing: 0.5px; /* Лёгкий акцент для шрифта */
 }
 
 .search-input {
     width: 100%;
-    padding: 8px;
+    padding: 10px 15px;
     margin: 10px 0;
-    border: 1px solid #ddd;
-    border-radius: 6px;
+    border: none;
+    border-radius: 20px; /* Закруглённые края для лаконичности */
     font-size: 14px;
     box-sizing: border-box;
-    font-family: 'Playfair Display', serif;
+    font-family: 'JetBrains Mono', monospace;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    outline: none;
+    transition: box-shadow 0.2s ease;
+}
+
+.search-input:focus {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 .product-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 15px; /* Увеличенный отступ для разделения карточек */
+    gap: 15px;
     padding: 10px 0;
     width: 100%;
     box-sizing: border-box;
@@ -59,7 +64,7 @@ h1 {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Тень для выделения карточек */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .product-card:hover {
@@ -70,9 +75,9 @@ h1 {
 .product-card img {
     width: 100%;
     height: 80px;
-    object-fit: contain; /* Изображение полностью влезает, уменьшаясь */
+    object-fit: contain;
     border-radius: 10px 10px 0 0;
-    background-color: #fff; /* Белый фон для изображений */
+    background-color: #fff;
 }
 
 .product-card .card-content {
@@ -84,16 +89,16 @@ h1 {
 }
 
 .product-card h3 {
-    font-size: 12px; /* Уменьшенный шрифт для длинных названий */
+    font-size: 12px;
     font-weight: 500;
     margin: 4px 0;
     color: #222;
-    line-height: 1.3; /* Улучшенная читаемость */
-    max-height: 32px; /* Ограничение по высоте для двух строк */
+    line-height: 1.3;
+    max-height: 32px;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
-    -webkit-line-clamp: 2; /* Две строки максимум */
+    -webkit-line-clamp: 2;
     -webkit-box-orient: vertical;
 }
 
@@ -124,7 +129,7 @@ h1 {
     position: fixed;
     bottom: 15px;
     right: 15px;
-    background-color: #ff4081;
+    background-color: #0088cc; /* Цвет Telegram */
     color: white;
     border-radius: 50%;
     width: 40px;
@@ -138,7 +143,7 @@ h1 {
 }
 
 .scroll-top-btn:hover {
-    background-color: #f06292;
+    background-color: #0077b3;
     transform: scale(1.1);
 }
 
@@ -248,29 +253,19 @@ h1 {
     border-radius: 6px;
     font-size: 14px;
     box-sizing: border-box;
-    font-family: 'Playfair Display', serif;
+    font-family: 'JetBrains Mono', monospace;
 }
 
 #product-detail .review-form .submit-btn {
     margin: 4px 0;
     font-size: 14px;
     padding: 6px 10px;
-    background-color: #ff4081;
+    background-color: #0088cc; /* Цвет Telegram */
     border-radius: 6px;
     color: white;
     transition: background-color 0.3s ease;
 }
 
 #product-detail .review-form .submit-btn:hover {
-    background-color: #f06292;
-}
-
-.back-btn {
-    background-color: transparent;
-    color: white;
-    border: none;
-    font-size: 16px;
-    cursor: pointer;
-    position: absolute;
-    left: 10px;
+    background-color: #0077b3;
 }
