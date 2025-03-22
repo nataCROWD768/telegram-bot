@@ -40,14 +40,14 @@ h1 {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(5, 150px); /* 5 столбцов фиксированной ширины 150px */
-    gap: 10px; /* Уменьшенный отступ между карточками */
+    grid-template-columns: repeat(5, 100px); /* 5 столбцов фиксированной ширины 150px */
+    gap: 2px; /* Уменьшенный отступ между карточками */
     justify-content: center;
-    padding: 10px 0;
+    padding: 2px 0;
 }
 
 .product-card {
-    width: 150px; /* Фиксированная ширина карточки */
+    width: 80px; /* Фиксированная ширина карточки */
     background-color: #fff;
     border-radius: 10px;
     overflow: hidden;
