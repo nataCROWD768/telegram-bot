@@ -3,6 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const axios = require('axios');
 const path = require('path');
+const ExcelJS = require('exceljs'); // Добавляем exceljs
 const { token, welcomeVideo, companyInfo } = require('./config/botConfig');
 const { handleMainMenu } = require('./handlers/menuHandler');
 const {
@@ -244,3 +245,5 @@ const startServer = async () => {
 };
 
 startServer();
+
+module.exports = { bot }; // Экспортируем bot для использования в других файлах
