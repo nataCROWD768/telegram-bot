@@ -58,7 +58,8 @@ const setupWebhook      = async () => {
         process.exit(1);
     }
 
-    const WEBHOOK_URL   = `https://${appName}.onrender.com/bot${token}`;
+    // Формируем правильный URL без дублирования
+    const WEBHOOK_URL   = `https://${appName}/bot${token}`;
     const telegramApi   = `https://api.telegram.org/bot${token}`;
 
     try {
