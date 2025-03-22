@@ -35,6 +35,7 @@ function loadProducts(products) {
             const productId = btn.getAttribute('data-id');
             const quantity = prompt('Введите количество:', '1');
             if (quantity && !isNaN(quantity)) {
+                console.log('Отправка заказа:', { productId, quantity });
                 Telegram.WebApp.sendData(JSON.stringify({
                     type: 'order',
                     productId,
@@ -109,6 +110,7 @@ function showProductDetail(product) {
         const productId = product._id;
         const quantity = prompt('Введите количество:', '1');
         if (quantity && !isNaN(quantity)) {
+            console.log('Отправка заказа из карточки:', { productId, quantity });
             Telegram.WebApp.sendData(JSON.stringify({
                 type: 'order',
                 productId,
@@ -135,18 +137,23 @@ function showProductDetail(product) {
         const comment = document.getElementById('review-comment').value.trim();
         const status = document.getElementById('review-status');
 
+        console.log('Проверка перед отправкой отзыва:', { productId, rating, comment });
+
         if (rating > 0 && comment) {
-            Telegram.WebApp.sendData(JSON.stringify({
+            const reviewData = {
                 type: 'review',
                 productId,
                 rating,
                 comment
-            }));
+            };
+            console.log('Отправка отзыва:', reviewData);
+            Telegram.WebApp.sendData(JSON.stringify(reviewData));
             status.textContent = 'Отзыв отправлен! Ожидает модерации.';
             document.getElementById('review-comment').value = '';
             stars.forEach(s => s.classList.remove('filled'));
             detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
         } else {
+            console.log('Ошибка валидации отзыва:', { rating, comment });
             Telegram.WebApp.showAlert('Пожалуйста, выберите рейтинг и введите комментарий');
         }
     });
@@ -181,3 +188,5 @@ window.addEventListener('scroll', () => {
 document.getElementById('scroll-top-btn').addEventListener('click', () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 });
+
+console.log('Скрипт загружен, Telegram Web App готов:', Telegram.WebApp.isVersionAtLeast('6.0'));
