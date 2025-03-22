@@ -31,12 +31,13 @@ app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI);
 
-// Настройка Webhook с проверкой
+// Настройка Webhook с правильной асинхронностью
 const WEBHOOK_URL       = `https://${process.env.RENDER_APP_NAME}.onrender.com/bot${token}`;
-(async () => {
+const setupWebhook      = async () => {
     try {
         const webhookInfo = await bot.getWebhookInfo();
         if (webhookInfo.url !== WEBHOOK_URL) {
+            await bot.deleteWebhook(); // Очищаем старый webhook
             await bot.setWebHook(WEBHOOK_URL);
             console.log(`Webhook установлен: ${WEBHOOK_URL}`);
         } else {
@@ -45,7 +46,7 @@ const WEBHOOK_URL       = `https://${process.env.RENDER_APP_NAME}.onrender.com/b
     } catch (error) {
         console.error('Ошибка при установке Webhook:', error.message);
     }
-})();
+};
 
 // Обработка старта
 bot.onText(/\/start/, async (msg) => {
@@ -197,8 +198,15 @@ const initData = async () => {
         ]);
     }
 };
-initData();
 
-app.get('/', (req, res) => res.send('Bot is running'));
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// Запуск сервера после настройки
+const startServer = async () => {
+    await setupWebhook();  // Устанавливаем webhook перед запуском
+    await initData();      // Инициализируем данные
+
+    app.get('/', (req, res) => res.send('Bot is running'));
+    const PORT = process.env.PORT || 3000;
+    app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+};
+
+startServer();
