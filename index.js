@@ -25,9 +25,9 @@ const initialProducts = require('./data/products');
 require('dotenv').config();
 
 const app = express();
-const isLocal = process.env.NODE_ENV !== 'production'; // Локальный режим только для разработки
+const isLocal = process.env.NODE_ENV !== 'production';
 const bot = new TelegramBot(process.env.TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8', { polling: isLocal });
-const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE'; // Замените на ваш Telegram ID
+const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE';
 
 let lastMessageId = {};
 
@@ -51,14 +51,29 @@ const setupWebhook = async () => {
         return;
     }
     const appName = process.env.RENDER_APP_NAME;
+    if (!appName) {
+        console.error('Ошибка: RENDER_APP_NAME не задан в переменных окружения');
+        process.exit(1);
+    }
     const WEBHOOK_URL = `https://${appName}.onrender.com/bot${process.env.TOKEN}`;
     const telegramApi = `https://api.telegram.org/bot${process.env.TOKEN}`;
+    console.log(`Попытка установить webhook: ${WEBHOOK_URL}`);
+
     try {
-        await axios.get(`${telegramApi}/deleteWebhook`); // Удаляем старый webhook
+        // Удаляем старый webhook
+        const deleteResponse = await axios.get(`${telegramApi}/deleteWebhook`);
+        console.log('Старый webhook удалён:', deleteResponse.data);
+
+        // Устанавливаем новый webhook
         const setResponse = await axios.get(`${telegramApi}/setWebHook?url=${WEBHOOK_URL}`);
-        console.log(setResponse.data.ok ? `Webhook установлен: ${WEBHOOK_URL}` : 'Ошибка установки webhook');
+        if (setResponse.data.ok) {
+            console.log(`Webhook успешно установлен: ${WEBHOOK_URL}`);
+        } else {
+            console.error('Ошибка установки webhook:', setResponse.data);
+            process.exit(1);
+        }
     } catch (error) {
-        console.error('Ошибка настройки webhook:', error.message);
+        console.error('Ошибка настройки webhook:', error.response ? error.response.data : error.message);
         process.exit(1);
     }
 };
@@ -208,7 +223,7 @@ bot.on('callback_query', (callbackQuery) => {
 
 // Webhook-обработчик
 app.post(`/bot${process.env.TOKEN}`, (req, res) => {
-    console.log('Webhook:', JSON.stringify(req.body, null, 2));
+    console.log('Webhook получил данные:', JSON.stringify(req.body, null, 2));
     bot.processUpdate(req.body);
     res.sendStatus(200);
 });
