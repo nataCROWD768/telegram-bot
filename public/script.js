@@ -14,11 +14,11 @@ function loadProducts() {
                     <img src="${product.image}" alt="${product.name}">
                     <h3>${product.name}</h3>
                     <div class="prices">
-                        <span class="club-price">${product.clubPrice} ₽</span> /
+                        <span class="club-price">${product.clubPrice} ₽</span>
                         <span class="client-price">${product.clientPrice} ₽</span>
                     </div>
                     <div class="rating">★ ${product.averageRating.toFixed(1)}</div>
-                    <button class="order-btn" data-id="${product._id}">Заказать</button>
+                    <button class="order-btn" data-id="${product._id}">В корзину</button>
                     <button class="review-btn" data-id="${product._id}">Отзыв</button>
                 `;
                 productList.appendChild(card);

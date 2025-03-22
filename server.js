@@ -121,7 +121,6 @@ app.get('/api/products', async (req, res) => {
 bot.onText(/\/start/, async (msg) => {
     const chatId        = msg.chat.id;
     const username      = msg.from.username || msg.from.first_name;
-    const webAppUrl     = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME}.onrender.com`;
 
     console.log(`Получена команда /start от ${username} (chatId: ${chatId})`);
     try {
@@ -144,15 +143,6 @@ bot.onText(/\/start/, async (msg) => {
             `, { parse_mode: 'Markdown' });
         }
 
-        await bot.setChatMenuButton({
-            chat_id: chatId,
-            menu_button: {
-                type: 'web_app',
-                text: 'Витрина',
-                web_app: { url: `${webAppUrl}/index.html` }
-            }
-        });
-
         handleMainMenu(bot, chatId);
     } catch (error) {
         console.error('Ошибка при обработке /start:', error.message);
@@ -161,8 +151,9 @@ bot.onText(/\/start/, async (msg) => {
 });
 
 // Обработка команд
-bot.on('message', (msg) => {
+bot.on('message', async (msg) => {
     const chatId        = msg.chat.id;
+    const webAppUrl     = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME}.onrender.com`;
     console.log(`Получено сообщение: "${msg.text}" от ${msg.from.username}`);
 
     switch (msg.text) {
@@ -171,8 +162,7 @@ bot.on('message', (msg) => {
             break;
 
         case 'Витрина':
-            const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME}.onrender.com`;
-            bot.sendMessage(chatId, '🛒 Витрина открывается...', {
+            await bot.sendMessage(chatId, '🛒 Загрузка витрины...', {
                 reply_markup: {
                     inline_keyboard: [[
                         { text: 'Открыть витрину', web_app: { url: `${webAppUrl}/index.html` } }
