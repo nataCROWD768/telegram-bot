@@ -34,7 +34,7 @@ module.exports = [
         clientPrice: 1000,
         stock: 15,
         averageRating: 3.9
-    }
+    },
     {
         name: 'Товар 5',
         description: 'Описание товара 5',
