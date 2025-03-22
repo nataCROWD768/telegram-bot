@@ -26,8 +26,9 @@ require('dotenv').config();
 
 const app = express();
 const isLocal = process.env.NODE_ENV !== 'production';
-const bot = new TelegramBot(process.env.TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8', { polling: isLocal });
-const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE';
+const BOT_TOKEN = process.env.TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8'; // Явный fallback
+const bot = new TelegramBot(BOT_TOKEN, { polling: isLocal });
+const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
 let lastMessageId = {};
 
@@ -55,8 +56,12 @@ const setupWebhook = async () => {
         console.error('Ошибка: RENDER_APP_NAME не задан в переменных окружения');
         process.exit(1);
     }
-    const WEBHOOK_URL = `https://${appName}.onrender.com/bot${process.env.TOKEN}`;
-    const telegramApi = `https://api.telegram.org/bot${process.env.TOKEN}`;
+    if (!BOT_TOKEN) {
+        console.error('Ошибка: TOKEN не задан или пустой');
+        process.exit(1);
+    }
+    const WEBHOOK_URL = `https://${appName}.onrender.com/bot${BOT_TOKEN}`;
+    const telegramApi = `https://api.telegram.org/bot${BOT_TOKEN}`;
     console.log(`Попытка установить webhook: ${WEBHOOK_URL}`);
 
     try {
@@ -222,7 +227,7 @@ bot.on('callback_query', (callbackQuery) => {
 });
 
 // Webhook-обработчик
-app.post(`/bot${process.env.TOKEN}`, (req, res) => {
+app.post(`/bot${BOT_TOKEN}`, (req, res) => {
     console.log('Webhook получил данные:', JSON.stringify(req.body, null, 2));
     bot.processUpdate(req.body);
     res.sendStatus(200);
