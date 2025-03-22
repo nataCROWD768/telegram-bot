@@ -25,9 +25,9 @@ const initialProducts = require('./data/products');
 require('dotenv').config();
 
 const app = express();
-const isLocal = process.env.NODE_ENV !== 'production';
-const bot = new TelegramBot(token, { polling: isLocal });
-const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE';
+const isLocal = process.env.NODE_ENV !== 'production'; // Локальный режим только для разработки
+const bot = new TelegramBot(process.env.TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8', { polling: isLocal });
+const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE'; // Замените на ваш Telegram ID
 
 let lastMessageId = {};
 
@@ -36,6 +36,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     setHeaders: (res, filePath) => console.log(`Раздача файла: ${filePath}`)
 }));
 
+// Подключение к MongoDB
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB подключен'))
     .catch(err => {
@@ -43,37 +44,33 @@ mongoose.connect(process.env.MONGODB_URI)
         process.exit(1);
     });
 
+// Настройка Webhook
 const setupWebhook = async () => {
-    if (isLocal) return console.log('Локальный режим: polling');
+    if (isLocal) {
+        console.log('Локальный режим: polling активен');
+        return;
+    }
     const appName = process.env.RENDER_APP_NAME;
-    const WEBHOOK_URL = `https://${appName}.onrender.com/bot${token}`;
-    const telegramApi = `https://api.telegram.org/bot${token}`;
+    const WEBHOOK_URL = `https://${appName}.onrender.com/bot${process.env.TOKEN}`;
+    const telegramApi = `https://api.telegram.org/bot${process.env.TOKEN}`;
     try {
-        await axios.get(`${telegramApi}/deleteWebhook`);
+        await axios.get(`${telegramApi}/deleteWebhook`); // Удаляем старый webhook
         const setResponse = await axios.get(`${telegramApi}/setWebHook?url=${WEBHOOK_URL}`);
         console.log(setResponse.data.ok ? `Webhook установлен: ${WEBHOOK_URL}` : 'Ошибка установки webhook');
     } catch (error) {
-        console.error('Ошибка webhook:', error.message);
+        console.error('Ошибка настройки webhook:', error.message);
         process.exit(1);
     }
 };
 
+// Синхронизация товаров
 const syncProducts = async () => {
     try {
         await Product.deleteMany({});
         console.log('Коллекция products очищена');
-        const existingProducts = await Product.find();
-        console.log('Текущие товары в БД:', existingProducts);
-        const existingNames = existingProducts.map(p => p.name);
-        console.log('Имена существующих товаров:', existingNames);
         for (const productData of initialProducts) {
-            if (!existingNames.includes(productData.name)) {
-                const newProduct = await Product.create(productData);
-                console.log('Добавлен новый товар:', newProduct);
-            } else {
-                const updatedProduct = await Product.updateOne({ name: productData.name }, productData);
-                console.log('Обновлён товар:', productData.name, updatedProduct);
-            }
+            const newProduct = await Product.create(productData);
+            console.log('Добавлен новый товар:', newProduct);
         }
         console.log('Товары синхронизированы');
     } catch (error) {
@@ -81,6 +78,7 @@ const syncProducts = async () => {
     }
 };
 
+// API для получения товаров
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
@@ -97,6 +95,7 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
+// Обработка команды /start
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const username = msg.from.username || msg.from.first_name;
@@ -120,6 +119,7 @@ bot.onText(/\/start/, async (msg) => {
 
 const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME}.onrender.com`;
 
+// Обработка сообщений
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     console.log(`Сообщение: "${msg.text}" от ${msg.from.username}`);
@@ -199,18 +199,21 @@ bot.on('message', async (msg) => {
     }
 });
 
+// Обработка callback-запросов
 bot.on('callback_query', (callbackQuery) => {
     console.log(`Callback: ${callbackQuery.data}`);
     handleCallback(bot, callbackQuery);
     handleAdminCallback(bot, callbackQuery);
 });
 
-app.post(`/bot${token}`, (req, res) => {
+// Webhook-обработчик
+app.post(`/bot${process.env.TOKEN}`, (req, res) => {
     console.log('Webhook:', JSON.stringify(req.body, null, 2));
     bot.processUpdate(req.body);
     res.sendStatus(200);
 });
 
+// Обработка данных от Web App
 bot.on('web_app_data', async (msg) => {
     const chatId = msg.chat.id;
     const data = JSON.parse(msg.web_app_data.data);
@@ -257,6 +260,7 @@ bot.on('web_app_data', async (msg) => {
     }
 });
 
+// Запуск сервера
 const startServer = async () => {
     await setupWebhook();
     await syncProducts();
