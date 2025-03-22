@@ -1,5 +1,5 @@
 body {
-    font-family: 'Roboto', Arial, sans-serif;
+    font-family: 'Playfair Display', serif;
     background-color: #f7f7f7;
     margin: 0;
     padding: 0;
@@ -8,15 +8,15 @@ body {
 
 .container {
     width: 100%;
-    padding: 5px;
+    padding: 10px;
     box-sizing: border-box;
 }
 
 header {
-    padding: 8px;
+    padding: 10px;
     text-align: center;
-    border-radius: 0 0 8px 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 0 0 12px 12px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -26,25 +26,27 @@ header {
 
 h1 {
     color: white;
-    font-size: 18px;
+    font-size: 20px;
     margin: 0;
+    font-weight: 500;
 }
 
 .search-input {
     width: 100%;
-    padding: 6px;
-    margin: 5px 0;
+    padding: 8px;
+    margin: 10px 0;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 12px;
+    border-radius: 6px;
+    font-size: 14px;
     box-sizing: border-box;
+    font-family: 'Playfair Display', serif;
 }
 
 .product-grid {
     display: grid;
     grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 4px;
-    padding: 5px 0;
+    gap: 15px; /* Увеличенный отступ для разделения карточек */
+    padding: 10px 0;
     width: 100%;
     box-sizing: border-box;
 }
@@ -52,28 +54,29 @@ h1 {
 .product-card {
     width: 100%;
     background-color: #fff;
-    border-radius: 6px;
+    border-radius: 10px;
     overflow: hidden;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Тень для выделения карточек */
 }
 
 .product-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
 }
 
 .product-card img {
     width: 100%;
-    height: 70px;
-    object-fit: cover;
-    border-radius: 6px 6px 0 0;
+    height: 80px;
+    object-fit: contain; /* Изображение полностью влезает, уменьшаясь */
+    border-radius: 10px 10px 0 0;
+    background-color: #fff; /* Белый фон для изображений */
 }
 
 .product-card .card-content {
-    padding: 4px !important;
+    padding: 8px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -81,19 +84,23 @@ h1 {
 }
 
 .product-card h3 {
-    font-size: 11px;
+    font-size: 12px; /* Уменьшенный шрифт для длинных названий */
     font-weight: 500;
-    margin: 2px 0;
+    margin: 4px 0;
     color: #222;
-    white-space: nowrap;
+    line-height: 1.3; /* Улучшенная читаемость */
+    max-height: 32px; /* Ограничение по высоте для двух строк */
     overflow: hidden;
     text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2; /* Две строки максимум */
+    -webkit-box-orient: vertical;
 }
 
 .product-card .prices {
-    font-size: 10px;
-    margin: 2px 0;
-    line-height: 1.1;
+    font-size: 11px;
+    margin: 4px 0;
+    line-height: 1.2;
 }
 
 .product-card .club-price {
@@ -104,44 +111,28 @@ h1 {
 .product-card .client-price {
     color: #7f8c8d;
     text-decoration: line-through;
-    margin-left: 3px;
+    margin-left: 4px;
 }
 
 .product-card .rating {
     color: #f39c12;
-    font-size: 10px;
-    margin: 2px 0;
-}
-
-.product-card .order-btn {
-    margin-top: 3px;
-    font-size: 10px;
-    padding: 3px 6px;
-    background-color: #ff4081;
-    border-radius: 3px;
-    color: white;
-    text-align: center;
-    transition: background-color 0.3s ease;
-    line-height: 1.2;
-}
-
-.product-card .order-btn:hover {
-    background-color: #f06292;
+    font-size: 11px;
+    margin: 4px 0;
 }
 
 .scroll-top-btn {
     position: fixed;
-    bottom: 10px;
-    right: 10px;
+    bottom: 15px;
+    right: 15px;
     background-color: #ff4081;
     color: white;
     border-radius: 50%;
-    width: 35px;
-    height: 35px;
-    line-height: 35px;
+    width: 40px;
+    height: 40px;
+    line-height: 40px;
     text-align: center;
-    font-size: 18px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    font-size: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
     display: none;
 }
@@ -153,32 +144,33 @@ h1 {
 
 /* Карточка товара */
 #product-detail .card {
-    padding: 8px;
-    margin-top: 5px;
+    padding: 10px;
+    margin-top: 10px;
 }
 
 #product-detail img {
     max-width: 100%;
     height: auto;
-    border-radius: 6px;
+    border-radius: 10px;
 }
 
 #product-detail h2 {
-    font-size: 16px;
-    margin: 6px 0;
+    font-size: 18px;
+    margin: 8px 0;
     color: #222;
-}
-
-#product-detail .description {
-    font-size: 12px;
-    color: #555;
-    margin: 6px 0;
     line-height: 1.3;
 }
 
+#product-detail .description {
+    font-size: 14px;
+    color: #555;
+    margin: 8px 0;
+    line-height: 1.4;
+}
+
 #product-detail .prices {
-    font-size: 12px;
-    margin: 6px 0;
+    font-size: 14px;
+    margin: 8px 0;
 }
 
 #product-detail .club-price {
@@ -194,52 +186,52 @@ h1 {
 
 #product-detail .rating {
     color: #f39c12;
-    font-size: 12px;
-    margin: 6px 0;
+    font-size: 14px;
+    margin: 8px 0;
 }
 
 #product-detail .reviews {
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
-#product-detail .reviews h3 {
-    font-size: 13px;
-    margin-bottom: 6px;
+#product-detail .reviews h5 {
+    font-size: 16px;
+    margin-bottom: 8px;
 }
 
 #product-detail .review {
     border-top: 1px solid #eee;
-    padding: 6px 0;
+    padding: 8px 0;
 }
 
 #product-detail .review .username {
     font-weight: 600;
     color: #3498db;
-    font-size: 11px;
+    font-size: 13px;
 }
 
 #product-detail .review .rating {
     color: #f39c12;
-    font-size: 11px;
+    font-size: 13px;
 }
 
 #product-detail .review-form {
-    margin-top: 10px;
+    margin-top: 15px;
 }
 
-#product-detail .review-form h3 {
-    font-size: 13px;
-    margin-bottom: 6px;
+#product-detail .review-form h5 {
+    font-size: 16px;
+    margin-bottom: 8px;
 }
 
 #product-detail .review-form .rating-stars {
     display: flex;
-    gap: 3px;
-    margin: 6px 0;
+    gap: 4px;
+    margin: 8px 0;
 }
 
 #product-detail .review-form .star {
-    font-size: 18px;
+    font-size: 20px;
     color: #ddd;
     cursor: pointer;
 }
@@ -250,27 +242,26 @@ h1 {
 
 #product-detail .review-form textarea {
     width: 100%;
-    padding: 5px;
-    margin: 3px 0;
+    padding: 8px;
+    margin: 4px 0;
     border: 1px solid #ddd;
-    border-radius: 4px;
-    font-size: 12px;
+    border-radius: 6px;
+    font-size: 14px;
     box-sizing: border-box;
+    font-family: 'Playfair Display', serif;
 }
 
-#product-detail .review-form .submit-btn,
-#product-detail .order-btn {
-    margin: 3px 0;
-    font-size: 12px;
-    padding: 5px 8px;
+#product-detail .review-form .submit-btn {
+    margin: 4px 0;
+    font-size: 14px;
+    padding: 6px 10px;
     background-color: #ff4081;
-    border-radius: 3px;
+    border-radius: 6px;
     color: white;
     transition: background-color 0.3s ease;
 }
 
-#product-detail .review-form .submit-btn:hover,
-#product-detail .order-btn:hover {
+#product-detail .review-form .submit-btn:hover {
     background-color: #f06292;
 }
 
@@ -278,8 +269,8 @@ h1 {
     background-color: transparent;
     color: white;
     border: none;
-    font-size: 14px;
+    font-size: 16px;
     cursor: pointer;
     position: absolute;
-    left: 8px;
+    left: 10px;
 }

@@ -186,25 +186,6 @@ bot.on('web_app_data', async (msg) => {
     const data = JSON.parse(msg.web_app_data.data);
     console.log('Получены данные от Web App:', data);
 
-    if (data.type === 'order') {
-        const { productId, quantity } = data;
-        const product = await Product.findById(productId);
-        if (!product || quantity <= 0) {
-            await bot.sendMessage(chatId, '❌ Ошибка заказа');
-            return;
-        }
-        const order = await Order.create({
-            userId: chatId,
-            username: msg.from.username,
-            productId,
-            quantity,
-            totalPrice: quantity * product.clubPrice
-        });
-        product.stock -= quantity;
-        await product.save();
-        await bot.sendMessage(chatId, `✅ Заказ оформлен! Товар: ${product.name}, Сумма: ${order.totalPrice} руб.`);
-    }
-
     if (data.type === 'review') {
         const { productId, rating, comment } = data;
         console.log('Попытка сохранить отзыв:', { productId, rating, comment });

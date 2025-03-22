@@ -31,32 +31,10 @@ function loadProducts(products) {
                     <span class="client-price">${product.clientPrice} ₽</span>
                 </div>
                 <div class="rating">★ ${product.averageRating.toFixed(1)}</div>
-                <a class="order-btn btn waves-effect waves-light" data-id="${product._id}">В корзину</a>
             </div>
         `;
-        card.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'A') showProductDetail(product);
-        });
+        card.addEventListener('click', () => showProductDetail(product));
         productList.appendChild(card);
-    });
-
-    document.querySelectorAll('.order-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const productId = btn.getAttribute('data-id');
-            const quantity = prompt('Введите количество:', '1');
-            if (quantity && !isNaN(quantity) && quantity > 0) {
-                console.log('Отправка заказа:', { productId, quantity });
-                Telegram.WebApp.sendData(JSON.stringify({
-                    type: 'order',
-                    productId,
-                    quantity: parseInt(quantity)
-                }));
-                Telegram.WebApp.showAlert('Заказ отправлен!');
-            } else {
-                Telegram.WebApp.showAlert('Введите корректное количество');
-            }
-        });
     });
 }
 
@@ -89,7 +67,6 @@ function showProductDetail(product) {
                 <span class="client-price">Клиентская: ${product.clientPrice} ₽</span>
             </div>
             <div class="rating">Рейтинг: ★ ${product.averageRating.toFixed(1)}</div>
-            <a class="order-btn btn waves-effect waves-light" data-id="${product._id}">В корзину</a>
             <div class="description">
                 <h5>Описание</h5>
                 <p>${product.description}</p>
@@ -117,22 +94,6 @@ function showProductDetail(product) {
     document.getElementById('back-btn').addEventListener('click', () => {
         detail.style.display = 'none';
         showcase.style.display = 'block';
-    });
-
-    detailContent.querySelector('.order-btn').addEventListener('click', () => {
-        const productId = product._id;
-        const quantity = prompt('Введите количество:', '1');
-        if (quantity && !isNaN(quantity) && quantity > 0) {
-            console.log('Отправка заказа из карточки:', { productId, quantity });
-            Telegram.WebApp.sendData(JSON.stringify({
-                type: 'order',
-                productId,
-                quantity: parseInt(quantity)
-            }));
-            Telegram.WebApp.showAlert('Заказ отправлен!');
-        } else {
-            Telegram.WebApp.showAlert('Введите корректное количество');
-        }
     });
 
     const stars = detailContent.querySelectorAll('.rating-stars .star');
