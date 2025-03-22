@@ -1,19 +1,17 @@
-const Order = require('../models/order');
+const Visit = require('../models/visit');
 
-async function showProfile(bot, chatId) {
-  bot.sendMessage(chatId, 'Ваш профиль (в разработке)');
-}
-
-async function showOrderHistory(bot, chatId) {
-  const orders = await Order.find({ userId: chatId }).populate('productId', 'name');
-  if (orders.length === 0) {
-    await bot.sendMessage(chatId, 'История заказов пуста');
-  } else {
-    const orderList = orders.map(o =>
-        `Товар: ${o.productId.name}\nКоличество: ${o.quantity}\nСумма: ${o.totalPrice} руб.\nДата: ${o.createdAt.toLocaleDateString()}`
-    ).join('\n---\n');
-    await bot.sendMessage(chatId, `История заказов:\n\n${orderList}`);
+const showProfile = async (bot, chatId) => {
+  try {
+    const visit = await Visit.findOne({ userId: chatId });
+    if (!visit) {
+      await bot.sendMessage(chatId, '❌ Профиль не найден');
+      return;
+    }
+    await bot.sendMessage(chatId, `👤 Ваш профиль:\nИмя: ${visit.username}\nID: ${visit.userId}`);
+  } catch (error) {
+    console.error('Ошибка профиля:', error);
+    await bot.sendMessage(chatId, '❌ Ошибка');
   }
-}
+};
 
-module.exports = { showProfile, showOrderHistory };
+module.exports = { showProfile };

@@ -17,10 +17,9 @@ const {
     handleAdminCallback
 } = require('./handlers/adminHandler');
 const { handleCallback, searchProducts } = require('./handlers/productHandler');
-const { showProfile, showOrderHistory } = require('./handlers/profileHandler');
+const { showProfile } = require('./handlers/profileHandler'); // Убираем showOrderHistory
 const Visit = require('./models/visit');
 const Product = require('./models/product');
-const Order = require('./models/order');
 const Review = require('./models/review');
 const initialProducts = require('./data/products');
 require('dotenv').config();
@@ -104,9 +103,9 @@ bot.onText(/\/start/, async (msg) => {
         if (!existingVisit) {
             await Visit.create({ username, userId: chatId });
             await bot.sendVideoNote(chatId, welcomeVideo);
-            await bot.sendMessage(chatId, `✨ Добро пожаловать!\n${companyInfo}\nВыберите пункт меню:`, { parse_mode: 'Markdown' });
+            await bot.sendMessage(chatId, `✨ Добро пожаловать!\n${companyInfo}`, { parse_mode: 'Markdown' });
         } else {
-            await bot.sendMessage(chatId, `👋 С возвращением, ${username}!\nВыберите пункт меню:`, { parse_mode: 'Markdown' });
+            await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown' });
         }
         handleMainMenu(bot, chatId);
     } catch (error) {
@@ -157,9 +156,6 @@ bot.on('message', async (msg) => {
             }
             handleAdmin(bot, msg);
             break;
-        case 'История заказов':
-            showOrderHistory(bot, chatId);
-            break;
         case 'Назад в меню':
             handleMainMenu(bot, chatId);
             break;
@@ -169,19 +165,19 @@ bot.on('message', async (msg) => {
             break;
         case 'Показать товары':
             if (chatId.toString() !== ADMIN_ID) return;
-            await showProducts(bot, chatId); // Передаем bot напрямую
+            await showProducts(bot, chatId);
             break;
         case 'Добавить товар':
             if (chatId.toString() !== ADMIN_ID) return;
-            await addProduct(bot, chatId); // Передаем bot напрямую
+            await addProduct(bot, chatId);
             break;
         case 'Редактировать товар':
             if (chatId.toString() !== ADMIN_ID) return;
-            await editProduct(bot, chatId); // Передаем bot напрямую
+            await editProduct(bot, chatId);
             break;
         case 'Удалить товар':
             if (chatId.toString() !== ADMIN_ID) return;
-            await deleteProduct(bot, chatId); // Передаем bot напрямую
+            await deleteProduct(bot, chatId);
             break;
     }
 });
@@ -226,8 +222,16 @@ bot.on('web_app_data', async (msg) => {
                 comment,
                 isApproved: false
             });
-            const savedReview = await review.save();
-            console.log('Отзыв сохранён:', savedReview);
+            await review.save();
+            console.log('Отзыв сохранён:', review);
+
+            // Обновляем средний рейтинг товара
+            const reviews = await Review.find({ productId, isApproved: true });
+            const averageRating = reviews.length > 0
+                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                : 0;
+            await Product.updateOne({ _id: productId }, { averageRating });
+
             await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
         } catch (error) {
             console.error('Ошибка сохранения отзыва:', error.stack);

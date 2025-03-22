@@ -91,7 +91,6 @@ function showProductDetail(product) {
         </div>
     `;
 
-    // Стрелка убрана из HTML, обработчик не нужен
     const stars = detailContent.querySelectorAll('.rating-stars .star');
     stars.forEach(star => {
         star.addEventListener('click', () => {
@@ -120,6 +119,7 @@ function showProductDetail(product) {
             document.getElementById('review-comment').value = '';
             stars.forEach(s => s.classList.remove('filled'));
             detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
+            // Примечание: Отзыв появится после модерации и обновления страницы
         } else {
             Telegram.WebApp.showAlert('Выберите рейтинг и введите комментарий');
         }

@@ -1,14 +1,13 @@
-function handleMainMenu(bot, chatId) {
-  bot.sendMessage(chatId, 'Выберите пункт меню:', {
+const handleMainMenu = (bot, chatId) => {
+  bot.sendMessage(chatId, 'Меню:', {
     reply_markup: {
       keyboard: [
-        ['Личный кабинет', 'Витрина'],
-        ['Бонусы и продукт', 'Отзывы'],
-        ['История заказов']
+        ['Витрина', 'Личный кабинет'],
+        ['Бонусы и продукт', 'Отзывы']
       ],
       resize_keyboard: true
     }
   });
-}
+};
 
 module.exports = { handleMainMenu };
