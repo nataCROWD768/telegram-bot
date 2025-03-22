@@ -1,8 +1,7 @@
 const Product = require('../models/product');
 const ExcelJS = require('exceljs');
-const { bot } = require('../server'); // Импортируем bot из server.js
 const fs = require('fs').promises;
-const path = require('path'); // Добавляем импорт path
+const path = require('path');
 
 const handleAdmin = async (bot, msg) => {
     const chatId = msg.chat.id;
@@ -82,8 +81,13 @@ const showProducts = async (bot, chatId) => {
         const filePath = path.join(__dirname, '../products.xlsx');
         await workbook.xlsx.writeFile(filePath);
 
-        // Отправляем файл
-        await bot.sendDocument(chatId, filePath, {}, { filename: 'Товары.xlsx', contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+        // Отправляем файл с уточнённым contentType
+        await bot.sendDocument(chatId, filePath, {
+            caption: 'Список товаров'
+        }, {
+            filename: 'Товары.xlsx',
+            contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        });
 
         // Удаляем временный файл
         await fs.unlink(filePath);
@@ -127,8 +131,7 @@ const addProduct = async (bot, chatId) => {
                             return;
                         }
 
-                        // Получаем файл изображения
-                        const photo = msg.photo[msg.photo.length - 1]; // Берем самое большое разрешение
+                        const photo = msg.photo[msg.photo.length - 1];
                         const fileId = photo.file_id;
                         const file = await bot.getFile(fileId);
                         const fileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;

@@ -3,7 +3,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const axios = require('axios');
 const path = require('path');
-const ExcelJS = require('exceljs'); // Добавляем exceljs
+const ExcelJS = require('exceljs');
 const { token, welcomeVideo, companyInfo } = require('./config/botConfig');
 const { handleMainMenu } = require('./handlers/menuHandler');
 const {
@@ -169,19 +169,19 @@ bot.on('message', async (msg) => {
             break;
         case 'Показать товары':
             if (chatId.toString() !== ADMIN_ID) return;
-            await showProducts(bot, chatId);
+            await showProducts(bot, chatId); // Передаем bot напрямую
             break;
         case 'Добавить товар':
             if (chatId.toString() !== ADMIN_ID) return;
-            await addProduct(bot, chatId);
+            await addProduct(bot, chatId); // Передаем bot напрямую
             break;
         case 'Редактировать товар':
             if (chatId.toString() !== ADMIN_ID) return;
-            await editProduct(bot, chatId);
+            await editProduct(bot, chatId); // Передаем bot напрямую
             break;
         case 'Удалить товар':
             if (chatId.toString() !== ADMIN_ID) return;
-            await deleteProduct(bot, chatId);
+            await deleteProduct(bot, chatId); // Передаем bot напрямую
             break;
     }
 });
@@ -245,5 +245,3 @@ const startServer = async () => {
 };
 
 startServer();
-
-module.exports = { bot }; // Экспортируем bot для использования в других файлах
