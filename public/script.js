@@ -3,7 +3,7 @@ Telegram.WebApp.ready();
 let allProducts = [];
 
 function loadProducts(products) {
-    console.log('Загрузка продуктов:', products); // Отладка
+    console.log('Загрузка продуктов:', products);
     const productList = document.getElementById('product-list');
     productList.innerHTML = '';
 
@@ -26,7 +26,7 @@ function loadProducts(products) {
                     <span class="client-price">${product.clientPrice} ₽</span>
                 </div>
                 <div class="rating">★ ${product.averageRating.toFixed(1)}</div>
-                <a class="order-btn btn red waves-effect waves-light" data-id="${product._id}">В корзину</a>
+                <a class="order-btn btn waves-effect waves-light" data-id="${product._id}">В корзину</a>
             </div>
         `;
         card.addEventListener('click', (e) => {
@@ -82,7 +82,7 @@ function showProductDetail(product) {
                 <span class="client-price">Клиентская: ${product.clientPrice} ₽</span>
             </div>
             <div class="rating">Рейтинг: ★ ${product.averageRating.toFixed(1)}</div>
-            <a class="order-btn btn red waves-effect waves-light" data-id="${product._id}">В корзину</a>
+            <a class="order-btn btn waves-effect waves-light" data-id="${product._id}">В корзину</a>
             <div class="description">
                 <h5>Описание</h5>
                 <p>${product.description}</p>
@@ -101,7 +101,7 @@ function showProductDetail(product) {
                     <span class="star" data-value="5">★</span>
                 </div>
                 <textarea id="review-comment" class="materialize-textarea" placeholder="Ваш отзыв..."></textarea>
-                <a class="submit-btn btn red waves-effect waves-light" data-id="${product._id}">Отправить отзыв</a>
+                <a class="submit-btn btn waves-effect waves-light" data-id="${product._id}">Отправить отзыв</a>
                 <div id="review-status" style="color: #27ae60; margin-top: 10px;"></div>
             </div>
         </div>
@@ -186,7 +186,7 @@ fetch('/api/products')
         return response.json();
     })
     .then(data => {
-        console.log('Получены данные от API:', data); // Отладка
+        console.log('Получены данные от API:', data);
         allProducts = data.products || [];
         loadProducts(allProducts);
 
