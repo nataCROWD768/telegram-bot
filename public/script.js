@@ -126,7 +126,6 @@ function showProductDetail(product) {
     });
 }
 
-// Добавим тестовый запрос для проверки
 console.log('Отправка запроса к:', API_URL);
 fetch(API_URL, {
     method: 'GET',

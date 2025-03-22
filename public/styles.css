@@ -24,7 +24,8 @@ header {
     z-index: 1000;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-start; /* Выравнивание влево */
+    gap: 15px; /* Расстояние между заголовком и строкой поиска */
     width: 385px; /* Фиксированная ширина шапки */
 }
 
@@ -37,7 +38,7 @@ h1 {
 }
 
 .search-input {
-    width: 100px; /* Уменьшена ширина для полного влезания */
+    width: 100px;
     padding: 5px 8px;
     border: none;
     border-radius: 15px;
@@ -47,6 +48,7 @@ h1 {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     outline: none;
     transition: all 0.3s ease;
+    margin-right: 15px; /* Отступ справа, как слева у заголовка */
 }
 
 .search-input:focus {
@@ -61,7 +63,7 @@ h1 {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(4, 92px); /* 4 карточки по 92px = 368px + 3px * 3 + 10px padding = 385px */
+    grid-template-columns: repeat(4, 89px); /* 4 карточки по 89px = 356px + 3px * 3 + 10px padding = 385px */
     gap: 3px; /* Минимальный отступ */
     padding: 10px;
     width: 385px; /* Фиксированная ширина сетки */
