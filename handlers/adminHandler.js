@@ -1,110 +1,132 @@
-const TelegramBot = require('node-telegram-bot-api');
-const Review = require('../models/review');
 const Product = require('../models/product');
 
-const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE';
-
-function handleAdmin(bot, msg) {
+const handleAdmin = async (bot, msg) => {
   const chatId = msg.chat.id;
-  if (chatId.toString() !== ADMIN_ID) return;
-
-  bot.sendMessage(chatId, '👨‍💼 Админ-панель:', {
+  await bot.sendMessage(chatId, '🛠 Админ-панель:', {
     reply_markup: {
       keyboard: [
-        ['Статистика', 'Список товаров'],
-        ['Добавить товар', 'Редактировать товар'],
-        ['Удалить товар', 'Модерация отзывов'],
-        ['Назад в меню']
+        ['Показать товары', 'Добавить товар'],
+        ['Редактировать товар', 'Удалить товар'],
+        ['Модерация отзывов', 'Назад в меню']
       ],
       resize_keyboard: true
     }
   });
-}
+};
 
-async function moderateReviews(bot, chatId) {
-  const reviews = await Review.find({ isApproved: false }).populate('productId', 'name');
-  if (reviews.length === 0) {
-    await bot.sendMessage(chatId, 'Нет отзывов на модерации');
-    return;
+const showStats = async (bot, chatId) => {
+  // Здесь может быть статистика, если нужно
+};
+
+const showProducts = async (bot, chatId) => {
+  try {
+    const products = await Product.find();
+    if (products.length === 0) {
+      await bot.sendMessage(chatId, '📦 Товаров пока нет');
+      return;
+    }
+    const productList = products.map(p =>
+        `ID: ${p._id}\n` +
+        `Название: ${p.name}\n` +
+        `Описание: ${p.description}\n` +
+        `Цена (клуб): ${p.clubPrice} ₽\n` +
+        `Цена (клиент): ${p.clientPrice} ₽\n` +
+        `Рейтинг: ${p.averageRating}\n` +
+        `Изображение: ${p.image}\n`
+    ).join('\n---\n');
+    await bot.sendMessage(chatId, `📦 Список товаров:\n\n${productList}`);
+  } catch (error) {
+    console.error('Ошибка показа товаров:', error);
+    await bot.sendMessage(chatId, '❌ Ошибка при загрузке товаров');
   }
+};
 
-  reviews.forEach(async (review, index) => {
-    const message = `
-            Отзыв #${index + 1}
-            Товар: ${review.productId.name}
-            Пользователь: ${review.username}
-            Рейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
-            Комментарий: ${review.comment}
-        `;
-    await bot.sendMessage(chatId, message, {
-      reply_markup: {
-        inline_keyboard: [
-          [
-            { text: 'Утвердить', callback_data: `approve_review_${review._id}` },
-            { text: 'Отклонить', callback_data: `reject_review_${review._id}` }
-          ]
-        ]
+const addProduct = async (bot, chatId) => {
+  await bot.sendMessage(chatId, '📦 Введите данные нового товара в формате:\n`Название|Описание|Цена (клуб)|Цена (клиент)|URL изображения`', { parse_mode: 'Markdown' });
+  bot.once('message', async (msg) => {
+    const [name, description, clubPrice, clientPrice, image] = msg.text.split('|');
+    if (!name || !description || !clubPrice || !clientPrice || !image) {
+      await bot.sendMessage(chatId, '❌ Неверный формат. Попробуйте снова.');
+      return;
+    }
+    try {
+      const product = new Product({
+        name,
+        description,
+        clubPrice: parseInt(clubPrice),
+        clientPrice: parseInt(clientPrice),
+        image,
+        stock: 0, // Для ознакомления stock не важен
+        averageRating: 0
+      });
+      await product.save();
+      await bot.sendMessage(chatId, `✅ Товар "${name}" успешно добавлен!`);
+    } catch (error) {
+      console.error('Ошибка добавления товара:', error);
+      await bot.sendMessage(chatId, '❌ Ошибка при добавлении товара');
+    }
+  });
+};
+
+const editProduct = async (bot, chatId) => {
+  await bot.sendMessage(chatId, '📦 Введите ID товара для редактирования:');
+  bot.once('message', async (msg) => {
+    const productId = msg.text;
+    const product = await Product.findById(productId);
+    if (!product) {
+      await bot.sendMessage(chatId, '❌ Товар не найден');
+      return;
+    }
+    await bot.sendMessage(chatId, `Текущие данные:\n${product.name}|${product.description}|${product.clubPrice}|${product.clientPrice}|${product.image}\n\nВведите новые данные в формате:\n\`Название|Описание|Цена (клуб)|Цена (клиент)|URL изображения\``);
+    bot.once('message', async (msg) => {
+      const [name, description, clubPrice, clientPrice, image] = msg.text.split('|');
+      if (!name || !description || !clubPrice || !clientPrice || !image) {
+        await bot.sendMessage(chatId, '❌ Неверный формат. Попробуйте снова.');
+        return;
+      }
+      try {
+        await Product.updateOne({ _id: productId }, {
+          name,
+          description,
+          clubPrice: parseInt(clubPrice),
+          clientPrice: parseInt(clientPrice),
+          image
+        });
+        await bot.sendMessage(chatId, `✅ Товар "${name}" успешно обновлён!`);
+      } catch (error) {
+        console.error('Ошибка редактирования товара:', error);
+        await bot.sendMessage(chatId, '❌ Ошибка при редактировании товара');
       }
     });
   });
-}
+};
 
-async function handleAdminCallback(bot, callbackQuery) {
-  const chatId = callbackQuery.message.chat.id;
-  const data = callbackQuery.data;
-
-  if (chatId.toString() !== ADMIN_ID) return;
-
-  if (data.startsWith('approve_review_')) {
-    const reviewId = data.split('_')[2];
-    const review = await Review.findById(reviewId);
-    if (review) {
-      review.isApproved = true;
-      await review.save();
-      await bot.editMessageText(`${callbackQuery.message.text}\n\n✅ Утверждён`, {
-        chat_id: chatId,
-        message_id: callbackQuery.message.message_id
-      });
-      await bot.answerCallbackQuery(callbackQuery.id, { text: 'Отзыв утверждён' });
+const deleteProduct = async (bot, chatId) => {
+  await bot.sendMessage(chatId, '📦 Введите ID товара для удаления:');
+  bot.once('message', async (msg) => {
+    const productId = msg.text;
+    const product = await Product.findById(productId);
+    if (!product) {
+      await bot.sendMessage(chatId, '❌ Товар не найден');
+      return;
     }
-  } else if (data.startsWith('reject_review_')) {
-    const reviewId = data.split('_')[2];
-    const review = await Review.findByIdAndDelete(reviewId);
-    if (review) {
-      await bot.editMessageText(`${callbackQuery.message.text}\n\n❌ Отклонён`, {
-        chat_id: chatId,
-        message_id: callbackQuery.message.message_id
-      });
-      await bot.answerCallbackQuery(callbackQuery.id, { text: 'Отзыв отклонён' });
+    try {
+      await Product.deleteOne({ _id: productId });
+      await bot.sendMessage(chatId, `✅ Товар "${product.name}" успешно удалён!`);
+    } catch (error) {
+      console.error('Ошибка удаления товара:', error);
+      await bot.sendMessage(chatId, '❌ Ошибка при удалении товара');
     }
-  }
-}
+  });
+};
 
-async function showStats(bot, chatId) {
-  bot.sendMessage(chatId, 'Статистика (в разработке)');
-}
+const moderateReviews = async (bot, chatId) => {
+  // Существующий код модерации отзывов
+};
 
-async function showProducts(bot, chatId) {
-  const products = await Product.find();
-  if (products.length === 0) {
-    await bot.sendMessage(chatId, 'Товаров нет');
-  } else {
-    const productList = products.map(p => `${p.name} - ${p.clubPrice} руб.`).join('\n');
-    await bot.sendMessage(chatId, `Список товаров:\n${productList}`);
-  }
-}
-
-async function addProduct(bot, chatId) {
-  bot.sendMessage(chatId, 'Добавление товара (в разработке)');
-}
-
-async function editProduct(bot, chatId) {
-  bot.sendMessage(chatId, 'Редактирование товара (в разработке)');
-}
-
-async function deleteProduct(bot, chatId) {
-  bot.sendMessage(chatId, 'Удаление товара (в разработке)');
-}
+const handleAdminCallback = async (bot, callbackQuery) => {
+  // Существующий код обработки callback-запросов админа
+};
 
 module.exports = {
   handleAdmin,

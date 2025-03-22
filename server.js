@@ -166,6 +166,22 @@ bot.on('message', async (msg) => {
             if (chatId.toString() !== ADMIN_ID) return;
             await moderateReviews(bot, chatId);
             break;
+        case 'Показать товары':
+            if (chatId.toString() !== ADMIN_ID) return;
+            await showProducts(bot, chatId);
+            break;
+        case 'Добавить товар':
+            if (chatId.toString() !== ADMIN_ID) return;
+            await addProduct(bot, chatId);
+            break;
+        case 'Редактировать товар':
+            if (chatId.toString() !== ADMIN_ID) return;
+            await editProduct(bot, chatId);
+            break;
+        case 'Удалить товар':
+            if (chatId.toString() !== ADMIN_ID) return;
+            await deleteProduct(bot, chatId);
+            break;
     }
 });
 
