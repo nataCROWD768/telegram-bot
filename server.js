@@ -1,8 +1,8 @@
-const TelegramBot       = require('node-telegram-bot-api');
-const express           = require('express');
-const mongoose          = require('mongoose');
-const axios             = require('axios');
-const path              = require('path');
+const TelegramBot = require('node-telegram-bot-api');
+const express = require('express');
+const mongoose = require('mongoose');
+const axios = require('axios');
+const path = require('path');
 const { token, welcomeVideo, companyInfo } = require('./config/botConfig');
 const { handleMainMenu } = require('./handlers/menuHandler');
 const {
@@ -15,45 +15,37 @@ const {
     moderateReviews,
     handleAdminCallback
 } = require('./handlers/adminHandler');
-const {
-    handleCallback,
-    searchProducts
-} = require('./handlers/productHandler');
+const { handleCallback, searchProducts } = require('./handlers/productHandler');
 const { showProfile, showOrderHistory } = require('./handlers/profileHandler');
-const Visit             = require('./models/visit');
-const Product           = require('./models/product');
-const Order             = require('./models/order');
-const Review            = require('./models/review');
-const initialProducts   = require('./data/products');
+const Visit = require('./models/visit');
+const Product = require('./models/product');
+const Order = require('./models/order');
+const Review = require('./models/review');
+const initialProducts = require('./data/products');
 require('dotenv').config();
 
-const app               = express();
-const isLocal           = process.env.NODE_ENV !== 'production';
-const bot               = new TelegramBot(token, { polling: isLocal });
-
-// ID администратора (замените на свой Telegram ID)
+const app = express();
+const isLocal = process.env.NODE_ENV !== 'production';
+const bot = new TelegramBot(token, { polling: isLocal });
 const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE';
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'), {
-    setHeaders: (res, filePath) => {
-        console.log(`Раздача файла: ${filePath}`);
-    }
+    setHeaders: (res, filePath) => console.log(`Раздача файла: ${filePath}`)
 }));
 
-mongoose.connect(process.env.MONGODB_URI).then(() => {
-    console.log('MongoDB подключен');
-}).catch(err => {
-    console.error('Ошибка подключения к MongoDB:', err.message);
-    process.exit(1);
-});
+mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB подключен'))
+    .catch(err => {
+        console.error('Ошибка подключения к MongoDB:', err.message);
+        process.exit(1);
+    });
 
 const setupWebhook = async () => {
     if (isLocal) return console.log('Локальный режим: polling');
     const appName = process.env.RENDER_APP_NAME;
     const WEBHOOK_URL = `https://${appName}.onrender.com/bot${token}`;
     const telegramApi = `https://api.telegram.org/bot${token}`;
-
     try {
         await axios.get(`${telegramApi}/deleteWebhook`);
         const setResponse = await axios.get(`${telegramApi}/setWebHook?url=${WEBHOOK_URL}`);
@@ -159,30 +151,10 @@ bot.on('message', async (msg) => {
         case 'Назад в меню':
             handleMainMenu(bot, chatId);
             break;
-        case 'Статистика':
-            showStats(bot, chatId);
-            break;
-        case 'Список товаров':
-            showProducts(bot, chatId);
-            break;
-        case 'Добавить товар':
-            addProduct(bot, chatId);
-            break;
-        case 'Редактировать товар':
-            editProduct(bot, chatId);
-            break;
-        case 'Удалить товар':
-            deleteProduct(bot, chatId);
-            break;
         case 'Модерация отзывов':
             if (chatId.toString() !== ADMIN_ID) return;
             await moderateReviews(bot, chatId);
             break;
-    }
-
-    if (msg.text?.startsWith('/search')) {
-        const query = msg.text.split(' ').slice(1).join(' ');
-        searchProducts(bot, chatId, query);
     }
 });
 
@@ -201,7 +173,7 @@ app.post(`/bot${token}`, (req, res) => {
 bot.on('web_app_data', async (msg) => {
     const chatId = msg.chat.id;
     const data = JSON.parse(msg.web_app_data.data);
-    console.log('Данные от Web App:', data);
+    console.log('Получены данные от Web App:', data);
 
     if (data.type === 'order') {
         const { productId, quantity } = data;
@@ -225,24 +197,34 @@ bot.on('web_app_data', async (msg) => {
     if (data.type === 'review') {
         const { productId, rating, comment } = data;
         console.log('Попытка сохранить отзыв:', { productId, rating, comment });
-        if (!rating || rating < 1 || rating > 5 || !comment) {
-            console.log('Ошибка валидации отзыва');
+
+        if (!rating || rating < 1 || rating > 5 || !comment || !productId) {
+            console.log('Ошибка валидации отзыва:', { productId, rating, comment });
             await bot.sendMessage(chatId, '❌ Неверный формат отзыва');
             return;
         }
+
         try {
-            const review = await Review.create({
-                userId: chatId,
+            const product = await Product.findById(productId);
+            if (!product) {
+                console.log('Товар не найден:', productId);
+                await bot.sendMessage(chatId, '❌ Товар не найден');
+                return;
+            }
+
+            const review = new Review({
+                userId: chatId.toString(),
                 username: msg.from.username || 'Аноним',
                 productId,
                 rating,
                 comment,
                 isApproved: false
             });
-            console.log('Отзыв сохранён:', review);
+            const savedReview = await review.save();
+            console.log('Отзыв сохранён:', savedReview);
             await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
         } catch (error) {
-            console.error('Ошибка сохранения отзыва:', error.message);
+            console.error('Ошибка сохранения отзыва:', error.stack);
             await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва');
         }
     }
