@@ -2,7 +2,9 @@ const Product           = require('../models/product');
 const Order             = require('../models/order');
 const Review            = require('../models/review');
 
-const ITEMS_PER_PAGE    = 10; // Количество товаров на странице
+const ITEMS_PER_ROW     = 4;  // Максимум 4 товара в ряду
+const MAX_ROWS          = 5;  // Максимум 5 строк на странице
+const ITEMS_PER_PAGE    = ITEMS_PER_ROW * MAX_ROWS; // 20 товаров на странице
 
 module.exports = {
   showProducts: async (bot, chatId, category = null, page = 1) => {
@@ -19,20 +21,26 @@ module.exports = {
       }
 
       let message = `*Витрина товаров (стр. ${page}/${Math.ceil(total / ITEMS_PER_PAGE)}):*\n\n`;
-      products.forEach((product, index) => {
-        message += `${(page - 1) * ITEMS_PER_PAGE + index + 1}. *${product.name}*\n`;
-        message += `Клиентская: ${product.clientPrice} руб.\n`;
-        message += `Клубная: ${product.clubPrice} руб.\n`;
-        message += `Рейтинг: ★ ${product.averageRating.toFixed(1)}\n\n`;
-      });
+      message += 'Выберите товар для подробностей:\n';
 
       const keyboard = [];
+      for (let i = 0; i < products.length; i += ITEMS_PER_ROW) {
+        const row = products.slice(i, i + ITEMS_PER_ROW).map(product => ({
+          text: `${product.name} (${product.clubPrice}/${product.clientPrice} ₽, ★ ${product.averageRating.toFixed(1)})`,
+          callback_data: `product_${product._id}`
+        }));
+        keyboard.push(row);
+      }
+
+      // Добавляем кнопки пагинации и категорий
+      const navigation = [];
       if (page > 1) {
-        keyboard.push([{ text: '⬅️ Назад', callback_data: `products_${category || 'all'}_${page - 1}` }]);
+        navigation.push({ text: '⬅️ Назад', callback_data: `products_${category || 'all'}_${page - 1}` });
       }
       if (page < Math.ceil(total / ITEMS_PER_PAGE)) {
-        keyboard.push([{ text: 'Вперед ➡️', callback_data: `products_${category || 'all'}_${page + 1}` }]);
+        navigation.push({ text: 'Вперед ➡️', callback_data: `products_${category || 'all'}_${page + 1}` });
       }
+      if (navigation.length > 0) keyboard.push(navigation);
       keyboard.push([{ text: '📋 Категории', callback_data: 'categories' }]);
 
       await bot.sendMessage(chatId, message, {
@@ -103,7 +111,7 @@ module.exports = {
           inline_keyboard: [
             [{ text: `Заказать (${product.clubPrice} руб.)`, callback_data: `order_${product._id}` }],
             [{ text: 'Оставить отзыв', callback_data: `review_${product._id}` }],
-            [{ text: 'Назад', callback_data: 'back_to_products' }]
+            [{ text: 'Назад', callback_data: `products_${product.category || 'all'}_${Math.floor((await Product.find(query).countDocuments() - 1) / ITEMS_PER_PAGE) + 1}` }]
           ]
         }
       });
@@ -173,7 +181,6 @@ module.exports = {
       const [_, category, page] = data.split('_');
       module.exports.showProducts(bot, chatId, category, parseInt(page));
     }
-    if (data === 'back_to_products') module.exports.showProducts(bot, chatId);
   },
 
   searchProducts: async (bot, chatId, query) => {
@@ -191,17 +198,22 @@ module.exports = {
       }
 
       let message = '*Результаты поиска:*\n\n';
-      products.forEach((product, index) => {
-        message += `${index + 1}. *${product.name}*\n`;
-        message += `Клиентская: ${product.clientPrice} руб.\n`;
-        message += `Клубная: ${product.clubPrice} руб.\n`;
-        message += `Рейтинг: ★ ${product.averageRating.toFixed(1)}\n\n`;
-      });
+      message += 'Выберите товар для подробностей:\n';
+
+      const keyboard = [];
+      for (let i = 0; i < products.length; i += ITEMS_PER_ROW) {
+        const row = products.slice(i, i + ITEMS_PER_ROW).map(product => ({
+          text: `${product.name} (${product.clubPrice}/${product.clientPrice} ₽, ★ ${product.averageRating.toFixed(1)})`,
+          callback_data: `product_${product._id}`
+        }));
+        keyboard.push(row);
+      }
+      keyboard.push([{ text: '📋 Категории', callback_data: 'categories' }]);
 
       await bot.sendMessage(chatId, message, {
         parse_mode: 'Markdown',
         reply_markup: {
-          inline_keyboard: [[{ text: '📋 Категории', callback_data: 'categories' }]]
+          inline_keyboard: keyboard
         }
       });
     } catch (error) {
