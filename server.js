@@ -58,20 +58,23 @@ const setupWebhook = async () => {
 
 const syncProducts = async () => {
     try {
+        await Product.deleteMany({}); // Очистка коллекции для теста
+        console.log('Коллекция products очищена');
         const existingProducts = await Product.find();
-        console.log('Текущие товары в БД:', existingProducts); // Отладка
+        console.log('Текущие товары в БД:', existingProducts);
         const existingNames = existingProducts.map(p => p.name);
-        console.log('Имена существующих товаров:', existingNames); // Отладка
+        console.log('Имена существующих товаров:', existingNames);
         for (const productData of initialProducts) {
             if (!existingNames.includes(productData.name)) {
                 const newProduct = await Product.create(productData);
-                console.log('Добавлен новый товар:', newProduct); // Отладка
+                console.log('Добавлен новый товар:', newProduct);
             } else {
                 const updatedProduct = await Product.updateOne({ name: productData.name }, productData);
-                console.log('Обновлён товар:', productData.name, updatedProduct); // Отладка
+                console.log('Обновлён товар:', productData.name, updatedProduct);
             }
         }
-        console.log('Товары синхронизированы');
+        const finalProducts = await Product.find();
+        console.log('Итоговые товары в БД после синхронизации:', finalProducts);
     } catch (error) {
         console.error('Ошибка синхронизации товаров:', error.message);
     }
@@ -80,18 +83,13 @@ const syncProducts = async () => {
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
-        console.log('Найденные товары:', products); // Отладка
+        console.log('Найденные товары для API:', products);
         const productsWithReviews = await Promise.all(products.map(async (product) => {
             const reviews = await Review.find({ productId: product._id, isApproved: true });
             return { ...product.toObject(), reviews };
         }));
-        console.log('Отправка данных товаров:', productsWithReviews); // Отладка
-        if (products.length === 0) {
-            console.log('Товаров в базе нет');
-            res.json({ products: [], total: 0 }); // Явно возвращаем пустой массив
-        } else {
-            res.json({ products: productsWithReviews, total: products.length });
-        }
+        console.log('Отправка данных товаров клиенту:', productsWithReviews);
+        res.json({ products: productsWithReviews, total: products.length });
     } catch (error) {
         console.error('Ошибка API /api/products:', error.message);
         res.status(500).json({ error: 'Ошибка загрузки товаров' });
