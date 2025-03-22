@@ -14,7 +14,7 @@ body {
 
 header {
     padding: 15px 20px;
-    background: linear-gradient(135deg, #1a1a1a, #333);
+    background: linear-gradient(135deg, #1a1a1a, #333); /* Элегантный градиент */
     color: #fff;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     position: sticky;
@@ -23,8 +23,7 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: 100%; /* Полная ширина для адаптивности */
-    max-width: 1200px; /* Ограничение для больших экранов */
+    width: 1200px; /* Фиксированная ширина под 4 карточки */
     margin: 0 auto;
 }
 
@@ -37,8 +36,7 @@ h1 {
 }
 
 .search-input {
-    width: 100%;
-    max-width: 300px; /* Уменьшена ширина для шапки */
+    width: 300px;
     padding: 10px 15px;
     border: none;
     border-radius: 50px;
@@ -62,11 +60,10 @@ h1 {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 карточки в ряд */
-    gap: 5px; /* Минимальный отступ */
-    padding: 10px;
-    width: 100%;
-    max-width: 1200px; /* Фиксированная ширина, адаптируется */
+    grid-template-columns: repeat(4, 280px); /* 4 карточки по 280px */
+    gap: 20px; /* Минимальный отступ для красоты */
+    padding: 20px;
+    width: 1200px; /* Фиксированная ширина: 4 * 280px + 3 * 20px = 1180px + padding */
     margin: 0 auto;
     box-sizing: border-box;
 }
@@ -79,7 +76,7 @@ h1 {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
-    height: 400px; /* Уменьшенная высота для компактности */
+    height: 400px; /* Фиксированная высота для единообразия */
 }
 
 .product-card:hover {
@@ -89,14 +86,13 @@ h1 {
 
 .product-card img {
     width: 100%;
-    height: 70%; /* Пропорциональное уменьшение изображения */
-    object-fit: contain; /* Пропорциональное вписывание изображения */
+    height: 70%;
+    object-fit: cover; /* Красивое заполнение */
     border-radius: 15px 15px 0 0;
-    background-color: #f9f9f9; /* Фон для пустых участков */
 }
 
 .product-card .card-content {
-    padding: 10px;
+    padding: 15px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -104,9 +100,9 @@ h1 {
 }
 
 .product-card h3 {
-    font-size: 14px;
+    font-size: 16px;
     font-weight: 500;
-    margin: 0 0 5px;
+    margin: 0 0 10px;
     color: #222;
     line-height: 1.2;
     overflow: hidden;
@@ -115,14 +111,14 @@ h1 {
 }
 
 .product-card .prices {
-    font-size: 12px;
+    font-size: 14px;
     margin: 5px 0;
     display: flex;
     justify-content: space-between;
 }
 
 .product-card .club-price {
-    color: #e91e63;
+    color: #e91e63; /* Яркий акцент */
     font-weight: 600;
 }
 
@@ -133,7 +129,7 @@ h1 {
 
 .product-card .rating {
     color: #f39c12;
-    font-size: 12px;
+    font-size: 14px;
     margin-top: 5px;
 }
 
@@ -161,10 +157,11 @@ h1 {
 
 #product-detail .card {
     padding: 20px;
-    margin-top: 10px;
+    margin: 20px auto;
     background-color: #fff;
     border-radius: 15px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
+    width: 1200px;
 }
 
 #product-detail img {
@@ -288,27 +285,4 @@ h1 {
 #product-detail .review-form .submit-btn:hover {
     background: linear-gradient(135deg, #d81b60, #ec407a);
     transform: scale(1.05);
-}
-
-/* Адаптивность для маленьких экранов */
-@media (max-width: 1200px) {
-    .product-grid {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Адаптивное количество колонок */
-    }
-
-    .product-card {
-        height: auto; /* Высота подстраивается */
-    }
-
-    header {
-        padding: 10px 15px;
-    }
-
-    h1 {
-        font-size: 20px;
-    }
-
-    .search-input {
-        max-width: 200px;
-    }
 }

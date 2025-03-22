@@ -29,7 +29,6 @@ const isLocal = process.env.NODE_ENV !== 'production';
 const bot = new TelegramBot(token, { polling: isLocal });
 const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE';
 
-// Храним ID последнего сообщения для удаления
 let lastMessageId = {};
 
 app.use(express.json());
@@ -125,7 +124,6 @@ bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     console.log(`Сообщение: "${msg.text}" от ${msg.from.username}`);
 
-    // Удаляем предыдущее сообщение, если оно есть
     if (lastMessageId[chatId] && lastMessageId[chatId] !== msg.message_id) {
         try {
             await bot.deleteMessage(chatId, lastMessageId[chatId]);
@@ -139,7 +137,7 @@ bot.on('message', async (msg) => {
         case 'Личный кабинет':
             await showProfile(bot, chatId);
             break;
-        case 'Витрина': // Переименовываем "Магазин" в "Витрина"
+        case 'Витрина':
             newMessage = await bot.sendMessage(chatId, '🛒 Открыть витрину:', {
                 reply_markup: {
                     inline_keyboard: [[{ text: 'Перейти', web_app: { url: `${webAppUrl}/index.html` } }]]
