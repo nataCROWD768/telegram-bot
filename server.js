@@ -2,6 +2,7 @@ const TelegramBot       = require('node-telegram-bot-api');
 const express           = require('express');
 const mongoose          = require('mongoose');
 const axios             = require('axios');
+const path              = require('path');
 const { token, welcomeVideo, companyInfo } = require('./config/botConfig');
 const { handleMainMenu } = require('./handlers/menuHandler');
 const {
@@ -24,7 +25,7 @@ const Visit             = require('./models/visit');
 const Product           = require('./models/product');
 const Order             = require('./models/order');
 const Review            = require('./models/review');
-const initialProducts   = require('./data/products'); // Импорт товаров
+const initialProducts   = require('./data/products');
 require('dotenv').config();
 
 const app               = express();
@@ -32,6 +33,7 @@ const isLocal           = process.env.NODE_ENV !== 'production';
 const bot               = new TelegramBot(token, { polling: isLocal });
 
 app.use(express.json());
+app.use(express.static(path.join(__dirname, 'webapp'))); // Обслуживание Web App
 
 // Проверка и подключение MongoDB
 const mongoUri          = process.env.MONGODB_URI;
@@ -44,6 +46,22 @@ mongoose.connect(mongoUri).then(() => {
 }).catch(err => {
     console.error('Ошибка подключения к MongoDB:', err.message);
     process.exit(1);
+});
+
+// API для получения товаров
+app.get('/api/products', async (req, res) => {
+    const page  = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    try {
+        const total    = await Product.countDocuments();
+        const products = await Product.find()
+            .skip((page - 1) * limit)
+            .limit(limit);
+        res.json({ products, total });
+    } catch (error) {
+        console.error('Ошибка API /products:', error);
+        res.status(500).json({ error: 'Ошибка сервера' });
+    }
 });
 
 // Настройка Webhook через HTTP-запросы
@@ -203,14 +221,52 @@ bot.on('message', (msg) => {
     }
 });
 
-// Обработка callback-запросов
+// Обработка callback-запросов и данных от Web App
 bot.on('callback_query', (callbackQuery) => {
-    console.log(`Получен callback: ${callbackQuery.data}`);
     handleCallback(bot, callbackQuery);
     handleAdminCallback(bot, callbackQuery);
 });
 
-// Webhook endpoint с отладкой
+bot.on('web_app_data', async (msg) => {
+    const chatId = msg.chat.id;
+    const data = JSON.parse(msg.web_app_data.data);
+
+    if (data.action === 'show_product') {
+        const productId = data.productId;
+        const product = await Product.findById(productId);
+        const reviews = await Review.find({ productId, isApproved: true }).limit(3);
+
+        let reviewsText = '\n*Последние отзывы:*\n';
+        reviews.forEach(r => {
+            reviewsText += `@${r.username}: ${r.rating}/5 - ${r.comment}\n`;
+        });
+
+        const caption = `
+            *${product.name}* (${product.category})
+            
+            ${product.description}
+            
+            Клиентская цена: ${product.clientPrice} руб.
+            Клубная цена: ${product.clubPrice} руб.
+            Рейтинг: ★ ${product.averageRating.toFixed(1)}
+            ${reviews.length > 0 ? reviewsText : 'Отзывов пока нет'}
+        `;
+
+        await bot.sendPhoto(chatId, product.image, {
+            caption,
+            parse_mode: 'Markdown',
+            reply_markup: {
+                inline_keyboard: [
+                    [{ text: `Заказать (${product.clubPrice} руб.)`, callback_data: `order_${product._id}` }],
+                    [{ text: 'Оставить отзыв', callback_data: `review_${product._id}` }],
+                    [{ text: 'Назад в витрину', web_app: { url: `https://${process.env.RENDER_APP_NAME}.onrender.com/` } }]
+                ]
+            }
+        });
+    }
+});
+
+// Webhook endpoint
 app.post(`/bot${token}`, (req, res) => {
     console.log('Получен запрос на webhook:', JSON.stringify(req.body, null, 2));
     bot.processUpdate(req.body);
@@ -220,7 +276,7 @@ app.post(`/bot${token}`, (req, res) => {
 // Запуск сервера
 const startServer = async () => {
     await setupWebhook();
-    await syncProducts(); // Синхронизация товаров
+    await syncProducts();
 
     app.get('/', (req, res) => res.send('Bot is running'));
     const PORT = process.env.PORT || 3000;
