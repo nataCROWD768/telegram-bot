@@ -58,7 +58,7 @@ const setupWebhook = async () => {
 
 const syncProducts = async () => {
     try {
-        await Product.deleteMany({}); // Очистка для теста
+        await Product.deleteMany({});
         console.log('Коллекция products очищена');
         const existingProducts = await Product.find();
         console.log('Текущие товары в БД:', existingProducts);
@@ -125,7 +125,7 @@ bot.on('message', async (msg) => {
             showProfile(bot, chatId);
             break;
         case 'Витрина':
-            await bot.sendMessage(chatId, '🛒 Открыть интернет-магазин:', {
+            await bot.sendMessage(chatId, '🛒 Открыть магазин:', {
                 reply_markup: {
                     inline_keyboard: [[{ text: 'Перейти', web_app: { url: `${webAppUrl}/index.html` } }]]
                 }
