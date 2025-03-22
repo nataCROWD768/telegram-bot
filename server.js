@@ -1,6 +1,7 @@
 const TelegramBot       = require('node-telegram-bot-api');
 const express           = require('express');
 const mongoose          = require('mongoose');
+const axios             = require('axios'); // Добавляем axios для HTTP-запросов
 const { token, welcomeVideo, companyInfo } = require('./config/botConfig');
 const { handleMainMenu } = require('./handlers/menuHandler');
 const {
@@ -27,7 +28,7 @@ require('dotenv').config();
 
 const app               = express();
 const isLocal           = process.env.NODE_ENV !== 'production';
-const bot               = new TelegramBot(token, { polling: isLocal });
+const bot               = new TelegramBot(token, { polling: isLocal }); // Polling только локально
 
 app.use(express.json());
 
@@ -44,7 +45,7 @@ mongoose.connect(mongoUri).then(() => {
     process.exit(1);
 });
 
-// Настройка Webhook только для production
+// Настройка Webhook через HTTP-запросы
 const setupWebhook      = async () => {
     if (isLocal) {
         console.log('Локальный режим: используется polling');
@@ -52,9 +53,15 @@ const setupWebhook      = async () => {
     }
 
     const WEBHOOK_URL   = `https://${process.env.RENDER_APP_NAME}.onrender.com/bot${token}`;
+    const telegramApi   = `https://api.telegram.org/bot${token}`;
+
     try {
-        await bot.deleteWebhook(); // Удаляем старый webhook
-        await bot.setWebHook(WEBHOOK_URL); // Устанавливаем новый
+        // Удаляем старый webhook
+        await axios.get(`${telegramApi}/deleteWebhook`);
+        console.log('Старый webhook удален');
+
+        // Устанавливаем новый webhook
+        await axios.get(`${telegramApi}/setWebHook?url=${WEBHOOK_URL}`);
         console.log(`Webhook установлен: ${WEBHOOK_URL}`);
     } catch (error) {
         console.error('Ошибка при установке Webhook:', error.message);
