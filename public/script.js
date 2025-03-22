@@ -126,7 +126,14 @@ function showProductDetail(product) {
     });
 }
 
-fetch(API_URL)
+// Добавим тестовый запрос для проверки
+console.log('Отправка запроса к:', API_URL);
+fetch(API_URL, {
+    method: 'GET',
+    headers: {
+        'Accept': 'application/json',
+    }
+})
     .then(response => {
         console.log('Ответ от /api/products:', response.status);
         if (!response.ok) {
