@@ -3,25 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Магазин</title>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/styles.css">
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <title>Витрина</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Магазин</h1>
+            <h1>Витрина</h1>
+            <input type="text" id="search-input" class="search-input" placeholder="Поиск товаров...">
         </header>
-        <div id="showcase">
-            <input type="text" id="search-input" placeholder="Поиск товаров...">
-            <div id="product-list" class="product-grid"></div>
-        </div>
-        <div id="product-detail" style="display: none;">
-            <div id="product-detail-content" class="card"></div>
-        </div>
+        <main>
+            <section id="showcase">
+                <div id="product-list" class="product-grid"></div>
+            </section>
+            <section id="product-detail" style="display: none;">
+                <div id="product-detail-content" class="card"></div>
+            </section>
+        </main>
         <div id="scroll-top-btn">↑</div>
     </div>
-    <script src="/script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

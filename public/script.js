@@ -119,7 +119,6 @@ function showProductDetail(product) {
             document.getElementById('review-comment').value = '';
             stars.forEach(s => s.classList.remove('filled'));
             detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
-            // Примечание: Отзыв появится после модерации и обновления страницы
         } else {
             Telegram.WebApp.showAlert('Выберите рейтинг и введите комментарий');
         }

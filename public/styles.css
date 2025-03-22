@@ -23,8 +23,8 @@ header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    width: calc(550px * 5 + 5px * 4 + 20px * 2); /* 5 карточек по 550px + 4 промежутка по 5px + отступы */
-    max-width: 100%;
+    width: 100%; /* Полная ширина для адаптивности */
+    max-width: 1200px; /* Ограничение для больших экранов */
     margin: 0 auto;
 }
 
@@ -38,9 +38,8 @@ h1 {
 
 .search-input {
     width: 100%;
-    max-width: 400px;
-    padding: 12px 20px;
-    margin: 10px auto;
+    max-width: 300px; /* Уменьшена ширина для шапки */
+    padding: 10px 15px;
     border: none;
     border-radius: 50px;
     font-size: 14px;
@@ -49,7 +48,6 @@ h1 {
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     outline: none;
     transition: all 0.3s ease;
-    display: block;
 }
 
 .search-input:focus {
@@ -64,18 +62,16 @@ h1 {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(5, 550px); /* 5 карточек в ряд */
-    gap: 5px; /* Минимальное расстояние */
+    grid-template-columns: repeat(4, 1fr); /* 4 карточки в ряд */
+    gap: 5px; /* Минимальный отступ */
     padding: 10px;
-    width: calc(550px * 5 + 5px * 4); /* Фиксированная ширина под 5 карточек */
-    max-width: 100%;
+    width: 100%;
+    max-width: 1200px; /* Фиксированная ширина, адаптируется */
     margin: 0 auto;
     box-sizing: border-box;
 }
 
 .product-card {
-    width: 550px;
-    height: 550px;
     background-color: #fff;
     border-radius: 15px;
     overflow: hidden;
@@ -83,6 +79,7 @@ h1 {
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
+    height: 400px; /* Уменьшенная высота для компактности */
 }
 
 .product-card:hover {
@@ -92,13 +89,14 @@ h1 {
 
 .product-card img {
     width: 100%;
-    height: 70%;
-    object-fit: cover;
+    height: 70%; /* Пропорциональное уменьшение изображения */
+    object-fit: contain; /* Пропорциональное вписывание изображения */
     border-radius: 15px 15px 0 0;
+    background-color: #f9f9f9; /* Фон для пустых участков */
 }
 
 .product-card .card-content {
-    padding: 15px;
+    padding: 10px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -106,9 +104,9 @@ h1 {
 }
 
 .product-card h3 {
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 500;
-    margin: 0 0 10px;
+    margin: 0 0 5px;
     color: #222;
     line-height: 1.2;
     overflow: hidden;
@@ -117,7 +115,7 @@ h1 {
 }
 
 .product-card .prices {
-    font-size: 14px;
+    font-size: 12px;
     margin: 5px 0;
     display: flex;
     justify-content: space-between;
@@ -135,7 +133,7 @@ h1 {
 
 .product-card .rating {
     color: #f39c12;
-    font-size: 14px;
+    font-size: 12px;
     margin-top: 5px;
 }
 
@@ -290,4 +288,27 @@ h1 {
 #product-detail .review-form .submit-btn:hover {
     background: linear-gradient(135deg, #d81b60, #ec407a);
     transform: scale(1.05);
+}
+
+/* Адаптивность для маленьких экранов */
+@media (max-width: 1200px) {
+    .product-grid {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Адаптивное количество колонок */
+    }
+
+    .product-card {
+        height: auto; /* Высота подстраивается */
+    }
+
+    header {
+        padding: 10px 15px;
+    }
+
+    h1 {
+        font-size: 20px;
+    }
+
+    .search-input {
+        max-width: 200px;
+    }
 }
