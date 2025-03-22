@@ -17,7 +17,7 @@ const {
     handleAdminCallback
 } = require('./handlers/adminHandler');
 const { handleCallback, searchProducts } = require('./handlers/productHandler');
-const { showProfile } = require('./handlers/profileHandler'); // Убираем showOrderHistory
+const { showProfile } = require('./handlers/profileHandler');
 const Visit = require('./models/visit');
 const Product = require('./models/product');
 const Review = require('./models/review');
@@ -28,6 +28,9 @@ const app = express();
 const isLocal = process.env.NODE_ENV !== 'production';
 const bot = new TelegramBot(token, { polling: isLocal });
 const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE';
+
+// Храним ID последнего сообщения для удаления
+let lastMessageId = {};
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'), {
@@ -103,11 +106,13 @@ bot.onText(/\/start/, async (msg) => {
         if (!existingVisit) {
             await Visit.create({ username, userId: chatId });
             await bot.sendVideoNote(chatId, welcomeVideo);
-            await bot.sendMessage(chatId, `✨ Добро пожаловать!\n${companyInfo}`, { parse_mode: 'Markdown' });
+            const welcomeMsg = await bot.sendMessage(chatId, `✨ Добро пожаловать!\n${companyInfo}`, { parse_mode: 'Markdown' });
+            lastMessageId[chatId] = welcomeMsg.message_id;
         } else {
-            await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown' });
+            const returnMsg = await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown' });
+            lastMessageId[chatId] = returnMsg.message_id;
         }
-        handleMainMenu(bot, chatId);
+        await handleMainMenu(bot, chatId);
     } catch (error) {
         console.error('Ошибка /start:', error.message);
         await bot.sendMessage(chatId, '❌ Ошибка');
@@ -120,24 +125,36 @@ bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     console.log(`Сообщение: "${msg.text}" от ${msg.from.username}`);
 
+    // Удаляем предыдущее сообщение, если оно есть
+    if (lastMessageId[chatId] && lastMessageId[chatId] !== msg.message_id) {
+        try {
+            await bot.deleteMessage(chatId, lastMessageId[chatId]);
+        } catch (error) {
+            console.error('Ошибка удаления сообщения:', error);
+        }
+    }
+
+    let newMessage;
     switch (msg.text) {
         case 'Личный кабинет':
-            showProfile(bot, chatId);
+            await showProfile(bot, chatId);
             break;
-        case 'Витрина':
-            await bot.sendMessage(chatId, '🛒 Открыть магазин:', {
+        case 'Витрина': // Переименовываем "Магазин" в "Витрина"
+            newMessage = await bot.sendMessage(chatId, '🛒 Открыть витрину:', {
                 reply_markup: {
                     inline_keyboard: [[{ text: 'Перейти', web_app: { url: `${webAppUrl}/index.html` } }]]
                 }
             });
+            lastMessageId[chatId] = newMessage.message_id;
             break;
         case 'Бонусы и продукт':
-            bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)');
+            newMessage = await bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)');
+            lastMessageId[chatId] = newMessage.message_id;
             break;
         case 'Отзывы':
             const reviews = await Review.find().populate('productId', 'name');
             if (reviews.length === 0) {
-                await bot.sendMessage(chatId, '📝 Отзывов пока нет');
+                newMessage = await bot.sendMessage(chatId, '📝 Отзывов пока нет');
             } else {
                 const reviewList = reviews.map(r =>
                     `Товар: ${r.productId.name}\n` +
@@ -146,18 +163,20 @@ bot.on('message', async (msg) => {
                     `Комментарий: ${r.comment}\n` +
                     `Статус: ${r.isApproved ? 'Утверждён' : 'На модерации'}\n`
                 ).join('\n---\n');
-                await bot.sendMessage(chatId, `📝 Все отзывы:\n\n${reviewList}`, { parse_mode: 'Markdown' });
+                newMessage = await bot.sendMessage(chatId, `📝 Все отзывы:\n\n${reviewList}`, { parse_mode: 'Markdown' });
             }
+            lastMessageId[chatId] = newMessage.message_id;
             break;
         case '/admin':
             if (chatId.toString() !== ADMIN_ID) {
-                await bot.sendMessage(chatId, '❌ Доступ только для администратора');
+                newMessage = await bot.sendMessage(chatId, '❌ Доступ только для администратора');
+                lastMessageId[chatId] = newMessage.message_id;
                 return;
             }
-            handleAdmin(bot, msg);
+            await handleAdmin(bot, msg);
             break;
         case 'Назад в меню':
-            handleMainMenu(bot, chatId);
+            await handleMainMenu(bot, chatId);
             break;
         case 'Модерация отзывов':
             if (chatId.toString() !== ADMIN_ID) return;
@@ -225,14 +244,14 @@ bot.on('web_app_data', async (msg) => {
             await review.save();
             console.log('Отзыв сохранён:', review);
 
-            // Обновляем средний рейтинг товара
             const reviews = await Review.find({ productId, isApproved: true });
             const averageRating = reviews.length > 0
                 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
                 : 0;
             await Product.updateOne({ _id: productId }, { averageRating });
 
-            await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+            const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+            lastMessageId[chatId] = newMessage.message_id;
         } catch (error) {
             console.error('Ошибка сохранения отзыва:', error.stack);
             await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва');

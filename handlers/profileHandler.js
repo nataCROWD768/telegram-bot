@@ -4,13 +4,26 @@ const showProfile = async (bot, chatId) => {
   try {
     const visit = await Visit.findOne({ userId: chatId });
     if (!visit) {
-      await bot.sendMessage(chatId, '❌ Профиль не найден');
+      const errorMsg = await bot.sendMessage(chatId, '❌ Профиль не найден');
+      bot.lastMessageId = bot.lastMessageId || {};
+      bot.lastMessageId[chatId] = errorMsg.message_id;
       return;
     }
-    await bot.sendMessage(chatId, `👤 Ваш профиль:\nИмя: ${visit.username}\nID: ${visit.userId}`);
+    const profileText = `
+            👤 **Личный кабинет**
+            ━━━━━━━━━━━━━━━━
+            **Имя:** ${visit.username}
+            **ID:** ${visit.userId}
+            ━━━━━━━━━━━━━━━━
+        `;
+    const newMessage = await bot.sendMessage(chatId, profileText, { parse_mode: 'Markdown' });
+    bot.lastMessageId = bot.lastMessageId || {};
+    bot.lastMessageId[chatId] = newMessage.message_id;
   } catch (error) {
     console.error('Ошибка профиля:', error);
-    await bot.sendMessage(chatId, '❌ Ошибка');
+    const errorMsg = await bot.sendMessage(chatId, '❌ Ошибка');
+    bot.lastMessageId = bot.lastMessageId || {};
+    bot.lastMessageId[chatId] = errorMsg.message_id;
   }
 };
 
