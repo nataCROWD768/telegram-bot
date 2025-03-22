@@ -1,7 +1,7 @@
 Telegram.WebApp.ready();
 
 let allProducts = [];
-const API_URL = 'https://your-app-name.onrender.com/api/products'; // Явно указываем URL сервера
+const API_URL = 'https://telegram-bot-gmut.onrender.com/api/products'; // Замените на ваш реальный URL
 
 function loadProducts(products) {
     console.log('Загрузка продуктов:', products);
@@ -126,6 +126,7 @@ function showProductDetail(product) {
     });
 }
 
+// Загрузка данных и настройка интерфейса
 console.log('Отправка запроса к:', API_URL);
 fetch(API_URL, {
     method: 'GET',
@@ -134,19 +135,19 @@ fetch(API_URL, {
     }
 })
     .then(response => {
-        console.log('Ответ от /api/products:', response.status);
+        console.log('Статус ответа:', response.status);
         if (!response.ok) {
-            console.error('Ошибка ответа сервера:', response.status, response.statusText);
             throw new Error(`HTTP ошибка: ${response.status}`);
         }
         return response.json();
     })
     .then(data => {
-        console.log('Получены данные от API:', data);
+        console.log('Полные данные от API:', data);
         allProducts = data.products || [];
         console.log('Товары для отображения:', allProducts);
         loadProducts(allProducts);
 
+        // Настройка поиска
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
             searchInput.addEventListener('input', () => {
@@ -160,6 +161,19 @@ fetch(API_URL, {
         } else {
             console.error('Элемент #search-input не найден');
         }
+
+        // Настройка кнопки "вверх"
+        const scrollTopBtn = document.getElementById('scroll-top-btn');
+        if (allProducts.length > 8) { // Показывать кнопку, если больше 8 товаров
+            window.addEventListener('scroll', () => {
+                scrollTopBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
+            });
+            scrollTopBtn.addEventListener('click', () => {
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            });
+        } else {
+            scrollTopBtn.style.display = 'none'; // Скрыть кнопку, если товаров мало
+        }
     })
     .catch(error => {
         console.error('Ошибка загрузки товаров:', error);
@@ -167,15 +181,3 @@ fetch(API_URL, {
         if (productList) productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки товаров: ' + error.message + '</p>';
         Telegram.WebApp.showAlert('Ошибка загрузки товаров: ' + error.message);
     });
-
-window.addEventListener('scroll', () => {
-    const btn = document.getElementById('scroll-top-btn');
-    if (btn) btn.style.display = window.scrollY > 300 ? 'block' : 'none';
-});
-
-const scrollTopBtn = document.getElementById('scroll-top-btn');
-if (scrollTopBtn) {
-    scrollTopBtn.addEventListener('click', () => {
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-}
