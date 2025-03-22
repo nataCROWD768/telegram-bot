@@ -58,7 +58,7 @@ const setupWebhook = async () => {
 
 const syncProducts = async () => {
     try {
-        await Product.deleteMany({}); // Очистка коллекции для теста
+        await Product.deleteMany({}); // Очистка для теста
         console.log('Коллекция products очищена');
         const existingProducts = await Product.find();
         console.log('Текущие товары в БД:', existingProducts);
@@ -73,8 +73,7 @@ const syncProducts = async () => {
                 console.log('Обновлён товар:', productData.name, updatedProduct);
             }
         }
-        const finalProducts = await Product.find();
-        console.log('Итоговые товары в БД после синхронизации:', finalProducts);
+        console.log('Товары синхронизированы');
     } catch (error) {
         console.error('Ошибка синхронизации товаров:', error.message);
     }
@@ -126,7 +125,7 @@ bot.on('message', async (msg) => {
             showProfile(bot, chatId);
             break;
         case 'Витрина':
-            await bot.sendMessage(chatId, '🛒 Открыть витрину:', {
+            await bot.sendMessage(chatId, '🛒 Открыть интернет-магазин:', {
                 reply_markup: {
                     inline_keyboard: [[{ text: 'Перейти', web_app: { url: `${webAppUrl}/index.html` } }]]
                 }

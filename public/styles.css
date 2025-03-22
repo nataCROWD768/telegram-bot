@@ -8,7 +8,7 @@ body {
 
 .container {
     width: 100%;
-    padding: 5px; /* Минимальный внешний отступ */
+    padding: 5px;
     box-sizing: border-box;
 }
 
@@ -26,7 +26,7 @@ header {
 
 h1 {
     color: white;
-    font-size: 18px; /* Уменьшенный заголовок */
+    font-size: 18px;
     margin: 0;
 }
 
@@ -42,8 +42,8 @@ h1 {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 столбца, адаптивная ширина */
-    gap: 4px; /* Минимальный отступ между карточками */
+    grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 столбца */
+    gap: 4px;
     padding: 5px 0;
     width: 100%;
     box-sizing: border-box;
@@ -57,7 +57,7 @@ h1 {
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
     flex-direction: column;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05); /* Лёгкая тень для красоты */
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
 }
 
 .product-card:hover {
@@ -67,13 +67,13 @@ h1 {
 
 .product-card img {
     width: 100%;
-    height: 70px; /* Компактная высота изображения */
+    height: 70px;
     object-fit: cover;
     border-radius: 6px 6px 0 0;
 }
 
 .product-card .card-content {
-    padding: 4px !important; /* Минимальный внутренний отступ */
+    padding: 4px !important;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -81,7 +81,7 @@ h1 {
 }
 
 .product-card h3 {
-    font-size: 11px; /* Уменьшенный шрифт названия */
+    font-size: 11px;
     font-weight: 500;
     margin: 2px 0;
     color: #222;
@@ -91,7 +91,7 @@ h1 {
 }
 
 .product-card .prices {
-    font-size: 10px; /* Уменьшенный шрифт цен */
+    font-size: 10px;
     margin: 2px 0;
     line-height: 1.1;
 }
@@ -109,14 +109,14 @@ h1 {
 
 .product-card .rating {
     color: #f39c12;
-    font-size: 10px; /* Уменьшенный шрифт рейтинга */
+    font-size: 10px;
     margin: 2px 0;
 }
 
 .product-card .order-btn {
     margin-top: 3px;
-    font-size: 10px; /* Уменьшенный шрифт кнопки */
-    padding: 3px 6px; /* Компактный размер кнопки */
+    font-size: 10px;
+    padding: 3px 6px;
     background-color: #ff4081;
     border-radius: 3px;
     color: white;

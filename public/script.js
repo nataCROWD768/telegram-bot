@@ -5,6 +5,10 @@ let allProducts = [];
 function loadProducts(products) {
     console.log('Загрузка продуктов в витрине:', products);
     const productList = document.getElementById('product-list');
+    if (!productList) {
+        console.error('Элемент #product-list не найден в HTML');
+        return;
+    }
     productList.innerHTML = '';
 
     if (!products || products.length === 0) {
