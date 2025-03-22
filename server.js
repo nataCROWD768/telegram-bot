@@ -34,7 +34,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     setHeaders: (res, filePath) => console.log(`Раздача файла: ${filePath}`)
 }));
 
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB подключен'))
     .catch(err => {
         console.error('Ошибка подключения к MongoDB:', err.message);
@@ -116,8 +116,8 @@ bot.on('message', async (msg) => {
             showProfile(bot, chatId);
             break;
         case 'Витрина':
-            await bot.sendMessage(chatId, '🛒 Загрузка витрины...', {
-                reply_markup: { inline_keyboard: [[{ text: 'Открыть витрину', web_app: { url: `${webAppUrl}/index.html` } }]] }
+            await bot.sendMessage(chatId, '🛒 Открыть витрину:', {
+                reply_markup: { inline_keyboard: [[{ text: 'Перейти', web_app: { url: `${webAppUrl}/index.html` } }]] }
             });
             break;
         case 'Бонусы и продукт':
@@ -197,13 +197,11 @@ bot.on('web_app_data', async (msg) => {
     if (data.type === 'review') {
         const { productId, rating, comment } = data;
         console.log('Попытка сохранить отзыв:', { productId, rating, comment });
-
         if (!rating || rating < 1 || rating > 5 || !comment || !productId) {
             console.log('Ошибка валидации отзыва:', { productId, rating, comment });
             await bot.sendMessage(chatId, '❌ Неверный формат отзыва');
             return;
         }
-
         try {
             const product = await Product.findById(productId);
             if (!product) {
@@ -211,7 +209,6 @@ bot.on('web_app_data', async (msg) => {
                 await bot.sendMessage(chatId, '❌ Товар не найден');
                 return;
             }
-
             const review = new Review({
                 userId: chatId.toString(),
                 username: msg.from.username || 'Аноним',

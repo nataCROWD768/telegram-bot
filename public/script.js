@@ -178,30 +178,4 @@ fetch('/api/products')
     .then(response => response.json())
     .then(data => {
         allProducts = data.products;
-        loadProducts(allProducts);
-
-        const searchInput = document.getElementById('search-input');
-        searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase();
-            const filteredProducts = allProducts.filter(product =>
-                product.name.toLowerCase().includes(query) ||
-                product.description.toLowerCase().includes(query)
-            );
-            loadProducts(filteredProducts);
-        });
-    })
-    .catch(error => {
-        console.error('Ошибка загрузки товаров:', error);
-        Telegram.WebApp.showAlert('Ошибка загрузки товаров');
-    });
-
-window.addEventListener('scroll', () => {
-    const btn = document.getElementById('scroll-top-btn');
-    btn.style.display = window.scrollY > 300 ? 'block' : 'none';
-});
-
-document.getElementById('scroll-top-btn').addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-});
-
-console.log('Скрипт загружен, Telegram Web App готов:', Telegram.WebApp.isVersionAtLeast('6.0'));
+        load
