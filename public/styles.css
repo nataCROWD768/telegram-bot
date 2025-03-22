@@ -27,7 +27,7 @@ h1 {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(5, minmax(0, 1fr)); /* 5 колонок по умолчанию */
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 10px;
     padding: 10px 0;
 }
@@ -39,6 +39,7 @@ h1 {
     padding: 10px;
     text-align: center;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
 }
 
 .product-card:hover {
@@ -129,6 +130,123 @@ h1 {
 
 .scroll-top-btn:hover {
     background-color: #27ae60;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 10% auto;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: #000;
+}
+
+.modal-content img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 8px;
+}
+
+.modal-content h2 {
+    font-size: 20px;
+    margin: 10px 0;
+    color: #222;
+}
+
+.modal-content .description {
+    font-size: 14px;
+    color: #555;
+    margin: 10px 0;
+}
+
+.modal-content .prices {
+    font-size: 16px;
+    margin: 10px 0;
+}
+
+.modal-content .reviews {
+    margin-top: 20px;
+}
+
+.modal-content .reviews h3 {
+    font-size: 16px;
+    margin-bottom: 10px;
+}
+
+.modal-content .review {
+    border-top: 1px solid #eee;
+    padding: 10px 0;
+}
+
+.modal-content .review .username {
+    font-weight: 600;
+    color: #3498db;
+}
+
+.modal-content .review .rating {
+    color: #f39c12;
+}
+
+.modal-content .review-form {
+    margin-top: 20px;
+}
+
+.modal-content .review-form label {
+    display: block;
+    margin: 5px 0;
+    font-size: 14px;
+}
+
+.modal-content .review-form select,
+.modal-content .review-form textarea {
+    width: 100%;
+    padding: 8px;
+    margin: 5px 0;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.modal-content .review-form button {
+    background-color: #3498db;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.modal-content .review-form button:hover {
+    background-color: #2980b9;
 }
 
 /* Адаптивность */

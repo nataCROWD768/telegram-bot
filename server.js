@@ -32,7 +32,11 @@ const isLocal           = process.env.NODE_ENV !== 'production';
 const bot               = new TelegramBot(token, { polling: isLocal });
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res, filePath) => {
+        console.log(`Раздача файла: ${filePath}`);
+    }
+}));
 
 // Проверка и подключение MongoDB
 const mongoUri          = process.env.MONGODB_URI;
@@ -106,11 +110,15 @@ const syncProducts = async () => {
     }
 };
 
-// API для получения всех товаров
+// API для получения всех товаров с отзывами
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
-        res.json({ products, total: products.length });
+        const productsWithReviews = await Promise.all(products.map(async (product) => {
+            const reviews = await Review.find({ productId: product._id, isApproved: true });
+            return { ...product.toObject(), reviews };
+        }));
+        res.json({ products: productsWithReviews, total: products.length });
     } catch (error) {
         console.error('Ошибка API /api/products:', error.message);
         res.status(500).json({ error: 'Ошибка загрузки товаров' });

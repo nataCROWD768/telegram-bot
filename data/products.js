@@ -5,8 +5,8 @@ module.exports = [
         category:       'Электроника',
         clientPrice:    1000,
         clubPrice:      800,
-        image:          './public/product1.jpg',
-        certificates:   ['./public/cert1.jpg'],
+        image:          './product1.jpg',
+        certificates:   ['./cert1.jpg'],
         stock:          10,
         averageRating:  4.5
     },
@@ -16,8 +16,8 @@ module.exports = [
         category:       'Бытовая техника',
         clientPrice:    1500,
         clubPrice:      1200,
-        image:          './public/product2.jpg',
-        certificates:   ['./public/cert2.jpg'],
+        image:          './product2.jpg',
+        certificates:   ['./cert2.jpg'],
         stock:          5,
         averageRating:  4.0
     },
@@ -27,8 +27,8 @@ module.exports = [
         category:       'Электроника',
         clientPrice:    2000,
         clubPrice:      1600,
-        image:          './public/product3.jpg',
-        certificates:   ['./public/cert3.jpg'],
+        image:          './product3.jpg',
+        certificates:   ['./cert3.jpg'],
         stock:          8,
         averageRating:  4.8
     },
@@ -38,8 +38,8 @@ module.exports = [
         category:       'Бытовая техника',
         clientPrice:    2500,
         clubPrice:      2000,
-        image:          './public/product4.jpg',
-        certificates:   ['./public/cert4.jpg'],
+        image:          './product4.jpg',
+        certificates:   ['./cert4.jpg'],
         stock:          7,
         averageRating:  4.2
     }
