@@ -1,4 +1,5 @@
 const Product = require('../models/product');
+const Review = require('../models/review'); // Добавляем импорт Review
 const ExcelJS = require('exceljs');
 const fs = require('fs').promises;
 const path = require('path');
@@ -29,11 +30,9 @@ const showProducts = async (bot, chatId) => {
             return;
         }
 
-        // Создаём Excel-файл
         const workbook = new ExcelJS.Workbook();
         const worksheet = workbook.addWorksheet('Товары');
 
-        // Определяем заголовки
         worksheet.columns = [
             { header: 'ID', key: '_id', width: 25 },
             { header: 'Название', key: 'name', width: 30 },
@@ -44,12 +43,10 @@ const showProducts = async (bot, chatId) => {
             { header: 'Изображение', key: 'image', width: 40 }
         ];
 
-        // Стили для заголовков
         worksheet.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
         worksheet.getRow(1).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0088CC' } };
         worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
 
-        // Добавляем данные
         products.forEach(product => {
             worksheet.addRow({
                 _id: product._id.toString(),
@@ -62,7 +59,6 @@ const showProducts = async (bot, chatId) => {
             });
         });
 
-        // Стили для данных
         worksheet.eachRow((row, rowNumber) => {
             if (rowNumber > 1) {
                 row.eachCell(cell => {
@@ -77,11 +73,9 @@ const showProducts = async (bot, chatId) => {
             }
         });
 
-        // Сохраняем файл
         const filePath = path.join(__dirname, '../products.xlsx');
         await workbook.xlsx.writeFile(filePath);
 
-        // Отправляем файл с уточнённым contentType
         await bot.sendDocument(chatId, filePath, {
             caption: 'Список товаров'
         }, {
@@ -89,7 +83,6 @@ const showProducts = async (bot, chatId) => {
             contentType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
         });
 
-        // Удаляем временный файл
         await fs.unlink(filePath);
     } catch (error) {
         console.error('Ошибка выгрузки товаров в Excel:', error);
@@ -134,7 +127,7 @@ const addProduct = async (bot, chatId) => {
                         const photo = msg.photo[msg.photo.length - 1];
                         const fileId = photo.file_id;
                         const file = await bot.getFile(fileId);
-                        const fileUrl = `https://api.telegram.org/file/bot${token}/${file.file_path}`;
+                        const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_TOKEN}/${file.file_path}`;
 
                         productData.image = fileUrl;
 
@@ -214,11 +207,75 @@ const deleteProduct = async (bot, chatId) => {
 };
 
 const moderateReviews = async (bot, chatId) => {
-    // Существующий код модерации отзывов
+    try {
+        const reviews = await Review.find({ isApproved: false }).populate('productId', 'name');
+        if (reviews.length === 0) {
+            await bot.sendMessage(chatId, '📝 Нет отзывов на модерацию');
+            return;
+        }
+
+        for (const review of reviews) {
+            const reviewText = `
+                Товар: ${review.productId.name}
+                Пользователь: ${review.username}
+                Рейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
+                Комментарий: ${review.comment}
+            `;
+            await bot.sendMessage(chatId, reviewText, {
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: 'Одобрить', callback_data: `approve_review_${review._id}` },
+                            { text: 'Отклонить', callback_data: `reject_review_${review._id}` }
+                        ]
+                    ]
+                }
+            });
+        }
+    } catch (error) {
+        console.error('Ошибка модерации отзывов:', error);
+        await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов');
+    }
 };
 
 const handleAdminCallback = async (bot, callbackQuery) => {
-    // Существующий код обработки callback-запросов админа
+    const chatId = callbackQuery.message.chat.id;
+    const data = callbackQuery.data;
+
+    if (data.startsWith('approve_review_')) {
+        const reviewId = data.split('_')[2];
+        try {
+            const review = await Review.findByIdAndUpdate(reviewId, { isApproved: true }, { new: true });
+            if (review) {
+                const reviews = await Review.find({ productId: review.productId, isApproved: true });
+                const averageRating = reviews.length > 0
+                    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                    : 0;
+                await Product.updateOne({ _id: review.productId }, { averageRating });
+                await bot.editMessageText(`Отзыв одобрен!\nТовар: ${review.productId.name}`, {
+                    chat_id: chatId,
+                    message_id: callbackQuery.message.message_id
+                });
+            }
+        } catch (error) {
+            console.error('Ошибка одобрения отзыва:', error);
+            await bot.sendMessage(chatId, '❌ Ошибка при одобрении отзыва');
+        }
+    } else if (data.startsWith('reject_review_')) {
+        const reviewId = data.split('_')[2];
+        try {
+            await Review.findByIdAndDelete(reviewId);
+            await bot.editMessageText('Отзыв отклонён и удалён!', {
+                chat_id: chatId,
+                message_id: callbackQuery.message.message_id
+            });
+        } catch (error) {
+            console.error('Ошибка отклонения отзыва:', error);
+            await bot.sendMessage(chatId, '❌ Ошибка при отклонении отзыва');
+        }
+    }
+
+    bot.answerCallbackQuery(callbackQuery.id);
 };
 
 module.exports = {

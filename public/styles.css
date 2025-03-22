@@ -1,6 +1,6 @@
 body {
-    font-family: 'JetBrains Mono', monospace; /* Стильный шрифт для программистов */
-    background-color: #f7f7f7;
+    font-family: 'JetBrains Mono', monospace;
+    background-color: #f5f5f5; /* Мягкий серый фон как в премиум-магазинах */
     margin: 0;
     padding: 0;
     color: #333;
@@ -8,80 +8,92 @@ body {
 
 .container {
     width: 100%;
-    padding: 10px;
+    padding: 0;
     box-sizing: border-box;
 }
 
 header {
-    padding: 12px;
-    text-align: center;
-    background-color: #0088cc; /* Цвет Telegram */
-    color: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 15px 20px;
+    background: linear-gradient(135deg, #1a1a1a, #333); /* Градиент для шапки как у люксовых сайтов */
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
 }
 
 h1 {
-    font-size: 20px;
+    font-size: 24px;
     margin: 0;
     font-weight: 500;
-    letter-spacing: 0.5px; /* Лёгкий акцент для шрифта */
+    letter-spacing: 1px;
+    text-transform: uppercase;
 }
 
 .search-input {
     width: 100%;
-    padding: 10px 15px;
-    margin: 10px 0;
+    max-width: 400px;
+    padding: 12px 20px;
+    margin: 10px auto;
     border: none;
-    border-radius: 20px; /* Закруглённые края для лаконичности */
+    border-radius: 50px; /* Сильно закруглённые края */
     font-size: 14px;
-    box-sizing: border-box;
     font-family: 'JetBrains Mono', monospace;
     background-color: #fff;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     outline: none;
-    transition: box-shadow 0.2s ease;
+    transition: all 0.3s ease;
+    display: block;
 }
 
 .search-input:focus {
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+    transform: scale(1.02);
+}
+
+.search-input::placeholder {
+    color: #aaa;
+    font-style: italic;
 }
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
-    gap: 15px;
-    padding: 10px 0;
+    grid-template-columns: repeat(auto-fill, minmax(550px, 1fr)); /* Фиксированный размер карточек */
+    gap: 5px; /* Минимальное расстояние между карточками */
+    padding: 10px;
     width: 100%;
     box-sizing: border-box;
 }
 
 .product-card {
-    width: 100%;
+    width: 550px; /* Фиксированная ширина */
+    height: 550px; /* Фиксированная высота */
     background-color: #fff;
-    border-radius: 10px;
+    border-radius: 15px;
     overflow: hidden;
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
     display: flex;
     flex-direction: column;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
 }
 
 .product-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
 }
 
 .product-card img {
     width: 100%;
-    height: 80px;
-    object-fit: contain;
-    border-radius: 10px 10px 0 0;
-    background-color: #fff;
+    height: 70%; /* Большая часть карточки под изображение */
+    object-fit: cover; /* Красивое заполнение */
+    border-radius: 15px 15px 0 0;
 }
 
 .product-card .card-content {
-    padding: 8px;
+    padding: 15px;
     flex-grow: 1;
     display: flex;
     flex-direction: column;
@@ -89,156 +101,160 @@ h1 {
 }
 
 .product-card h3 {
-    font-size: 12px;
+    font-size: 16px;
     font-weight: 500;
-    margin: 4px 0;
+    margin: 0 0 10px;
     color: #222;
-    line-height: 1.3;
-    max-height: 32px;
+    line-height: 1.2;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+    white-space: nowrap;
 }
 
 .product-card .prices {
-    font-size: 11px;
-    margin: 4px 0;
-    line-height: 1.2;
+    font-size: 14px;
+    margin: 5px 0;
+    display: flex;
+    justify-content: space-between;
 }
 
 .product-card .club-price {
-    color: #27ae60;
+    color: #e91e63; /* Яркий акцент для клубной цены */
     font-weight: 600;
 }
 
 .product-card .client-price {
-    color: #7f8c8d;
+    color: #888;
     text-decoration: line-through;
-    margin-left: 4px;
 }
 
 .product-card .rating {
     color: #f39c12;
-    font-size: 11px;
-    margin: 4px 0;
+    font-size: 14px;
+    margin-top: 5px;
 }
 
 .scroll-top-btn {
     position: fixed;
-    bottom: 15px;
-    right: 15px;
-    background-color: #0088cc; /* Цвет Telegram */
+    bottom: 20px;
+    right: 20px;
+    background: linear-gradient(135deg, #e91e63, #f06292);
     color: white;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
     text-align: center;
-    font-size: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    font-size: 24px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     transition: all 0.3s ease;
     display: none;
 }
 
 .scroll-top-btn:hover {
-    background-color: #0077b3;
+    background: linear-gradient(135deg, #d81b60, #ec407a);
     transform: scale(1.1);
 }
 
 /* Карточка товара */
 #product-detail .card {
-    padding: 10px;
+    padding: 20px;
     margin-top: 10px;
+    background-color: #fff;
+    border-radius: 15px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.05);
 }
 
 #product-detail img {
     max-width: 100%;
     height: auto;
-    border-radius: 10px;
+    border-radius: 15px;
 }
 
 #product-detail h2 {
-    font-size: 18px;
-    margin: 8px 0;
+    font-size: 22px;
+    margin: 10px 0;
     color: #222;
-    line-height: 1.3;
+    font-weight: 500;
 }
 
 #product-detail .description {
     font-size: 14px;
     color: #555;
-    margin: 8px 0;
-    line-height: 1.4;
+    margin: 15px 0;
+    line-height: 1.5;
 }
 
 #product-detail .prices {
-    font-size: 14px;
-    margin: 8px 0;
+    font-size: 16px;
+    margin: 10px 0;
+    display: flex;
+    gap: 15px;
 }
 
 #product-detail .club-price {
-    color: #27ae60;
+    color: #e91e63;
     font-weight: 600;
 }
 
 #product-detail .client-price {
-    color: #7f8c8d;
+    color: #888;
     text-decoration: line-through;
-    margin-left: 6px;
 }
 
 #product-detail .rating {
     color: #f39c12;
-    font-size: 14px;
-    margin: 8px 0;
+    font-size: 16px;
+    margin: 10px 0;
 }
 
 #product-detail .reviews {
-    margin-top: 15px;
+    margin-top: 20px;
 }
 
 #product-detail .reviews h5 {
-    font-size: 16px;
-    margin-bottom: 8px;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #222;
 }
 
 #product-detail .review {
     border-top: 1px solid #eee;
-    padding: 8px 0;
+    padding: 10px 0;
 }
 
 #product-detail .review .username {
     font-weight: 600;
-    color: #3498db;
-    font-size: 13px;
+    color: #e91e63;
+    font-size: 14px;
 }
 
 #product-detail .review .rating {
     color: #f39c12;
-    font-size: 13px;
+    font-size: 14px;
 }
 
 #product-detail .review-form {
-    margin-top: 15px;
+    margin-top: 20px;
 }
 
 #product-detail .review-form h5 {
-    font-size: 16px;
-    margin-bottom: 8px;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: #222;
 }
 
 #product-detail .review-form .rating-stars {
     display: flex;
-    gap: 4px;
-    margin: 8px 0;
+    gap: 5px;
+    margin: 10px 0;
 }
 
 #product-detail .review-form .star {
-    font-size: 20px;
+    font-size: 24px;
     color: #ddd;
     cursor: pointer;
+    transition: color 0.2s ease;
 }
 
 #product-detail .review-form .star.filled {
@@ -247,25 +263,27 @@ h1 {
 
 #product-detail .review-form textarea {
     width: 100%;
-    padding: 8px;
-    margin: 4px 0;
+    padding: 10px;
+    margin: 5px 0;
     border: 1px solid #ddd;
-    border-radius: 6px;
+    border-radius: 10px;
     font-size: 14px;
     box-sizing: border-box;
     font-family: 'JetBrains Mono', monospace;
+    resize: vertical;
 }
 
 #product-detail .review-form .submit-btn {
-    margin: 4px 0;
+    margin: 10px 0;
     font-size: 14px;
-    padding: 6px 10px;
-    background-color: #0088cc; /* Цвет Telegram */
-    border-radius: 6px;
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #e91e63, #f06292);
+    border-radius: 25px;
     color: white;
-    transition: background-color 0.3s ease;
+    transition: all 0.3s ease;
 }
 
 #product-detail .review-form .submit-btn:hover {
-    background-color: #0077b3;
+    background: linear-gradient(135deg, #d81b60, #ec407a);
+    transform: scale(1.05);
 }
