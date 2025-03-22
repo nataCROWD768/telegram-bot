@@ -65,6 +65,24 @@ h1 {
 .product-card .rating {
     color: #f1c40f;
     font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.product-card button {
+    padding: 8px 15px;
+    margin: 5px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+}
+
+.product-card .order-btn {
+    background-color: #3498db;
+}
+
+.product-card .review-btn {
+    background-color: #e67e22;
 }
 
 .pagination {

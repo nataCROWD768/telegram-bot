@@ -171,7 +171,7 @@ bot.on('message', (msg) => {
             bot.sendMessage(chatId, '🛒 Откройте витрину товаров:', {
                 reply_markup: {
                     inline_keyboard: [[
-                        { text: 'Открыть витрину', web_app: { url: webAppUrl } }
+                        { text: 'Открыть витрину', web_app: { url: `${webAppUrl}/index.html` } }
                     ]]
                 }
             });
@@ -242,10 +242,57 @@ app.post(`/bot${token}`, (req, res) => {
     res.sendStatus(200);
 });
 
+// Обработка данных от Web App
+bot.on('web_app_data', async (msg) => {
+    const chatId = msg.chat.id;
+    const data = JSON.parse(msg.web_app_data.data);
+
+    if (data.type === 'order') {
+        const { productId, quantity } = data;
+        const product = await Product.findById(productId);
+
+        if (!product || quantity <= 0) {
+            await bot.sendMessage(chatId, '❌ Ошибка при оформлении заказа');
+            return;
+        }
+
+        const order = await Order.create({
+            userId: chatId,
+            username: msg.from.username,
+            productId,
+            quantity,
+            totalPrice: quantity * product.clubPrice
+        });
+
+        product.stock -= quantity;
+        await product.save();
+
+        await bot.sendMessage(chatId, `✅ Заказ оформлен! Товар: ${product.name}, Сумма: ${order.totalPrice} руб.`);
+    }
+
+    if (data.type === 'review') {
+        const { productId, rating, comment } = data;
+        if (rating < 1 || rating > 5 || !comment) {
+            await bot.sendMessage(chatId, '❌ Неверный формат отзыва');
+            return;
+        }
+
+        await Review.create({
+            userId: chatId,
+            username: msg.from.username,
+            productId,
+            rating,
+            comment
+        });
+
+        await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+    }
+});
+
 // Запуск сервера
 const startServer = async () => {
     await setupWebhook();
-    await syncProducts();
+    await syncPets();
 
     app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
     const PORT = process.env.PORT || 3000;
