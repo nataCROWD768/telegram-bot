@@ -31,16 +31,27 @@ app.use(express.json());
 
 mongoose.connect(process.env.MONGODB_URI);
 
-// Настройка Webhook
+// Настройка Webhook с проверкой
 const WEBHOOK_URL       = `https://${process.env.RENDER_APP_NAME}.onrender.com/bot${token}`;
-bot.setWebHook(WEBHOOK_URL);
+(async () => {
+    try {
+        const webhookInfo = await bot.getWebhookInfo();
+        if (webhookInfo.url !== WEBHOOK_URL) {
+            await bot.setWebHook(WEBHOOK_URL);
+            console.log(`Webhook установлен: ${WEBHOOK_URL}`);
+        } else {
+            console.log('Webhook уже установлен корректно');
+        }
+    } catch (error) {
+        console.error('Ошибка при установке Webhook:', error.message);
+    }
+})();
 
 // Обработка старта
 bot.onText(/\/start/, async (msg) => {
     const chatId        = msg.chat.id;
     const username      = msg.from.username || msg.from.first_name;
 
-    // Проверка первого посещения
     const existingVisit = await Visit.findOne({ userId: chatId });
     if (!existingVisit) {
         await Visit.create({ username, userId: chatId });
@@ -172,6 +183,16 @@ const initData = async () => {
                 image:          './public/product3.jpg',
                 certificates:   ['./public/cert3.jpg'],
                 stock:          8
+            },
+            {
+                name:           'Продукт 4',
+                description:    'Четвертый товар',
+                category:       'Бытовая техника',
+                clientPrice:    2500,
+                clubPrice:      2000,
+                image:          './public/product4.jpg',
+                certificates:   ['./public/cert4.jpg'],
+                stock:          7
             }
         ]);
     }

@@ -9,40 +9,41 @@ module.exports = {
       const products  = await Product.find(query);
 
       if (products.length === 0) {
-        bot.sendMessage(chatId, '🛒 Товары в этой категории отсутствуют');
+        await bot.sendMessage(chatId, '🛒 Товары в этой категории отсутствуют');
         return;
       }
 
-      // Отправка каждого товара с миниатюрой и двумя ценами
-      for (const product of products) {
-        const caption = `
-                    *${product.name}*
-                    
-                    Клиентская цена: ${product.clientPrice} руб.
-                    Клубная цена: ${product.clubPrice} руб.
-                `;
-        await bot.sendPhoto(chatId, product.image, {
-          caption,
-          parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [[
-              { text: `Подробнее`, callback_data: `product_${product._id}` }
-            ]]
-          }
-        });
+      // Группировка по 4 в ряд
+      const keyboard  = [];
+      for (let i = 0; i < products.length; i += 4) {
+        const row   = products.slice(i, i + 4).map(product => ({
+          text:           `${product.name} (${product.clubPrice} руб.)`,
+          callback_data:  `product_${product._id}`
+        }));
+        keyboard.push(row);
       }
+      keyboard.push([{ text: '📋 Категории', callback_data: 'categories' }]);
 
-      // Кнопка "Категории"
-      await bot.sendMessage(chatId, 'Выберите категорию или вернитесь в меню:', {
+      await bot.sendMessage(chatId, '🛒 Витрина товаров:', {
         reply_markup: {
-          inline_keyboard: [[
-            { text: '📋 Категории', callback_data: 'categories' }
-          ]]
+          inline_keyboard: keyboard
         }
       });
+
+      // Отправка миниатюр отдельными сообщениями
+      for (const product of products) {
+        await bot.sendPhoto(chatId, product.image, {
+          caption: `
+                        *${product.name}*
+                        Клиентская: ${product.clientPrice} руб.
+                        Клубная: ${product.clubPrice} руб.
+                    `,
+          parse_mode: 'Markdown'
+        });
+      }
     } catch (error) {
       console.error(error);
-      bot.sendMessage(chatId, '❌ Ошибка при загрузке витрины');
+      await bot.sendMessage(chatId, '❌ Ошибка при загрузке витрины');
     }
   },
 
@@ -54,14 +55,14 @@ module.exports = {
         [{ text: 'Все товары', callback_data: 'all_products' }]
       ];
 
-      bot.sendMessage(chatId, '📋 Выберите категорию:', {
+      await bot.sendMessage(chatId, '📋 Выберите категорию:', {
         reply_markup: {
           inline_keyboard: keyboard
         }
       });
     } catch (error) {
       console.error(error);
-      bot.sendMessage(chatId, '❌ Ошибка при загрузке категорий');
+      await bot.sendMessage(chatId, '❌ Ошибка при загрузке категорий');
     }
   },
 
@@ -116,7 +117,7 @@ module.exports = {
         const product   = await Product.findById(productId);
 
         if (isNaN(quantity) || quantity <= 0) {
-          bot.sendMessage(chatId, '❌ Неверное количество');
+          await bot.sendMessage(chatId, '❌ Неверное количество');
           return;
         }
 
@@ -131,13 +132,13 @@ module.exports = {
         product.stock -= quantity;
         await product.save();
 
-        bot.sendMessage(chatId, `✅ Заказ оформлен! Сумма: ${order.totalPrice} руб.`);
+        await bot.sendMessage(chatId, `✅ Заказ оформлен! Сумма: ${order.totalPrice} руб.`);
       });
     }
 
     if (data.startsWith('review_')) {
       const productId = data.split('_')[1];
-      bot.sendMessage(chatId, '📝 Оставьте отзыв в формате: рейтинг(1-5);комментарий', {
+      await bot.sendMessage(chatId, '📝 Оставьте отзыв в формате: рейтинг(1-5);комментарий', {
         reply_markup: { force_reply: true }
       });
 
@@ -146,7 +147,7 @@ module.exports = {
         const numRating         = parseInt(rating);
 
         if (isNaN(numRating) || numRating < 1 || numRating > 5) {
-          bot.sendMessage(chatId, '❌ Неверный формат рейтинга');
+          await bot.sendMessage(chatId, '❌ Неверный формат рейтинга');
           return;
         }
 
@@ -158,7 +159,7 @@ module.exports = {
           comment
         });
 
-        bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+        await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
       });
     }
 
@@ -178,38 +179,39 @@ module.exports = {
       });
 
       if (products.length === 0) {
-        bot.sendMessage(chatId, '🔍 Ничего не найдено');
+        await bot.sendMessage(chatId, '🔍 Ничего не найдено');
         return;
       }
 
-      for (const product of products) {
-        const caption = `
-                    *${product.name}*
-                    
-                    Клиентская цена: ${product.clientPrice} руб.
-                    Клубная цена: ${product.clubPrice} руб.
-                `;
-        await bot.sendPhoto(chatId, product.image, {
-          caption,
-          parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [[
-              { text: `Подробнее`, callback_data: `product_${product._id}` }
-            ]]
-          }
-        });
+      const keyboard  = [];
+      for (let i = 0; i < products.length; i += 4) {
+        const row   = products.slice(i, i + 4).map(product => ({
+          text:           `${product.name} (${product.clubPrice} руб.)`,
+          callback_data:  `product_${product._id}`
+        }));
+        keyboard.push(row);
       }
+      keyboard.push([{ text: '📋 Категории', callback_data: 'categories' }]);
 
-      await bot.sendMessage(chatId, 'Выберите категорию или вернитесь в меню:', {
+      await bot.sendMessage(chatId, '🔍 Результаты поиска:', {
         reply_markup: {
-          inline_keyboard: [[
-            { text: '📋 Категории', callback_data: 'categories' }
-          ]]
+          inline_keyboard: keyboard
         }
       });
+
+      for (const product of products) {
+        await bot.sendPhoto(chatId, product.image, {
+          caption: `
+                        *${product.name}*
+                        Клиентская: ${product.clientPrice} руб.
+                        Клубная: ${product.clubPrice} руб.
+                    `,
+          parse_mode: 'Markdown'
+        });
+      }
     } catch (error) {
       console.error(error);
-      bot.sendMessage(chatId, '❌ Ошибка при поиске');
+      await bot.sendMessage(chatId, '❌ Ошибка при поиске');
     }
   }
 };
