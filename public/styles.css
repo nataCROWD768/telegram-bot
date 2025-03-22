@@ -1,290 +1,138 @@
 body {
-    font-family: 'JetBrains Mono', monospace;
+    font-family: Arial, sans-serif;
     background-color: #f5f5f5;
     margin: 0;
-    padding: 0;
-    color: #333;
 }
 
 .container {
-    width: 385px; /* Фиксированная ширина Web App */
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 0;
+    padding: 10px;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.header-title {
+    font-size: 24px;
+    color: #1976d2;
+    margin: 0 0 10px;
+}
+
+.search-bar {
+    margin-bottom: 20px;
+}
+
+#search-input {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
     box-sizing: border-box;
-    overflow-x: hidden; /* Предотвращаем горизонтальную прокрутку */
-}
-
-header {
-    padding: 10px 15px;
-    background: linear-gradient(135deg, #1a1a1a, #333);
-    color: #fff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: space-between; /* Заголовок слева, строка поиска справа */
-    width: 385px; /* Фиксированная ширина шапки */
-}
-
-h1 {
-    font-size: 18px; /* Компактный заголовок */
-    margin: 0;
-    font-weight: 500;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-}
-
-.search-input {
-    width: 100px;
-    padding: 5px 8px;
-    border: none;
-    border-radius: 15px;
-    font-size: 11px;
-    font-family: 'JetBrains Mono', monospace;
-    background-color: #fff;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-    outline: none;
-    transition: all 0.3s ease;
-    margin-right: 30px; /* Небольшой отступ справа */
-}
-
-.search-input:focus {
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
-    transform: scale(1.02);
-}
-
-.search-input::placeholder {
-    color: #aaa;
-    font-style: italic;
 }
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(4, 89px); /* 4 карточки по 89px = 356px + 3px * 3 + 10px padding = 385px */
-    gap: 3px; /* Минимальный отступ */
-    padding: 10px;
-    width: 385px; /* Фиксированная ширина сетки */
-    box-sizing: border-box;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
 }
 
 .product-card {
-    background-color: #fff;
+    background: white;
     border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    display: flex;
-    flex-direction: column;
-    height: 140px; /* Компактная высота */
+    transition: transform 0.2s;
 }
 
 .product-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+    transform: scale(1.05);
 }
 
-.product-card img {
+.card-image img {
     width: 100%;
-    height: auto; /* Автоподстройка изображения */
-    max-height: 60%; /* Ограничение высоты */
-    object-fit: cover; /* Пропорциональное заполнение */
-    border-radius: 8px 8px 0 0;
+    height: 150px;
+    object-fit: cover;
 }
 
-.product-card .card-content {
-    padding: 5px;
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
+.card-content {
+    padding: 10px;
 }
 
-.product-card h3 {
-    font-size: 9px; /* Уменьшен для компактности */
-    font-weight: 500;
-    margin: 0 0 2px;
-    color: #222;
-    line-height: 1.1;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+.card-content h3 {
+    font-size: 16px;
+    margin: 0 0 10px;
 }
 
-.product-card .prices {
-    font-size: 8px;
-    margin: 2px 0;
+.prices {
     display: flex;
     justify-content: space-between;
+    margin-bottom: 10px;
 }
 
-.product-card .club-price {
-    color: #e91e63;
-    font-weight: 600;
+.club-price {
+    color: #27ae60;
+    font-weight: bold;
 }
 
-.product-card .client-price {
-    color: #888;
+.client-price {
+    color: #e74c3c;
     text-decoration: line-through;
 }
 
-.product-card .rating {
-    color: #f39c12;
-    font-size: 8px;
-    margin-top: 2px;
+.rating {
+    color: #f1c40f;
+}
+
+#product-detail {
+    padding: 20px;
+}
+
+.description, .reviews, .review-form {
+    margin-top: 20px;
+}
+
+.review {
+    border-bottom: 1px solid #eee;
+    padding: 10px 0;
+}
+
+.rating-stars .star {
+    font-size: 24px;
+    cursor: pointer;
+    color: #ccc;
+}
+
+.rating-stars .star.filled {
+    color: #f1c40f;
+}
+
+#review-comment {
+    width: 100%;
+    min-height: 100px;
+    margin-top: 10px;
+}
+
+.submit-btn {
+    margin-top: 10px;
 }
 
 .scroll-top-btn {
     position: fixed;
-    bottom: 10px;
-    right: 10px;
-    background: linear-gradient(135deg, #e91e63, #f06292);
+    bottom: 20px;
+    right: 20px;
+    background-color: #1976d2;
     color: white;
+    padding: 10px 15px;
     border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    line-height: 40px;
-    text-align: center;
-    font-size: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    transition: all 0.3s ease;
+    text-decoration: none;
     display: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .scroll-top-btn:hover {
-    background: linear-gradient(135deg, #d81b60, #ec407a);
-    transform: scale(1.1);
-}
-
-#product-detail .card {
-    padding: 15px;
-    margin: 15px auto;
-    background-color: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-    width: 385px; /* Фиксированная ширина карточки товара */
-}
-
-#product-detail img {
-    max-width: 100%;
-    height: auto;
-    border-radius: 10px;
-}
-
-#product-detail h2 {
-    font-size: 16px;
-    margin: 5px 0;
-    color: #222;
-    font-weight: 500;
-}
-
-#product-detail .description {
-    font-size: 12px;
-    color: #555;
-    margin: 10px 0;
-    line-height: 1.4;
-}
-
-#product-detail .prices {
-    font-size: 12px;
-    margin: 5px 0;
-    display: flex;
-    gap: 10px;
-}
-
-#product-detail .club-price {
-    color: #e91e63;
-    font-weight: 600;
-}
-
-#product-detail .client-price {
-    color: #888;
-    text-decoration: line-through;
-}
-
-#product-detail .rating {
-    color: #f39c12;
-    font-size: 12px;
-    margin: 5px 0;
-}
-
-#product-detail .reviews {
-    margin-top: 15px;
-}
-
-#product-detail .reviews h5 {
-    font-size: 14px;
-    margin-bottom: 5px;
-    color: #222;
-}
-
-#product-detail .review {
-    border-top: 1px solid #eee;
-    padding: 5px 0;
-}
-
-#product-detail .review .username {
-    font-weight: 600;
-    color: #e91e63;
-    font-size: 12px;
-}
-
-#product-detail .review .rating {
-    color: #f39c12;
-    font-size: 12px;
-}
-
-#product-detail .review-form {
-    margin-top: 15px;
-}
-
-#product-detail .review-form h5 {
-    font-size: 14px;
-    margin-bottom: 5px;
-    color: #222;
-}
-
-#product-detail .review-form .rating-stars {
-    display: flex;
-    gap: 3px;
-    margin: 5px 0;
-}
-
-#product-detail .review-form .star {
-    font-size: 18px;
-    color: #ddd;
-    cursor: pointer;
-    transition: color 0.2s ease;
-}
-
-#product-detail .review-form .star.filled {
-    color: #f39c12;
-}
-
-#product-detail .review-form textarea {
-    width: 100%;
-    padding: 8px;
-    margin: 5px 0;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 12px;
-    box-sizing: border-box;
-    font-family: 'JetBrains Mono', monospace;
-    resize: vertical;
-}
-
-#product-detail .review-form .submit-btn {
-    margin: 5px 0;
-    font-size: 12px;
-    padding: 8px 15px;
-    background: linear-gradient(135deg, #e91e63, #f06292);
-    border-radius: 20px;
-    color: white;
-    transition: all 0.3s ease;
-}
-
-#product-detail .review-form .submit-btn:hover {
-    background: linear-gradient(135deg, #d81b60, #ec407a);
-    transform: scale(1.05);
+    background-color: #1565c0;
 }

@@ -1,7 +1,7 @@
 Telegram.WebApp.ready();
 
 let allProducts = [];
-const API_URL = 'https://telegram-bot-gmut.onrender.com/api/products'; // Указываем точный URL
+const API_URL = 'https://telegram-bot-gmut.onrender.com/api/products';
 
 function loadProducts(products) {
     console.log('Загрузка продуктов:', products);
