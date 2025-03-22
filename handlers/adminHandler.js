@@ -80,11 +80,31 @@ async function handleAdminCallback(bot, callbackQuery) {
   }
 }
 
-async function showStats(bot, chatId) { /* Реализация статистики */ }
-async function showProducts(bot, chatId) { /* Реализация списка товаров */ }
-async function addProduct(bot, chatId) { /* Реализация добавления товара */ }
-async function editProduct(bot, chatId) { /* Реализация редактирования товара */ }
-async function deleteProduct(bot, chatId) { /* Реализация удаления товара */ }
+async function showStats(bot, chatId) {
+  bot.sendMessage(chatId, 'Статистика (в разработке)');
+}
+
+async function showProducts(bot, chatId) {
+  const products = await Product.find();
+  if (products.length === 0) {
+    await bot.sendMessage(chatId, 'Товаров нет');
+  } else {
+    const productList = products.map(p => `${p.name} - ${p.clubPrice} руб.`).join('\n');
+    await bot.sendMessage(chatId, `Список товаров:\n${productList}`);
+  }
+}
+
+async function addProduct(bot, chatId) {
+  bot.sendMessage(chatId, 'Добавление товара (в разработке)');
+}
+
+async function editProduct(bot, chatId) {
+  bot.sendMessage(chatId, 'Редактирование товара (в разработке)');
+}
+
+async function deleteProduct(bot, chatId) {
+  bot.sendMessage(chatId, 'Удаление товара (в разработке)');
+}
 
 module.exports = {
   handleAdmin,

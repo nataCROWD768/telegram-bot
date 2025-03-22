@@ -1,9 +1,9 @@
 const mongoose = require('mongoose');
 
 const visitSchema = new mongoose.Schema({
-  username: String,
-  userId: Number,
-  date: { type: Date, default: Date.now }
+  username: { type: String, required: true },
+  userId: { type: String, required: true, unique: true },
+  createdAt: { type: Date, default: Date.now }
 });
 
 module.exports = mongoose.model('Visit', visitSchema);

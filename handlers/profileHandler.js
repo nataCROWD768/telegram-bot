@@ -1,45 +1,19 @@
 const Order = require('../models/order');
 
-module.exports = {
-  showProfile: async (bot, chatId) => {
-    const orders = await Order.find({ userId: chatId })
-      .populate('productId')
-      .sort({ createdAt: -1 })
-      .limit(5);
+async function showProfile(bot, chatId) {
+  bot.sendMessage(chatId, 'Ваш профиль (в разработке)');
+}
 
-    let response = '*Ваш личный кабинет*\n\n';
-    response += 'Последние заказы:\n';
-
-    if (orders.length === 0) {
-      response += 'У вас пока нет заказов';
-    } else {
-      orders.forEach((order, index) => {
-        response += `${index + 1}. ${order.productId.name}\n`;
-        response += `Количество: ${order.quantity}\n`;
-        response += `Сумма: ${order.totalPrice} руб.\n`;
-        response += `Статус: ${order.status}\n\n`;
-      });
-    }
-
-    bot.sendMessage(chatId, response, {
-      parse_mode: 'Markdown',
-      reply_markup: {
-        keyboard: [['История заказов'], ['Назад в меню']],
-        resize_keyboard: true
-      }
-    });
-  },
-
-  showOrderHistory: async (bot, chatId) => {
-    const orders = await Order.find({ userId: chatId }).populate('productId');
-    let response = '*История заказов*\n\n';
-    
-    orders.forEach((order, index) => {
-      response += `${index + 1}. ${order.productId.name}\n`;
-      response += `Дата: ${order.createdAt.toLocaleDateString()}\n`;
-      response += `Сумма: ${order.totalPrice} руб.\n\n`;
-    });
-
-    bot.sendMessage(chatId, response, { parse_mode: 'Markdown' });
+async function showOrderHistory(bot, chatId) {
+  const orders = await Order.find({ userId: chatId }).populate('productId', 'name');
+  if (orders.length === 0) {
+    await bot.sendMessage(chatId, 'История заказов пуста');
+  } else {
+    const orderList = orders.map(o =>
+        `Товар: ${o.productId.name}\nКоличество: ${o.quantity}\nСумма: ${o.totalPrice} руб.\nДата: ${o.createdAt.toLocaleDateString()}`
+    ).join('\n---\n');
+    await bot.sendMessage(chatId, `История заказов:\n\n${orderList}`);
   }
-};
+}
+
+module.exports = { showProfile, showOrderHistory };

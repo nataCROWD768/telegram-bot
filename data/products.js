@@ -1,47 +1,47 @@
 module.exports = [
     {
-        name:           'Продукт 1',
-        description:    'Качественный товар',
-        category:       'Электроника',
-        clientPrice:    1000,
-        clubPrice:      800,
-        image:          './product1.jpg',
-        certificates:   ['./cert1.jpg'],
-        stock:          10,
-        averageRating:  4.5
+        name: 'Товар 1',
+        description: 'Описание товара 1',
+        image: '/product1.jpg',
+        clubPrice: 1000,
+        clientPrice: 1200,
+        stock: 10,
+        averageRating: 4.5
     },
     {
-        name:           'Продукт 2',
-        description:    'Еще один товар',
-        category:       'Бытовая техника',
-        clientPrice:    1500,
-        clubPrice:      1200,
-        image:          './product2.jpg',
-        certificates:   ['./cert2.jpg'],
-        stock:          5,
-        averageRating:  4.0
+        name: 'Товар 2',
+        description: 'Описание товара 2',
+        image: '/product2.jpg',
+        clubPrice: 1500,
+        clientPrice: 1800,
+        stock: 8,
+        averageRating: 4.0
     },
     {
-        name:           'Продукт 3',
-        description:    'Третий товар',
-        category:       'Электроника',
-        clientPrice:    2000,
-        clubPrice:      1600,
-        image:          './product3.jpg',
-        certificates:   ['./cert3.jpg'],
-        stock:          8,
-        averageRating:  4.8
+        name: 'Товар 3',
+        description: 'Описание товара 3',
+        image: '/product3.jpg',
+        clubPrice: 2000,
+        clientPrice: 2400,
+        stock: 5,
+        averageRating: 4.8
     },
     {
-        name:           'Продукт 4',
-        description:    'Четвертый товар',
-        category:       'Бытовая техника',
-        clientPrice:    2500,
-        clubPrice:      2000,
-        image:          './product4.jpg',
-        certificates:   ['./cert4.jpg'],
-        stock:          7,
-        averageRating:  4.2
+        name: 'Товар 4',
+        description: 'Описание товара 4',
+        image: '/product4.jpg',
+        clubPrice: 800,
+        clientPrice: 1000,
+        stock: 15,
+        averageRating: 3.9
     }
-    // Добавляйте сюда новые товары по мере необходимости
+    {
+        name: 'Товар 5',
+        description: 'Описание товара 5',
+        image: '/product5.jpg',
+        clubPrice: 800,
+        clientPrice: 1000,
+        stock: 15,
+        averageRating: 3.9
+    }
 ];
