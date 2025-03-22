@@ -59,12 +59,16 @@ const setupWebhook = async () => {
 const syncProducts = async () => {
     try {
         const existingProducts = await Product.find();
+        console.log('Текущие товары в БД:', existingProducts); // Отладка
         const existingNames = existingProducts.map(p => p.name);
+        console.log('Имена существующих товаров:', existingNames); // Отладка
         for (const productData of initialProducts) {
             if (!existingNames.includes(productData.name)) {
-                await Product.create(productData);
+                const newProduct = await Product.create(productData);
+                console.log('Добавлен новый товар:', newProduct); // Отладка
             } else {
-                await Product.updateOne({ name: productData.name }, productData);
+                const updatedProduct = await Product.updateOne({ name: productData.name }, productData);
+                console.log('Обновлён товар:', productData.name, updatedProduct); // Отладка
             }
         }
         console.log('Товары синхронизированы');
@@ -76,12 +80,18 @@ const syncProducts = async () => {
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
+        console.log('Найденные товары:', products); // Отладка
         const productsWithReviews = await Promise.all(products.map(async (product) => {
             const reviews = await Review.find({ productId: product._id, isApproved: true });
             return { ...product.toObject(), reviews };
         }));
-        console.log('Отправка данных товаров:', productsWithReviews);
-        res.json({ products: productsWithReviews, total: products.length });
+        console.log('Отправка данных товаров:', productsWithReviews); // Отладка
+        if (products.length === 0) {
+            console.log('Товаров в базе нет');
+            res.json({ products: [], total: 0 }); // Явно возвращаем пустой массив
+        } else {
+            res.json({ products: productsWithReviews, total: products.length });
+        }
     } catch (error) {
         console.error('Ошибка API /api/products:', error.message);
         res.status(500).json({ error: 'Ошибка загрузки товаров' });
