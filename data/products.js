@@ -30,5 +30,13 @@ module.exports = [
         clubPrice: 800,
         clientPrice: 1000,
         averageRating: 3.5
+    },
+    {
+        name: 'Товар 5',
+        description: 'Описание товара 5',
+        image: 'https://via.placeholder.com/150',
+        clubPrice: 1200,
+        clientPrice: 1400,
+        averageRating: 4.2
     }
 ];
