@@ -40,14 +40,14 @@ h1 {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(2, 160px); /* 2 столбца фиксированной ширины 160px */
+    grid-template-columns: repeat(2, 160px);
     gap: 15px;
     justify-content: center;
     padding: 10px 0;
 }
 
 .product-card {
-    width: 160px; /* Фиксированная ширина карточки */
+    width: 160px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -107,7 +107,7 @@ h1 {
 .scroll-top-btn {
     position: fixed;
     bottom: 20px;
-    right: 20#>: 30px;
+    right: 20px;
     background-color: #ff4081;
     color: white;
     border-radius: 50%;
@@ -168,7 +168,7 @@ h1 {
 }
 
 #product-detail .rating {
-    color: #f39c12;
+    color: #f06292;
     font-size: 14px;
     margin: 10px 0;
 }

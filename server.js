@@ -80,6 +80,7 @@ app.get('/api/products', async (req, res) => {
             const reviews = await Review.find({ productId: product._id, isApproved: true });
             return { ...product.toObject(), reviews };
         }));
+        console.log('Отправка данных товаров:', productsWithReviews); // Отладка
         res.json({ products: productsWithReviews, total: products.length });
     } catch (error) {
         console.error('Ошибка API /api/products:', error.message);
@@ -106,9 +107,10 @@ bot.onText(/\/start/, async (msg) => {
     }
 });
 
+const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME}.onrender.com`;
+
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
-    const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME}.onrender.com`;
     console.log(`Сообщение: "${msg.text}" от ${msg.from.username}`);
 
     switch (msg.text) {
@@ -116,8 +118,12 @@ bot.on('message', async (msg) => {
             showProfile(bot, chatId);
             break;
         case 'Витрина':
-            await bot.sendMessage(chatId, '🛒 Открыть витрину:', {
-                reply_markup: { inline_keyboard: [[{ text: 'Перейти', web_app: { url: `${webAppUrl}/index.html` } }]] }
+            await bot.sendMessage(chatId, '', {
+                reply_markup: {
+                    keyboard: [[{ text: 'Открыть витрину', web_app: { url: `${webAppUrl}/index.html` } }]],
+                    resize_keyboard: true,
+                    one_time_keyboard: true
+                }
             });
             break;
         case 'Бонусы и продукт':

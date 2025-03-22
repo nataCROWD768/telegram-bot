@@ -3,8 +3,14 @@ Telegram.WebApp.ready();
 let allProducts = [];
 
 function loadProducts(products) {
+    console.log('Загрузка продуктов:', products); // Отладка
     const productList = document.getElementById('product-list');
     productList.innerHTML = '';
+
+    if (!products || products.length === 0) {
+        productList.innerHTML = '<p>Товары не найдены</p>';
+        return;
+    }
 
     products.forEach(product => {
         const card = document.createElement('div');
@@ -175,7 +181,36 @@ function showProductDetail(product) {
 }
 
 fetch('/api/products')
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) throw new Error(`HTTP ошибка: ${response.status}`);
+        return response.json();
+    })
     .then(data => {
-        allProducts = data.products;
-        load
+        console.log('Получены данные от API:', data); // Отладка
+        allProducts = data.products || [];
+        loadProducts(allProducts);
+
+        const searchInput = document.getElementById('search-input');
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            const filteredProducts = allProducts.filter(product =>
+                product.name.toLowerCase().includes(query) ||
+                product.description.toLowerCase().includes(query)
+            );
+            loadProducts(filteredProducts);
+        });
+    })
+    .catch(error => {
+        console.error('Ошибка загрузки товаров:', error);
+        Telegram.WebApp.showAlert('Ошибка загрузки товаров');
+        document.getElementById('product-list').innerHTML = '<p>Ошибка загрузки товаров</p>';
+    });
+
+window.addEventListener('scroll', () => {
+    const btn = document.getElementById('scroll-top-btn');
+    btn.style.display = window.scrollY > 300 ? 'block' : 'none';
+});
+
+document.getElementById('scroll-top-btn').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth', duration: 300 });
+});
