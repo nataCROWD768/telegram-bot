@@ -8,24 +8,27 @@ function loadProducts(products) {
 
     products.forEach(product => {
         const card = document.createElement('div');
-        card.className = 'product-card';
+        card.className = 'product-card card';
         card.innerHTML = `
-            <img src="${product.image}" alt="${product.name}">
-            <h3>${product.name}</h3>
-            <div class="prices">
-                <span class="club-price">${product.clubPrice} ₽</span>
-                <span class="client-price">${product.clientPrice} ₽</span>
+            <div class="card-image">
+                <img src="${product.image}" alt="${product.name}">
             </div>
-            <div class="rating">★ ${product.averageRating.toFixed(1)}</div>
-            <button class="order-btn" data-id="${product._id}">В корзину</button>
+            <div class="card-content">
+                <h3>${product.name}</h3>
+                <div class="prices">
+                    <span class="club-price">${product.clubPrice} ₽</span>
+                    <span class="client-price">${product.clientPrice} ₽</span>
+                </div>
+                <div class="rating">★ ${product.averageRating.toFixed(1)}</div>
+                <a class="order-btn btn red waves-effect waves-light" data-id="${product._id}">В корзину</a>
+            </div>
         `;
         card.addEventListener('click', (e) => {
-            if (e.target.tagName !== 'BUTTON') showProductDetail(product);
+            if (e.target.tagName !== 'A') showProductDetail(product);
         });
         productList.appendChild(card);
     });
 
-    // Обработчики кнопок "В корзину"
     document.querySelectorAll('.order-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -62,41 +65,46 @@ function showProductDetail(product) {
         : '<p>Отзывов пока нет</p>';
 
     detailContent.innerHTML = `
-        <img src="${product.image}" alt="${product.name}">
-        <h2>${product.name}</h2>
-        <div class="description">${product.description}</div>
-        <div class="prices">
-            <span class="club-price">Клубная: ${product.clubPrice} ₽</span>
-            <span class="client-price">Клиентская: ${product.clientPrice} ₽</span>
+        <div class="card-image">
+            <img src="${product.image}" alt="${product.name}">
         </div>
-        <div class="rating">Рейтинг: ★ ${product.averageRating.toFixed(1)}</div>
-        <button class="order-btn" data-id="${product._id}">В корзину</button>
-        <div class="reviews">
-            <h3>Отзывы</h3>
-            ${reviewsHtml}
-        </div>
-        <div class="review-form">
-            <h3>Оставить отзыв</h3>
-            <div class="rating-stars" data-rating="0">
-                <span class="star" data-value="1">★</span>
-                <span class="star" data-value="2">★</span>
-                <span class="star" data-value="3">★</span>
-                <span class="star" data-value="4">★</span>
-                <span class="star" data-value="5">★</span>
+        <div class="card-content">
+            <h2>${product.name}</h2>
+            <div class="prices">
+                <span class="club-price">Клубная: ${product.clubPrice} ₽</span>
+                <span class="client-price">Клиентская: ${product.clientPrice} ₽</span>
             </div>
-            <textarea id="review-comment" rows="4" placeholder="Ваш отзыв..."></textarea>
-            <button class="submit-btn" data-id="${product._id}">Отправить отзыв</button>
-            <div id="review-status" style="color: #27ae60; margin-top: 10px;"></div>
+            <div class="rating">Рейтинг: ★ ${product.averageRating.toFixed(1)}</div>
+            <a class="order-btn btn red waves-effect waves-light" data-id="${product._id}">В корзину</a>
+            <div class="description">
+                <h5>Описание</h5>
+                <p>${product.description}</p>
+            </div>
+            <div class="reviews">
+                <h5>Отзывы</h5>
+                ${reviewsHtml}
+            </div>
+            <div class="review-form">
+                <h5>Оставить отзыв</h5>
+                <div class="rating-stars" data-rating="0">
+                    <span class="star" data-value="1">★</span>
+                    <span class="star" data-value="2">★</span>
+                    <span class="star" data-value="3">★</span>
+                    <span class="star" data-value="4">★</span>
+                    <span class="star" data-value="5">★</span>
+                </div>
+                <textarea id="review-comment" class="materialize-textarea" placeholder="Ваш отзыв..."></textarea>
+                <a class="submit-btn btn red waves-effect waves-light" data-id="${product._id}">Отправить отзыв</a>
+                <div id="review-status" style="color: #27ae60; margin-top: 10px;"></div>
+            </div>
         </div>
     `;
 
-    // Обработчик кнопки "Назад"
     document.getElementById('back-btn').addEventListener('click', () => {
         detail.style.display = 'none';
         showcase.style.display = 'block';
     });
 
-    // Обработчик кнопки "В корзину" в карточке
     detailContent.querySelector('.order-btn').addEventListener('click', () => {
         const productId = product._id;
         const quantity = prompt('Введите количество:', '1');
@@ -110,7 +118,6 @@ function showProductDetail(product) {
         }
     });
 
-    // Обработчик рейтинга
     const stars = detailContent.querySelectorAll('.rating-stars .star');
     stars.forEach(star => {
         star.addEventListener('click', () => {
@@ -122,7 +129,6 @@ function showProductDetail(product) {
         });
     });
 
-    // Обработчик отправки отзыва
     detailContent.querySelector('.submit-btn').addEventListener('click', () => {
         const productId = product._id;
         const rating = parseInt(detailContent.querySelector('.rating-stars').getAttribute('data-rating'));
@@ -146,7 +152,6 @@ function showProductDetail(product) {
     });
 }
 
-// Загрузка товаров и поиск
 fetch('/api/products')
     .then(response => response.json())
     .then(data => {
@@ -168,7 +173,6 @@ fetch('/api/products')
         Telegram.WebApp.showAlert('Ошибка загрузки товаров');
     });
 
-// Показ кнопки "Наверх" при прокрутке
 window.addEventListener('scroll', () => {
     const btn = document.getElementById('scroll-top-btn');
     btn.style.display = window.scrollY > 300 ? 'block' : 'none';
