@@ -24,6 +24,7 @@ const Visit             = require('./models/visit');
 const Product           = require('./models/product');
 const Order             = require('./models/order');
 const Review            = require('./models/review');
+const initialProducts   = require('./data/products'); // Импорт товаров
 require('dotenv').config();
 
 const app               = express();
@@ -58,7 +59,6 @@ const setupWebhook      = async () => {
         process.exit(1);
     }
 
-    // Добавляем .onrender.com к имени приложения
     const WEBHOOK_URL   = `https://${appName}.onrender.com/bot${token}`;
     const telegramApi   = `https://api.telegram.org/bot${token}`;
 
@@ -83,6 +83,25 @@ const setupWebhook      = async () => {
             console.error('Детали ошибки:', JSON.stringify(error.response.data));
         }
         process.exit(1);
+    }
+};
+
+// Синхронизация товаров из data/products.js с MongoDB
+const syncProducts = async () => {
+    try {
+        const existingProducts = await Product.find();
+        const existingNames    = existingProducts.map(p => p.name);
+
+        for (const productData of initialProducts) {
+            if (!existingNames.includes(productData.name)) {
+                await Product.create(productData);
+            } else {
+                await Product.updateOne({ name: productData.name }, productData);
+            }
+        }
+        console.log('Товары синхронизированы с data/products.js');
+    } catch (error) {
+        console.error('Ошибка при синхронизации товаров:', error.message);
     }
 };
 
@@ -198,63 +217,10 @@ app.post(`/bot${token}`, (req, res) => {
     res.sendStatus(200);
 });
 
-// Инициализация тестовых данных
-const initData = async () => {
-    try {
-        if (await Product.countDocuments() === 0) {
-            await Product.create([
-                {
-                    name:           'Продукт 1',
-                    description:    'Качественный товар',
-                    category:       'Электроника',
-                    clientPrice:    1000,
-                    clubPrice:      800,
-                    image:          './public/product1.jpg',
-                    certificates:   ['./public/cert1.jpg'],
-                    stock:          10
-                },
-                {
-                    name:           'Продукт 2',
-                    description:    'Еще один товар',
-                    category:       'Бытовая техника',
-                    clientPrice:    1500,
-                    clubPrice:      1200,
-                    image:          './public/product2.jpg',
-                    certificates:   ['./public/cert2.jpg'],
-                    stock:          5
-                },
-                {
-                    name:           'Продукт 3',
-                    description:    'Третий товар',
-                    category:       'Электроника',
-                    clientPrice:    2000,
-                    clubPrice:      1600,
-                    image:          './public/product3.jpg',
-                    certificates:   ['./public/cert3.jpg'],
-                    stock:          8
-                },
-                {
-                    name:           'Продукт 4',
-                    description:    'Четвертый товар',
-                    category:       'Бытовая техника',
-                    clientPrice:    2500,
-                    clubPrice:      2000,
-                    image:          './public/product4.jpg',
-                    certificates:   ['./public/cert4.jpg'],
-                    stock:          7
-                }
-            ]);
-            console.log('Тестовые данные инициализированы');
-        }
-    } catch (error) {
-        console.error('Ошибка при инициализации данных:', error.message);
-    }
-};
-
 // Запуск сервера
 const startServer = async () => {
     await setupWebhook();
-    await initData();
+    await syncProducts(); // Синхронизация товаров
 
     app.get('/', (req, res) => res.send('Bot is running'));
     const PORT = process.env.PORT || 3000;

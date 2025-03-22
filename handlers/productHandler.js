@@ -1,72 +1,44 @@
 const Product           = require('../models/product');
 const Order             = require('../models/order');
 const Review            = require('../models/review');
-const sharp             = require('sharp');
-const fs                = require('fs');
-const path              = require('path');
 
-// Папка для хранения миниатюр
-const THUMBNAIL_DIR     = path.join(__dirname, '../public/thumbnails');
-if (!fs.existsSync(THUMBNAIL_DIR)) {
-  fs.mkdirSync(THUMBNAIL_DIR, { recursive: true });
-}
-
-// Функция для создания миниатюры
-const createThumbnail = async (imagePath) => {
-  const thumbnailPath = path.join(THUMBNAIL_DIR, `thumb_${path.basename(imagePath)}`);
-
-  // Если миниатюра уже существует, возвращаем её
-  if (fs.existsSync(thumbnailPath)) {
-    return thumbnailPath;
-  }
-
-  try {
-    await sharp(imagePath)
-        .resize(200, 200, { fit: 'cover' }) // Сжимаем до 200x200
-        .jpeg({ quality: 80 }) // Уменьшаем качество для экономии размера
-        .toFile(thumbnailPath);
-    return thumbnailPath;
-  } catch (error) {
-    console.error(`Ошибка при создании миниатюры для ${imagePath}:`, error.message);
-    return imagePath; // В случае ошибки возвращаем оригинал
-  }
-};
+const ITEMS_PER_PAGE    = 10; // Количество товаров на странице
 
 module.exports = {
-  showProducts: async (bot, chatId, category = null) => {
+  showProducts: async (bot, chatId, category = null, page = 1) => {
     try {
       const query     = category ? { category } : {};
-      const products  = await Product.find(query);
+      const total     = await Product.countDocuments(query);
+      const products  = await Product.find(query)
+          .skip((page - 1) * ITEMS_PER_PAGE)
+          .limit(ITEMS_PER_PAGE);
 
       if (products.length === 0) {
         await bot.sendMessage(chatId, '🛒 Товары в этой категории отсутствуют');
         return;
       }
 
-      // Отправляем товары с миниатюрами
-      for (const product of products) {
-        const thumbnail = await createThumbnail(product.image);
-        const caption = `
-                    *${product.name}*
-                    Клиентская: ${product.clientPrice} руб.
-                    Клубная: ${product.clubPrice} руб.
-                `;
+      let message = `*Витрина товаров (стр. ${page}/${Math.ceil(total / ITEMS_PER_PAGE)}):*\n\n`;
+      products.forEach((product, index) => {
+        message += `${(page - 1) * ITEMS_PER_PAGE + index + 1}. *${product.name}*\n`;
+        message += `Клиентская: ${product.clientPrice} руб.\n`;
+        message += `Клубная: ${product.clubPrice} руб.\n`;
+        message += `Рейтинг: ★ ${product.averageRating.toFixed(1)}\n\n`;
+      });
 
-        await bot.sendPhoto(chatId, thumbnail, {
-          caption,
-          parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: 'Подробнее', callback_data: `product_${product._id}` }]
-            ]
-          }
-        });
+      const keyboard = [];
+      if (page > 1) {
+        keyboard.push([{ text: '⬅️ Назад', callback_data: `products_${category || 'all'}_${page - 1}` }]);
       }
+      if (page < Math.ceil(total / ITEMS_PER_PAGE)) {
+        keyboard.push([{ text: 'Вперед ➡️', callback_data: `products_${category || 'all'}_${page + 1}` }]);
+      }
+      keyboard.push([{ text: '📋 Категории', callback_data: 'categories' }]);
 
-      // Кнопка для категорий
-      await bot.sendMessage(chatId, 'Выберите категорию или продолжайте просмотр:', {
+      await bot.sendMessage(chatId, message, {
+        parse_mode: 'Markdown',
         reply_markup: {
-          inline_keyboard: [[{ text: '📋 Категории', callback_data: 'categories' }]]
+          inline_keyboard: keyboard
         }
       });
     } catch (error) {
@@ -79,8 +51,8 @@ module.exports = {
     try {
       const categories = await Product.distinct('category');
       const keyboard   = [
-        ...categories.map(cat => [{ text: cat, callback_data: `cat_${cat}` }]),
-        [{ text: 'Все товары', callback_data: 'all_products' }]
+        ...categories.map(cat => [{ text: cat, callback_data: `cat_${cat}_1` }]),
+        [{ text: 'Все товары', callback_data: 'products_all_1' }]
       ];
 
       await bot.sendMessage(chatId, '📋 Выберите категорию:', {
@@ -97,6 +69,11 @@ module.exports = {
   handleCallback: async (bot, callbackQuery) => {
     const chatId    = callbackQuery.message.chat.id;
     const data      = callbackQuery.data;
+
+    if (data.startsWith('products_')) {
+      const [_, category, page] = data.split('_');
+      module.exports.showProducts(bot, chatId, category === 'all' ? null : category, parseInt(page));
+    }
 
     if (data.startsWith('product_')) {
       const productId = data.split('_')[1];
@@ -119,7 +96,7 @@ module.exports = {
                 ${reviews.length > 0 ? reviewsText : 'Отзывов пока нет'}
             `;
 
-      await bot.sendPhoto(chatId, product.image, { // Оригинальное изображение для карточки
+      await bot.sendPhoto(chatId, product.image, {
         caption,
         parse_mode: 'Markdown',
         reply_markup: {
@@ -192,8 +169,10 @@ module.exports = {
     }
 
     if (data === 'categories') module.exports.showCategories(bot, chatId);
-    if (data.startsWith('cat_')) module.exports.showProducts(bot, chatId, data.split('_')[1]);
-    if (data === 'all_products') module.exports.showProducts(bot, chatId);
+    if (data.startsWith('cat_')) {
+      const [_, category, page] = data.split('_');
+      module.exports.showProducts(bot, chatId, category, parseInt(page));
+    }
     if (data === 'back_to_products') module.exports.showProducts(bot, chatId);
   },
 
@@ -204,33 +183,23 @@ module.exports = {
           { name: { $regex: query, $options: 'i' } },
           { description: { $regex: query, $options: 'i' } }
         ]
-      });
+      }).limit(ITEMS_PER_PAGE);
 
       if (products.length === 0) {
         await bot.sendMessage(chatId, '🔍 Ничего не найдено');
         return;
       }
 
-      for (const product of products) {
-        const thumbnail = await createThumbnail(product.image);
-        const caption = `
-                    *${product.name}*
-                    Клиентская: ${product.clientPrice} руб.
-                    Клубная: ${product.clubPrice} руб.
-                `;
+      let message = '*Результаты поиска:*\n\n';
+      products.forEach((product, index) => {
+        message += `${index + 1}. *${product.name}*\n`;
+        message += `Клиентская: ${product.clientPrice} руб.\n`;
+        message += `Клубная: ${product.clubPrice} руб.\n`;
+        message += `Рейтинг: ★ ${product.averageRating.toFixed(1)}\n\n`;
+      });
 
-        await bot.sendPhoto(chatId, thumbnail, {
-          caption,
-          parse_mode: 'Markdown',
-          reply_markup: {
-            inline_keyboard: [
-              [{ text: 'Подробнее', callback_data: `product_${product._id}` }]
-            ]
-          }
-        });
-      }
-
-      await bot.sendMessage(chatId, '🔍 Результаты поиска:', {
+      await bot.sendMessage(chatId, message, {
+        parse_mode: 'Markdown',
         reply_markup: {
           inline_keyboard: [[{ text: '📋 Категории', callback_data: 'categories' }]]
         }
