@@ -3,10 +3,10 @@ Telegram.WebApp.ready();
 let allProducts = [];
 
 function loadProducts(products) {
-    console.log('Загрузка продуктов в витрине:', products);
+    console.log('Загрузка продуктов:', products);
     const productList = document.getElementById('product-list');
     if (!productList) {
-        console.error('Элемент #product-list не найден в HTML');
+        console.error('Элемент #product-list не найден');
         return;
     }
     productList.innerHTML = '';
@@ -45,7 +45,7 @@ function loadProducts(products) {
             e.stopPropagation();
             const productId = btn.getAttribute('data-id');
             const quantity = prompt('Введите количество:', '1');
-            if (quantity && !isNaN(quantity)) {
+            if (quantity && !isNaN(quantity) && quantity > 0) {
                 console.log('Отправка заказа:', { productId, quantity });
                 Telegram.WebApp.sendData(JSON.stringify({
                     type: 'order',
@@ -53,6 +53,8 @@ function loadProducts(products) {
                     quantity: parseInt(quantity)
                 }));
                 Telegram.WebApp.showAlert('Заказ отправлен!');
+            } else {
+                Telegram.WebApp.showAlert('Введите корректное количество');
             }
         });
     });
@@ -66,7 +68,7 @@ function showProductDetail(product) {
     showcase.style.display = 'none';
     detail.style.display = 'block';
 
-    const reviewsHtml = product.reviews.length > 0
+    const reviewsHtml = product.reviews && product.reviews.length > 0
         ? product.reviews.map(r => `
             <div class="review">
                 <span class="username">${r.username}</span>: 
@@ -120,7 +122,7 @@ function showProductDetail(product) {
     detailContent.querySelector('.order-btn').addEventListener('click', () => {
         const productId = product._id;
         const quantity = prompt('Введите количество:', '1');
-        if (quantity && !isNaN(quantity)) {
+        if (quantity && !isNaN(quantity) && quantity > 0) {
             console.log('Отправка заказа из карточки:', { productId, quantity });
             Telegram.WebApp.sendData(JSON.stringify({
                 type: 'order',
@@ -128,6 +130,8 @@ function showProductDetail(product) {
                 quantity: parseInt(quantity)
             }));
             Telegram.WebApp.showAlert('Заказ отправлен!');
+        } else {
+            Telegram.WebApp.showAlert('Введите корректное количество');
         }
     });
 
@@ -135,9 +139,7 @@ function showProductDetail(product) {
     stars.forEach(star => {
         star.addEventListener('click', () => {
             const rating = parseInt(star.getAttribute('data-value'));
-            stars.forEach(s => {
-                s.classList.toggle('filled', parseInt(s.getAttribute('data-value')) <= rating);
-            });
+            stars.forEach(s => s.classList.toggle('filled', parseInt(s.getAttribute('data-value')) <= rating));
             detailContent.querySelector('.rating-stars').setAttribute('data-rating', rating);
             console.log('Рейтинг выбран:', rating);
         });
@@ -146,41 +148,23 @@ function showProductDetail(product) {
     const submitBtn = detailContent.querySelector('.submit-btn');
     submitBtn.addEventListener('click', (e) => {
         e.preventDefault();
-        console.log('Кнопка "Отправить отзыв" нажата');
         const productId = product._id;
         const rating = parseInt(detailContent.querySelector('.rating-stars').getAttribute('data-rating'));
         const comment = document.getElementById('review-comment').value.trim();
         const status = document.getElementById('review-status');
 
-        console.log('Проверка данных перед отправкой:', { productId, rating, comment });
-
-        if (!productId) {
-            console.error('Ошибка: productId отсутствует');
-            Telegram.WebApp.showAlert('Ошибка: ID товара не найден');
-            return;
-        }
+        console.log('Проверка данных отзыва:', { productId, rating, comment });
 
         if (rating > 0 && comment) {
-            const reviewData = {
-                type: 'review',
-                productId,
-                rating,
-                comment
-            };
+            const reviewData = { type: 'review', productId, rating, comment };
             console.log('Отправка отзыва:', reviewData);
-            try {
-                Telegram.WebApp.sendData(JSON.stringify(reviewData));
-                status.textContent = 'Отзыв отправлен! Ожидает модерации.';
-                document.getElementById('review-comment').value = '';
-                stars.forEach(s => s.classList.remove('filled'));
-                detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
-            } catch (error) {
-                console.error('Ошибка при отправке отзыва:', error);
-                Telegram.WebApp.showAlert('Ошибка при отправке отзыва');
-            }
+            Telegram.WebApp.sendData(JSON.stringify(reviewData));
+            status.textContent = 'Отзыв отправлен! Ожидает модерации.';
+            document.getElementById('review-comment').value = '';
+            stars.forEach(s => s.classList.remove('filled'));
+            detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
         } else {
-            console.log('Ошибка валидации:', { rating, comment });
-            Telegram.WebApp.showAlert('Пожалуйста, выберите рейтинг и введите комментарий');
+            Telegram.WebApp.showAlert('Выберите рейтинг и введите комментарий');
         }
     });
 }
@@ -194,30 +178,38 @@ fetch('/api/products')
     .then(data => {
         console.log('Получены данные от API:', data);
         allProducts = data.products || [];
-        console.log('Массив товаров для отображения:', allProducts);
+        console.log('Товары для отображения:', allProducts);
         loadProducts(allProducts);
 
         const searchInput = document.getElementById('search-input');
-        searchInput.addEventListener('input', () => {
-            const query = searchInput.value.toLowerCase();
-            const filteredProducts = allProducts.filter(product =>
-                product.name.toLowerCase().includes(query) ||
-                product.description.toLowerCase().includes(query)
-            );
-            loadProducts(filteredProducts);
-        });
+        if (searchInput) {
+            searchInput.addEventListener('input', () => {
+                const query = searchInput.value.toLowerCase();
+                const filteredProducts = allProducts.filter(product =>
+                    product.name.toLowerCase().includes(query) ||
+                    product.description.toLowerCase().includes(query)
+                );
+                loadProducts(filteredProducts);
+            });
+        } else {
+            console.error('Элемент #search-input не найден');
+        }
     })
     .catch(error => {
         console.error('Ошибка загрузки товаров:', error);
+        const productList = document.getElementById('product-list');
+        if (productList) productList.innerHTML = '<p>Ошибка загрузки товаров</p>';
         Telegram.WebApp.showAlert('Ошибка загрузки товаров');
-        document.getElementById('product-list').innerHTML = '<p>Ошибка загрузки товаров</p>';
     });
 
 window.addEventListener('scroll', () => {
     const btn = document.getElementById('scroll-top-btn');
-    btn.style.display = window.scrollY > 300 ? 'block' : 'none';
+    if (btn) btn.style.display = window.scrollY > 300 ? 'block' : 'none';
 });
 
-document.getElementById('scroll-top-btn').addEventListener('click', () => {
-    window.scrollTo({ top: 0, behavior: 'smooth', duration: 300 });
-});
+const scrollTopBtn = document.getElementById('scroll-top-btn');
+if (scrollTopBtn) {
+    scrollTopBtn.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+}

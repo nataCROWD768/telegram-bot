@@ -42,7 +42,7 @@ h1 {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr)); /* 4 столбца */
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 4px;
     padding: 5px 0;
     width: 100%;
