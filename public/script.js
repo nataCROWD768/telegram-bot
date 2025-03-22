@@ -128,16 +128,26 @@ function showProductDetail(product) {
                 s.classList.toggle('filled', parseInt(s.getAttribute('data-value')) <= rating);
             });
             detailContent.querySelector('.rating-stars').setAttribute('data-rating', rating);
+            console.log('Рейтинг выбран:', rating);
         });
     });
 
-    detailContent.querySelector('.submit-btn').addEventListener('click', () => {
+    const submitBtn = detailContent.querySelector('.submit-btn');
+    submitBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        console.log('Кнопка "Отправить отзыв" нажата');
         const productId = product._id;
         const rating = parseInt(detailContent.querySelector('.rating-stars').getAttribute('data-rating'));
         const comment = document.getElementById('review-comment').value.trim();
         const status = document.getElementById('review-status');
 
-        console.log('Проверка перед отправкой отзыва:', { productId, rating, comment });
+        console.log('Проверка данных перед отправкой:', { productId, rating, comment });
+
+        if (!productId) {
+            console.error('Ошибка: productId отсутствует');
+            Telegram.WebApp.showAlert('Ошибка: ID товара не найден');
+            return;
+        }
 
         if (rating > 0 && comment) {
             const reviewData = {
@@ -147,13 +157,18 @@ function showProductDetail(product) {
                 comment
             };
             console.log('Отправка отзыва:', reviewData);
-            Telegram.WebApp.sendData(JSON.stringify(reviewData));
-            status.textContent = 'Отзыв отправлен! Ожидает модерации.';
-            document.getElementById('review-comment').value = '';
-            stars.forEach(s => s.classList.remove('filled'));
-            detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
+            try {
+                Telegram.WebApp.sendData(JSON.stringify(reviewData));
+                status.textContent = 'Отзыв отправлен! Ожидает модерации.';
+                document.getElementById('review-comment').value = '';
+                stars.forEach(s => s.classList.remove('filled'));
+                detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
+            } catch (error) {
+                console.error('Ошибка при отправке отзыва:', error);
+                Telegram.WebApp.showAlert('Ошибка при отправке отзыва');
+            }
         } else {
-            console.log('Ошибка валидации отзыва:', { rating, comment });
+            console.log('Ошибка валидации:', { rating, comment });
             Telegram.WebApp.showAlert('Пожалуйста, выберите рейтинг и введите комментарий');
         }
     });
