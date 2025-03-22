@@ -2,6 +2,7 @@ body {
     font-family: Arial, sans-serif;
     background-color: #f5f5f5;
     margin: 0;
+    padding-top: 20px;
 }
 
 .container {
@@ -36,7 +37,7 @@ body {
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, 1fr); /* 4 товара в ряд */
     gap: 20px;
 }
 
@@ -46,6 +47,8 @@ body {
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     transition: transform 0.2s;
+    display: flex;
+    flex-direction: column;
 }
 
 .product-card:hover {
@@ -60,31 +63,39 @@ body {
 
 .card-content {
     padding: 10px;
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .card-content h3 {
     font-size: 16px;
-    margin: 0 0 10px;
+    margin: 0 0 8px;
+    color: #333;
 }
 
 .prices {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .club-price {
     color: #27ae60;
     font-weight: bold;
+    font-size: 14px;
 }
 
 .client-price {
     color: #e74c3c;
     text-decoration: line-through;
+    font-size: 14px;
 }
 
 .rating {
     color: #f1c40f;
+    font-size: 14px;
+    margin-top: auto; /* Рейтинг внизу карточки */
 }
 
 #product-detail {
@@ -118,6 +129,16 @@ body {
 
 .submit-btn {
     margin-top: 10px;
+    background-color: #1976d2;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+}
+
+.submit-btn:hover {
+    background-color: #1565c0;
 }
 
 .scroll-top-btn {
