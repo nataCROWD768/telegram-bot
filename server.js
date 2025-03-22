@@ -1,7 +1,7 @@
 const TelegramBot       = require('node-telegram-bot-api');
 const express           = require('express');
 const mongoose          = require('mongoose');
-const axios             = require('axios'); // Добавляем axios для HTTP-запросов
+const axios             = require('axios');
 const { token, welcomeVideo, companyInfo } = require('./config/botConfig');
 const { handleMainMenu } = require('./handlers/menuHandler');
 const {
@@ -28,7 +28,7 @@ require('dotenv').config();
 
 const app               = express();
 const isLocal           = process.env.NODE_ENV !== 'production';
-const bot               = new TelegramBot(token, { polling: isLocal }); // Polling только локально
+const bot               = new TelegramBot(token, { polling: isLocal });
 
 app.use(express.json());
 
@@ -52,19 +52,34 @@ const setupWebhook      = async () => {
         return;
     }
 
-    const WEBHOOK_URL   = `https://${process.env.RENDER_APP_NAME}.onrender.com/bot${token}`;
+    const appName       = process.env.RENDER_APP_NAME;
+    if (!appName) {
+        console.error('Ошибка: RENDER_APP_NAME не задан в переменных окружения');
+        process.exit(1);
+    }
+
+    const WEBHOOK_URL   = `https://${appName}.onrender.com/bot${token}`;
     const telegramApi   = `https://api.telegram.org/bot${token}`;
 
     try {
-        // Удаляем старый webhook
-        await axios.get(`${telegramApi}/deleteWebhook`);
-        console.log('Старый webhook удален');
+        console.log('Удаление старого webhook...');
+        const deleteResponse = await axios.get(`${telegramApi}/deleteWebhook`);
+        console.log('Ответ от deleteWebhook:', deleteResponse.data);
 
-        // Устанавливаем новый webhook
-        await axios.get(`${telegramApi}/setWebHook?url=${WEBHOOK_URL}`);
-        console.log(`Webhook установлен: ${WEBHOOK_URL}`);
+        console.log('Установка нового webhook...');
+        const setResponse = await axios.get(`${telegramApi}/setWebHook?url=${WEBHOOK_URL}`);
+        console.log('Ответ от setWebHook:', setResponse.data);
+
+        if (setResponse.data.ok) {
+            console.log(`Webhook успешно установлен: ${WEBHOOK_URL}`);
+        } else {
+            console.error('Не удалось установить webhook:', setResponse.data);
+        }
     } catch (error) {
         console.error('Ошибка при установке Webhook:', error.message);
+        if (error.response) {
+            console.error('Детали ошибки:', error.response.data);
+        }
     }
 };
 
@@ -73,31 +88,38 @@ bot.onText(/\/start/, async (msg) => {
     const chatId        = msg.chat.id;
     const username      = msg.from.username || msg.from.first_name;
 
-    const existingVisit = await Visit.findOne({ userId: chatId });
-    if (!existingVisit) {
-        await Visit.create({ username, userId: chatId });
-        await bot.sendVideoNote(chatId, welcomeVideo);
-        await bot.sendMessage(chatId, `
-            ✨ Добро пожаловать в наш бот! ✨
-            
-            ${companyInfo}
-            
-            Мы рады видеть вас! Выберите пункт меню ниже, чтобы начать:
-        `, { parse_mode: 'Markdown' });
-    } else {
-        await bot.sendMessage(chatId, `
-            👋 С возвращением, ${username}!
-            
-            Выберите пункт меню, чтобы продолжить:
-        `, { parse_mode: 'Markdown' });
-    }
+    console.log(`Получена команда /start от ${username} (chatId: ${chatId})`);
+    try {
+        const existingVisit = await Visit.findOne({ userId: chatId });
+        if (!existingVisit) {
+            await Visit.create({ username, userId: chatId });
+            await bot.sendVideoNote(chatId, welcomeVideo);
+            await bot.sendMessage(chatId, `
+                ✨ Добро пожаловать в наш бот! ✨
+                
+                ${companyInfo}
+                
+                Мы рады видеть вас! Выберите пункт меню ниже, чтобы начать:
+            `, { parse_mode: 'Markdown' });
+        } else {
+            await bot.sendMessage(chatId, `
+                👋 С возвращением, ${username}!
+                
+                Выберите пункт меню, чтобы продолжить:
+            `, { parse_mode: 'Markdown' });
+        }
 
-    handleMainMenu(bot, chatId);
+        handleMainMenu(bot, chatId);
+    } catch (error) {
+        console.error('Ошибка при обработке /start:', error.message);
+        await bot.sendMessage(chatId, '❌ Произошла ошибка, попробуйте позже');
+    }
 });
 
 // Обработка команд
 bot.on('message', (msg) => {
     const chatId        = msg.chat.id;
+    console.log(`Получено сообщение: "${msg.text}" от ${msg.from.username}`);
 
     switch (msg.text) {
         case 'Личный кабинет':
@@ -161,12 +183,14 @@ bot.on('message', (msg) => {
 
 // Обработка callback-запросов
 bot.on('callback_query', (callbackQuery) => {
+    console.log(`Получен callback: ${callbackQuery.data}`);
     handleCallback(bot, callbackQuery);
     handleAdminCallback(bot, callbackQuery);
 });
 
-// Webhook endpoint
+// Webhook endpoint с отладкой
 app.post(`/bot${token}`, (req, res) => {
+    console.log('Получен запрос на webhook:', JSON.stringify(req.body, null, 2));
     bot.processUpdate(req.body);
     res.sendStatus(200);
 });
