@@ -84,19 +84,14 @@ const setupWebhook = async () => {
 // Синхронизация товаров
 const syncProducts = async () => {
     try {
-        const existingProducts = await Product.find();
-        if (existingProducts.length === 0) {
-            console.log('Товаров в базе нет, синхронизируем...');
-            await Product.deleteMany({});
-            console.log('Коллекция products очищена');
-            for (const productData of initialProducts) {
-                const newProduct = await Product.create(productData);
-                console.log('Добавлен новый товар:', newProduct);
-            }
-            console.log('Товары синхронизированы');
-        } else {
-            console.log('Товары уже присутствуют в базе:', existingProducts.length);
+        console.log('Принудительная синхронизация товаров...');
+        await Product.deleteMany({}); // Очищаем коллекцию
+        console.log('Коллекция products очищена');
+        for (const productData of initialProducts) {
+            const newProduct = await Product.create(productData);
+            console.log('Добавлен новый товар:', newProduct);
         }
+        console.log('Товары синхронизированы');
     } catch (error) {
         console.error('Ошибка синхронизации товаров:', error.message);
     }
