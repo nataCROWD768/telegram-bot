@@ -32,7 +32,7 @@ const isLocal           = process.env.NODE_ENV !== 'production';
 const bot               = new TelegramBot(token, { polling: isLocal });
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public'))); // Раздача статических файлов
+app.use(express.static(path.join(__dirname, 'public')));
 
 // Проверка и подключение MongoDB
 const mongoUri          = process.env.MONGODB_URI;
@@ -106,17 +106,11 @@ const syncProducts = async () => {
     }
 };
 
-// API для получения товаров
+// API для получения всех товаров
 app.get('/api/products', async (req, res) => {
-    const page  = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 20;
-
     try {
-        const total    = await Product.countDocuments();
-        const products = await Product.find()
-            .skip((page - 1) * limit)
-            .limit(limit);
-        res.json({ products, total });
+        const products = await Product.find();
+        res.json({ products, total: products.length });
     } catch (error) {
         console.error('Ошибка API /api/products:', error.message);
         res.status(500).json({ error: 'Ошибка загрузки товаров' });
@@ -127,6 +121,7 @@ app.get('/api/products', async (req, res) => {
 bot.onText(/\/start/, async (msg) => {
     const chatId        = msg.chat.id;
     const username      = msg.from.username || msg.from.first_name;
+    const webAppUrl     = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME}.onrender.com`;
 
     console.log(`Получена команда /start от ${username} (chatId: ${chatId})`);
     try {
@@ -149,6 +144,15 @@ bot.onText(/\/start/, async (msg) => {
             `, { parse_mode: 'Markdown' });
         }
 
+        await bot.setChatMenuButton({
+            chat_id: chatId,
+            menu_button: {
+                type: 'web_app',
+                text: 'Витрина',
+                web_app: { url: `${webAppUrl}/index.html` }
+            }
+        });
+
         handleMainMenu(bot, chatId);
     } catch (error) {
         console.error('Ошибка при обработке /start:', error.message);
@@ -168,7 +172,7 @@ bot.on('message', (msg) => {
 
         case 'Витрина':
             const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME}.onrender.com`;
-            bot.sendMessage(chatId, '🛒 Откройте витрину товаров:', {
+            bot.sendMessage(chatId, '🛒 Витрина открывается...', {
                 reply_markup: {
                     inline_keyboard: [[
                         { text: 'Открыть витрину', web_app: { url: `${webAppUrl}/index.html` } }
@@ -292,7 +296,7 @@ bot.on('web_app_data', async (msg) => {
 // Запуск сервера
 const startServer = async () => {
     await setupWebhook();
-    await syncPets();
+    await syncProducts();
 
     app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
     const PORT = process.env.PORT || 3000;

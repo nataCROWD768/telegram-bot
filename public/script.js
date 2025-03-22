@@ -1,11 +1,7 @@
-const ITEMS_PER_PAGE = 20;
-let currentPage = 1;
-let totalPages = 1;
-
 Telegram.WebApp.ready();
 
-function loadProducts(page) {
-    fetch(`/api/products?page=${page}&limit=${ITEMS_PER_PAGE}`)
+function loadProducts() {
+    fetch('/api/products')
         .then(response => response.json())
         .then(data => {
             const productList = document.getElementById('product-list');
@@ -22,15 +18,44 @@ function loadProducts(page) {
                         <span class="client-price">${product.clientPrice} ₽</span>
                     </div>
                     <div class="rating">★ ${product.averageRating.toFixed(1)}</div>
+                    <button class="order-btn" data-id="${product._id}">Заказать</button>
+                    <button class="review-btn" data-id="${product._id}">Отзыв</button>
                 `;
-                card.onclick = () => Telegram.WebApp.showAlert(`Вы выбрали: ${product.name}\nОписание: ${product.description}`);
                 productList.appendChild(card);
             });
 
-            totalPages = Math.ceil(data.total / ITEMS_PER_PAGE);
-            document.getElementById('page-info').textContent = `Страница ${page} из ${totalPages}`;
-            document.getElementById('prev-btn').disabled = page === 1;
-            document.getElementById('next-btn').disabled = page === totalPages;
+            // Обработчики кнопок
+            document.querySelectorAll('.order-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const productId = btn.getAttribute('data-id');
+                    const quantity = prompt('Введите количество:', '1');
+                    if (quantity && !isNaN(quantity)) {
+                        Telegram.WebApp.sendData(JSON.stringify({
+                            type: 'order',
+                            productId,
+                            quantity: parseInt(quantity)
+                        }));
+                        Telegram.WebApp.close();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.review-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const productId = btn.getAttribute('data-id');
+                    const rating = prompt('Введите рейтинг (1-5):', '5');
+                    const comment = prompt('Введите комментарий:');
+                    if (rating && comment && !isNaN(rating)) {
+                        Telegram.WebApp.sendData(JSON.stringify({
+                            type: 'review',
+                            productId,
+                            rating: parseInt(rating),
+                            comment
+                        }));
+                        Telegram.WebApp.close();
+                    }
+                });
+            });
         })
         .catch(error => {
             console.error('Ошибка загрузки товаров:', error);
@@ -38,19 +63,15 @@ function loadProducts(page) {
         });
 }
 
-document.getElementById('prev-btn').addEventListener('click', () => {
-    if (currentPage > 1) {
-        currentPage--;
-        loadProducts(currentPage);
-    }
+// Показ кнопки "Наверх" при прокрутке
+window.addEventListener('scroll', () => {
+    const btn = document.getElementById('scroll-top-btn');
+    btn.style.display = window.scrollY > 300 ? 'block' : 'none';
 });
 
-document.getElementById('next-btn').addEventListener('click', () => {
-    if (currentPage < totalPages) {
-        currentPage++;
-        loadProducts(currentPage);
-    }
+document.getElementById('scroll-top-btn').addEventListener('click', () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 
-// Загружаем первую страницу при открытии
-loadProducts(currentPage);
+// Загружаем товары при открытии
+loadProducts();
