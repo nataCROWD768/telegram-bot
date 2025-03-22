@@ -1,7 +1,7 @@
 Telegram.WebApp.ready();
 
 let allProducts = [];
-const API_URL = window.location.origin + '/api/products'; // Абсолютный URL
+const API_URL = 'https://your-app-name.onrender.com/api/products'; // Явно указываем URL сервера
 
 function loadProducts(products) {
     console.log('Загрузка продуктов:', products);
