@@ -142,6 +142,11 @@ function showProductDetail(product) {
     const hasReviews = product.reviews && product.reviews.some(review => review.isApproved) && product.averageRating > 0;
     const ratingHtml = hasReviews ? `<div class="product-detail-rating">★ ${product.averageRating.toFixed(1)}</div>` : '';
 
+    // Сортировка подтверждённых отзывов по убыванию даты
+    const sortedReviews = product.reviews && product.reviews.length > 0
+        ? product.reviews.filter(r => r.isApproved).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+        : [];
+
     productDetailContent.innerHTML = `
         <div class="product-detail-image">
             <img src="${product.image || '/images/placeholder.jpg'}" alt="${product.name}">
@@ -166,8 +171,8 @@ function showProductDetail(product) {
                 <p>${product.description || 'Описание отсутствует'}</p>
             </div>
             <div class="product-detail-reviews review-container">
-                <h4>Отзывы (${product.reviews ? product.reviews.filter(r => r.isApproved).length : 0})</h4>
-                ${product.reviews && product.reviews.length > 0 ? product.reviews.filter(r => r.isApproved).map(review => `
+                <h4>Отзывы (${sortedReviews.length})</h4>
+                ${sortedReviews.length > 0 ? sortedReviews.map(review => `
                     <div class="review">
                         <p class="review-date">Дата: ${formatDate(review.createdAt)}</p>
                         <p><strong>${review.username.startsWith('@') ? review.username : '@' + review.username}</strong> (★ ${review.rating})</p>
