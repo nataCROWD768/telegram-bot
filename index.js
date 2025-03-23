@@ -31,6 +31,21 @@ const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
 let lastMessageId = {};
 
+// Функция форматирования даты на русском языке
+const formatDate = (date) => {
+    const months = [
+        'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+    const d = new Date(date);
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${day} ${month} ${year}, ${hours}:${minutes}`;
+};
+
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public'), {
     setHeaders: (res, filePath) => console.log(`Раздача файла: ${filePath}`)
@@ -249,7 +264,8 @@ bot.on('message', async (msg) => {
                         return `Товар: ${productName}\n` +
                             `Пользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\n` +
                             `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
-                            `Комментарий: ${r.comment}`;
+                            `Комментарий: ${r.comment}\n` +
+                            `Дата: ${formatDate(r.createdAt)}`;
                     }).join('\n---\n');
 
                     const inlineKeyboard = [];
@@ -328,7 +344,8 @@ bot.on('callback_query', async (callbackQuery) => {
             return `Товар: ${productName}\n` +
                 `Пользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\n` +
                 `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
-                `Комментарий: ${r.comment}`;
+                `Комментарий: ${r.comment}\n` +
+                `Дата: ${formatDate(r.createdAt)}`;
         }).join('\n---\n');
 
         const inlineKeyboard = [];

@@ -4,6 +4,21 @@ const ExcelJS = require('exceljs');
 const fs = require('fs').promises;
 const path = require('path');
 
+// Функция форматирования даты на русском языке
+const formatDate = (date) => {
+    const months = [
+        'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+    const d = new Date(date);
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${day} ${month} ${year}, ${hours}:${minutes}`;
+};
+
 const handleAdmin = async (bot, msg) => {
     const chatId = msg.chat.id;
     await bot.sendMessage(chatId, '🛠 Админ-панель:', {
@@ -222,6 +237,7 @@ const moderateReviews = async (bot, chatId) => {
                 Пользователь: ${review.username.startsWith('@') ? review.username : '@' + review.username}
                 Рейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
                 Комментарий: ${review.comment}
+                Дата: ${formatDate(review.createdAt)}
             `;
             await bot.sendMessage(chatId, reviewText, {
                 reply_markup: {
