@@ -226,39 +226,9 @@ function showProductDetail(product) {
     });
 }
 
-// Отправка отзыва администратору и на сервер
+// Отправка отзыва на сервер
 function sendReviewToAdmin(review) {
-    const botToken = '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8';
-    const adminChatId = '942851377';
-
-    const message = `Новый отзыв на модерации:\nПродукт ID: ${review.productId}\nПользователь: ${review.user}\nРейтинг: ${review.rating}\nКомментарий: ${review.comment}`;
-
-    // Отправка уведомления в Telegram с кнопками
-    fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            chat_id: adminChatId,
-            text: message,
-            reply_markup: {
-                inline_keyboard: [
-                    [
-                        { text: 'Одобрить', callback_data: `approve_review_${review.productId}_${Date.now()}` },
-                        { text: 'Отклонить', callback_data: `reject_review_${review.productId}_${Date.now()}` }
-                    ]
-                ]
-            }
-        })
-    })
-        .then(response => response.json())
-        .then(data => {
-            if (data.ok) console.log('Уведомление отправлено:', review);
-            else console.error('Ошибка отправки уведомления:', data);
-        })
-        .catch(error => console.error('Ошибка:', error));
-
-    // Отправка отзыва на сервер для сохранения в MongoDB
-    fetch('http://localhost:3000/api/reviews', {
+    fetch('http://localhost:3000/api/reviews', { // Замените на ваш URL в продакшене
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -266,15 +236,23 @@ function sendReviewToAdmin(review) {
             username: review.user,
             rating: review.rating,
             comment: review.comment,
-            isApproved: false // Изначально отзыв неподтверждён
+            isApproved: false
         })
     })
         .then(response => response.json())
         .then(data => {
-            if (data.success) console.log('Отзыв сохранён на сервере:', data);
-            else console.error('Ошибка сохранения отзыва:', data);
+            if (data.success) {
+                console.log('Отзыв сохранён на сервере:', data);
+                alert('Отзыв отправлен на модерацию.');
+            } else {
+                console.error('Ошибка сохранения отзыва:', data);
+                alert('Ошибка при отправке отзыва');
+            }
         })
-        .catch(error => console.error('Ошибка отправки отзыва на сервер:', error));
+        .catch(error => {
+            console.error('Ошибка отправки отзыва на сервер:', error);
+            alert('Ошибка сервера');
+        });
 }
 
 // Отображение списка отзывов

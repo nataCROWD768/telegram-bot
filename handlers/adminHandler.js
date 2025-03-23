@@ -245,18 +245,20 @@ const handleAdminCallback = async (bot, callbackQuery) => {
     if (data.startsWith('approve_review_')) {
         const reviewId = data.split('_')[2];
         try {
-            const review = await Review.findByIdAndUpdate(reviewId, { isApproved: true }, { new: true });
-            if (review) {
-                const reviews = await Review.find({ productId: review.productId, isApproved: true });
-                const averageRating = reviews.length > 0
-                    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-                    : 0;
-                await Product.updateOne({ _id: review.productId }, { averageRating });
-                await bot.editMessageText(`Отзыв одобрен!\nТовар: ${review.productId.name}`, {
-                    chat_id: chatId,
-                    message_id: callbackQuery.message.message_id
-                });
+            const review = await Review.findByIdAndUpdate(reviewId, { isApproved: true }, { new: true }).populate('productId', 'name');
+            if (!review) {
+                await bot.sendMessage(chatId, '❌ Отзыв не найден');
+                return;
             }
+            const reviews = await Review.find({ productId: review.productId, isApproved: true });
+            const averageRating = reviews.length > 0
+                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                : 0;
+            await Product.updateOne({ _id: review.productId }, { averageRating });
+            await bot.editMessageText(`Отзыв одобрен!\nТовар: ${review.productId.name}`, {
+                chat_id: chatId,
+                message_id: callbackQuery.message.message_id
+            });
         } catch (error) {
             console.error('Ошибка одобрения отзыва:', error);
             await bot.sendMessage(chatId, '❌ Ошибка при одобрении отзыва');
@@ -264,19 +266,21 @@ const handleAdminCallback = async (bot, callbackQuery) => {
     } else if (data.startsWith('reject_review_')) {
         const reviewId = data.split('_')[2];
         try {
-            const review = await Review.findById(reviewId);
-            if (review) {
-                await Review.deleteOne({ _id: reviewId });
-                const reviews = await Review.find({ productId: review.productId, isApproved: true });
-                const averageRating = reviews.length > 0
-                    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-                    : 0;
-                await Product.updateOne({ _id: review.productId }, { averageRating });
-                await bot.editMessageText('Отзыв отклонён и удалён!', {
-                    chat_id: chatId,
-                    message_id: callbackQuery.message.message_id
-                });
+            const review = await Review.findById(reviewId).populate('productId', 'name');
+            if (!review) {
+                await bot.sendMessage(chatId, '❌ Отзыв не найден');
+                return;
             }
+            await Review.deleteOne({ _id: reviewId });
+            const reviews = await Review.find({ productId: review.productId, isApproved: true });
+            const averageRating = reviews.length > 0
+                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                : 0;
+            await Product.updateOne({ _id: review.productId }, { averageRating });
+            await bot.editMessageText(`Отзыв отклонён и удалён!\nТовар: ${review.productId.name}`, {
+                chat_id: chatId,
+                message_id: callbackQuery.message.message_id
+            });
         } catch (error) {
             console.error('Ошибка отклонения отзыва:', error);
             await bot.sendMessage(chatId, '❌ Ошибка при отклонении отзыва');
