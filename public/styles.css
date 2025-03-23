@@ -85,7 +85,7 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    height: 155px; /* Новая высота: 80px (изображение) + 75px (контент) */
+    height: 159px; /* Новая высота: 80px (изображение) + 79px (контент) */
     position: relative;
 }
 
@@ -111,7 +111,7 @@ body {
 
 .card-content {
     width: 100%;
-    height: 75px; /* Новая высота: 34px (название) + 4px (отступ) + 19px (цены) + 4px (отступ) + 14px (кнопка) */
+    height: 79px; /* Новая высота: 36px (название) + 4px (отступ) + 19px (цены) + 4px (отступ) + 16px (кнопка) */
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -125,7 +125,7 @@ body {
     margin: 0;
     color: #2c3e50;
     line-height: 1.2;
-    max-height: 30px; /* 5 строк: 5px * 1.2 * 5 = 30px */
+    max-height: 32px; /* Увеличиваем: 5px * 1.2 * 5 + 2px запас = 32px */
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -135,17 +135,17 @@ body {
     top: 4px;
     left: 4px;
     right: 4px;
-    height: 30px; /* Фиксированная высота контейнера */
+    height: 32px; /* Увеличиваем фиксированную высоту */
 }
 
 .prices {
     display: flex;
     justify-content: space-between;
     position: absolute;
-    top: 38px; /* 4px (отступ сверху) + 30px (высота названия) + 4px (отступ) */
+    top: 40px; /* 4px (отступ сверху) + 32px (высота названия) + 4px (отступ) */
     left: 4px;
     right: 4px;
-    height: 19px; /* Фиксированная высота: 9px (эмблема) + 10px (клубная цена) */
+    height: 19px;
 }
 
 .price-container {
@@ -204,10 +204,10 @@ body {
 
 .card-button {
     position: absolute;
-    top: 61px; /* 38px (top цен) + 19px (высота цен) + 4px (отступ) */
+    top: 63px; /* 40px (top цен) + 19px (высота цен) + 4px (отступ) */
     left: 4px;
     right: 4px;
-    height: 10px; /* Фиксированная высота: 10px (кнопка) */
+    height: 12px; /* Увеличиваем высоту контейнера */
     text-align: center;
 }
 
