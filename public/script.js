@@ -9,11 +9,11 @@ function loadProducts(products) {
     console.log('Загрузка продуктов:', products);
     const productList = document.getElementById('product-list');
     if (!productList) {
-        console.error('Элемент #product-list не найден в HTML');
+        console.error('Элемент #product-list не найден');
         Telegram.WebApp.showAlert('Ошибка: контейнер для товаров не найден');
         return;
     }
-    productList.innerHTML = '';
+    productList.innerHTML = ''; // Очищаем список перед добавлением
 
     if (!products || products.length === 0) {
         console.log('Товары отсутствуют');
@@ -21,8 +21,8 @@ function loadProducts(products) {
         return;
     }
 
-    products.forEach(product => {
-        console.log('Создание карточки для:', product.name);
+    products.forEach((product, index) => {
+        console.log(`Создание карточки ${index + 1} для:`, product.name);
         const card = document.createElement('div');
         card.className = 'product-card card';
         card.innerHTML = `
@@ -41,12 +41,19 @@ function loadProducts(products) {
         card.addEventListener('click', () => showProductDetail(product));
         productList.appendChild(card);
     });
+    console.log('Все карточки добавлены в DOM');
 }
 
 function showProductDetail(product) {
+    console.log('Открытие деталей для:', product.name);
     const showcase = document.getElementById('showcase');
     const detail = document.getElementById('product-detail');
     const detailContent = document.getElementById('product-detail-content');
+
+    if (!showcase || !detail || !detailContent) {
+        console.error('Не найдены элементы для отображения деталей');
+        return;
+    }
 
     showcase.style.display = 'none';
     detail.style.display = 'block';
@@ -130,6 +137,7 @@ function showProductDetail(product) {
     });
 }
 
+// Выполняем запрос к API
 console.log('Отправка запроса к:', API_URL);
 fetch(API_URL, {
     method: 'GET',
@@ -152,6 +160,7 @@ fetch(API_URL, {
 
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
+            console.log('Поиск инициализирован');
             searchInput.addEventListener('input', () => {
                 const query = searchInput.value.toLowerCase();
                 const filteredProducts = allProducts.filter(product =>
@@ -180,16 +189,7 @@ fetch(API_URL, {
         console.error('Ошибка загрузки товаров:', error.message);
         const productList = document.getElementById('product-list');
         if (productList) {
-            productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки товаров: ' + error.message + '</p>';
+            productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки: ' + error.message + '</p>';
         }
         Telegram.WebApp.showAlert('Ошибка загрузки товаров: ' + error.message);
-
-        // Тестовые данные для отладки
-        const testProducts = [
-            { _id: "1", name: "Тест 1", description: "Описание", image: "https://via.placeholder.com/80", clubPrice: 1000, clientPrice: 1200, averageRating: 4.5 },
-            { _id: "2", name: "Тест 2", description: "Описание", image: "https://via.placeholder.com/80", clubPrice: 1500, clientPrice: 1800, averageRating: 4.0 }
-        ];
-        console.log('Использование тестовых данных:', testProducts);
-        allProducts = testProducts;
-        loadProducts(allProducts);
     });
