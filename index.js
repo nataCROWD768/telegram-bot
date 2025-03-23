@@ -3,7 +3,6 @@ const express = require('express');
 const mongoose = require('mongoose');
 const axios = require('axios');
 const path = require('path');
-const ExcelJS = require('exceljs');
 const { token, welcomeVideo, companyInfo } = require('./config/botConfig');
 const { handleMainMenu } = require('./handlers/menuHandler');
 const {
@@ -28,7 +27,7 @@ const app = express();
 const isLocal = process.env.NODE_ENV !== 'production';
 const BOT_TOKEN = process.env.TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8';
 const bot = new TelegramBot(BOT_TOKEN, { polling: isLocal });
-const ADMIN_ID = process.env.ADMIN_ID || 'YOUR_ADMIN_ID_HERE';
+const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
 let lastMessageId = {};
 
@@ -37,6 +36,7 @@ app.use(express.static(path.join(__dirname, 'public'), {
     setHeaders: (res, filePath) => console.log(`Раздача файла: ${filePath}`)
 }));
 
+// Подключение к MongoDB
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB подключен'))
     .catch(err => {
@@ -44,6 +44,7 @@ mongoose.connect(process.env.MONGODB_URI)
         process.exit(1);
     });
 
+// Настройка вебхука
 const setupWebhook = async () => {
     if (isLocal) {
         console.log('Локальный режим: polling активен');
@@ -52,10 +53,6 @@ const setupWebhook = async () => {
     const appName = process.env.RENDER_APP_NAME;
     if (!appName) {
         console.error('Ошибка: RENDER_APP_NAME не задан в переменных окружения');
-        process.exit(1);
-    }
-    if (!BOT_TOKEN) {
-        console.error('Ошибка: TOKEN не задан или пустой');
         process.exit(1);
     }
     const WEBHOOK_URL = `https://${appName}.onrender.com/bot${BOT_TOKEN}`;
@@ -79,6 +76,7 @@ const setupWebhook = async () => {
     }
 };
 
+// Синхронизация продуктов из data/products.js
 const syncProducts = async () => {
     try {
         console.log('Принудительная синхронизация товаров...');
@@ -94,6 +92,7 @@ const syncProducts = async () => {
     }
 };
 
+// Эндпоинт для получения продуктов
 app.get('/api/products', async (req, res) => {
     console.log('Получен запрос на /api/products');
     try {
@@ -115,6 +114,7 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
+// Обработчик команды /start
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const username = msg.from.username || msg.from.first_name;
@@ -277,9 +277,10 @@ bot.on('web_app_data', async (msg) => {
     }
 });
 
+// Запуск сервера
 const startServer = async () => {
     await setupWebhook();
-    await syncProducts();
+    await syncProducts(); // Синхронизация продуктов при запуске
     app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
