@@ -162,9 +162,11 @@ bot.on('message', async (msg) => {
             await showProfile(bot, chatId);
             break;
         case 'Витрина':
-            newMessage = await bot.sendMessage(chatId, '🛒 Открыть витрину:', {
+            newMessage = await bot.sendMessage(chatId, 'В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система) - в конечную стоимость продукта не входит:\n' +
+                '- прибыль компании \n' +
+                '- маркетинговое вознаграждение', {
                 reply_markup: {
-                    inline_keyboard: [[{ text: 'Перейти', web_app: { url: `${webAppUrl}/index.html` } }]]
+                    inline_keyboard: [[{ text: '🛒 Открыть витрину:', web_app: { url: `${webAppUrl}/index.html` } }]]
                 }
             });
             lastMessageId[chatId] = newMessage.message_id;
