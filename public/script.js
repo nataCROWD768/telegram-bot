@@ -10,25 +10,69 @@ let products = [];
 // Хранилище для отзывов на модерации
 let pendingReviews = [];
 
+// WebSocket для обновления данных в реальном времени
+let ws;
+
+// Функция для подключения к WebSocket
+function connectWebSocket() {
+    ws = new WebSocket('ws://your-backend-url:8080');
+
+    ws.onopen = () => {
+        console.log('Подключено к WebSocket');
+    };
+
+    ws.onmessage = (event) => {
+        const message = JSON.parse(event.data);
+        if (message.type === 'update_products') {
+            products = message.data;
+            renderProducts(products); // Обновляем список продуктов
+            // Если открыта карточка продукта, обновляем её
+            const productDetail = document.getElementById('product-detail');
+            if (productDetail.style.display === 'block') {
+                const productId = parseInt(document.querySelector('.submit-btn').getAttribute('data-id'));
+                const product = products.find(p => p.id === productId);
+                showProductDetail(product);
+            }
+            // Если открыт список отзывов, обновляем его
+            const reviewsSection = document.getElementById('reviews-section');
+            if (reviewsSection.style.display === 'block') {
+                showReviews();
+            }
+        }
+    };
+
+    ws.onclose = () => {
+        console.log('WebSocket отключён, пытаемся переподключиться...');
+        setTimeout(connectWebSocket, 5000); // Переподключаемся через 5 секунд
+    };
+
+    ws.onerror = (error) => {
+        console.error('Ошибка WebSocket:', error);
+    };
+}
+
 // Функция для загрузки продуктов с бэкенда
 async function loadProducts() {
     try {
         const response = await fetch('http://your-backend-url:3000/products');
+        if (!response.ok) throw new Error('Не удалось загрузить продукты');
         products = await response.json();
         renderProducts(products);
     } catch (error) {
         console.error('Ошибка при загрузке продуктов:', error);
+        alert('Не удалось загрузить продукты. Попробуйте позже.');
     }
 }
 
 // Функция для синхронизации отзывов с бэкендом
 async function syncReviews() {
     try {
-        await fetch('http://your-backend-url:3000/sync-reviews', {
+        const response = await fetch('http://your-backend-url:3000/sync-reviews', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ pendingReviews })
         });
+        if (!response.ok) throw new Error('Не удалось синхронизировать отзывы');
     } catch (error) {
         console.error('Ошибка при синхронизации отзывов:', error);
     }
@@ -295,6 +339,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     loadProducts(); // Загружаем продукты с бэкенда
+    connectWebSocket(); // Подключаемся к WebSocket
 
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', (e) => {
