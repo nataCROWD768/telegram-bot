@@ -122,8 +122,8 @@ function renderProducts(productArray) {
     });
 }
 
-// Отображение карточки продукта
-function showProductDetail(product) {
+// Отображение карточки продукта с пагинацией отзывов
+function showProductDetail(product, page = 1) {
     const showcase = document.getElementById('showcase');
     const productDetail = document.getElementById('product-detail');
     const reviewsSection = document.getElementById('reviews-section');
@@ -146,6 +146,13 @@ function showProductDetail(product) {
     const sortedReviews = product.reviews && product.reviews.length > 0
         ? product.reviews.filter(r => r.isApproved).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         : [];
+
+    const reviewsPerPage = 10;
+    const totalReviews = sortedReviews.length;
+    const totalPages = Math.ceil(totalReviews / reviewsPerPage);
+    const start = (page - 1) * reviewsPerPage;
+    const end = Math.min(start + reviewsPerPage, totalReviews);
+    const paginatedReviews = sortedReviews.slice(start, end);
 
     productDetailContent.innerHTML = `
         <div class="product-detail-image">
@@ -171,14 +178,19 @@ function showProductDetail(product) {
                 <p>${product.description || 'Описание отсутствует'}</p>
             </div>
             <div class="product-detail-reviews review-container">
-                <h4>Отзывы (${sortedReviews.length})</h4>
-                ${sortedReviews.length > 0 ? sortedReviews.map(review => `
+                <h4>Отзывы (${totalReviews})</h4>
+                ${paginatedReviews.length > 0 ? paginatedReviews.map(review => `
                     <div class="review">
                         <p class="review-date">Дата: ${formatDate(review.createdAt)}</p>
                         <p><strong>${review.username.startsWith('@') ? review.username : '@' + review.username}</strong> (★ ${review.rating})</p>
                         <p>${review.comment}</p>
                     </div>
                 `).join('') : '<p>Пока нет отзывов.</p>'}
+                ${totalReviews > reviewsPerPage ? `
+                    <div class="pagination" id="reviews-pagination">
+                        ${renderPagination(totalPages, page, product)}
+                    </div>
+                ` : ''}
             </div>
             <div class="product-detail-review-form review-container">
                 <h4>Оставить отзыв</h4>
@@ -238,6 +250,77 @@ function showProductDetail(product) {
             alert('Пожалуйста, выберите рейтинг и напишите отзыв.');
         }
     });
+
+    // Добавляем обработчики событий для кнопок пагинации
+    if (totalReviews > reviewsPerPage) {
+        document.querySelectorAll('#reviews-pagination .pagination-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const newPage = parseInt(btn.getAttribute('data-page'));
+                showProductDetail(product, newPage);
+            });
+        });
+    }
+}
+
+// Функция рендеринга пагинации
+function renderPagination(totalPages, currentPage, product) {
+    let paginationHtml = '<div class="pagination-container">';
+
+    // Кнопка "Назад"
+    paginationHtml += `
+        <button class="pagination-btn${currentPage === 1 ? ' disabled' : ''}" 
+                data-page="${currentPage - 1}" 
+                ${currentPage === 1 ? 'disabled' : ''}>
+            ←
+        </button>
+    `;
+
+    // Ограничение на количество видимых страниц (например, 5)
+    const maxVisiblePages = 5;
+    let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
+    let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+    if (endPage - startPage + 1 < maxVisiblePages) {
+        startPage = Math.max(1, endPage - maxVisiblePages + 1);
+    }
+
+    // Первая страница и многоточие
+    if (startPage > 1) {
+        paginationHtml += `<button class="pagination-btn" data-page="1">1</button>`;
+        if (startPage > 2) {
+            paginationHtml += `<span class="pagination-ellipsis">...</span>`;
+        }
+    }
+
+    // Номера страниц
+    for (let i = startPage; i <= endPage; i++) {
+        paginationHtml += `
+            <button class="pagination-btn${i === currentPage ? ' active' : ''}" 
+                    data-page="${i}">
+                ${i}
+            </button>
+        `;
+    }
+
+    // Последняя страница и многоточие
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            paginationHtml += `<span class="pagination-ellipsis">...</span>`;
+        }
+        paginationHtml += `<button class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
+    }
+
+    // Кнопка "Вперёд"
+    paginationHtml += `
+        <button class="pagination-btn${currentPage === totalPages ? ' disabled' : ''}" 
+                data-page="${currentPage + 1}" 
+                ${currentPage === totalPages ? 'disabled' : ''}>
+            →
+        </button>
+    `;
+
+    paginationHtml += '</div>';
+    return paginationHtml;
 }
 
 // Отправка отзыва на сервер
