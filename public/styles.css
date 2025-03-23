@@ -164,7 +164,7 @@ body {
 }
 
 .client-price + .price-icon {
-    color: #f59e0b; /* Меняем цвет иконки на жёлтый, чтобы соответствовать цене */
+    color: #800020; /* Меняем цвет иконки на бордовый, чтобы соответствовать цене */
 }
 
 .club-price {
@@ -179,11 +179,11 @@ body {
 }
 
 .client-price {
-    color: #f59e0b; /* Меняем цвет на жёлтый */
-    text-decoration: none; /* Убираем зачёркивание */
+    color: #800020; /* Меняем цвет на бордовый */
+    text-decoration: none;
     font-size: 5px;
     opacity: 0.8;
-    background-color: #fef9e7; /* Меняем фон на светло-жёлтый */
+    background-color: #f9e6e6; /* Меняем фон на светло-бордовый */
     padding: 1px 3px;
     border-radius: 3px;
     font-family: 'Merriweather', serif;
