@@ -50,11 +50,7 @@ const setupWebhook = async () => {
         console.log('Локальный режим: polling активен');
         return;
     }
-    const appName = process.env.RENDER_APP_NAME;
-    if (!appName) {
-        console.error('Ошибка: RENDER_APP_NAME не задан в переменных окружения');
-        process.exit(1);
-    }
+    const appName = process.env.RENDER_APP_NAME || 'telegram-bot-gmut';
     const WEBHOOK_URL = `https://${appName}.onrender.com/bot${BOT_TOKEN}`;
     const telegramApi = `https://api.telegram.org/bot${BOT_TOKEN}`;
     console.log(`Попытка установить webhook: ${WEBHOOK_URL}`);
@@ -171,7 +167,7 @@ bot.onText(/\/start/, async (msg) => {
     }
 });
 
-const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME}.onrender.com`;
+const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME || 'telegram-bot-gmut'}.onrender.com`;
 
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
@@ -183,7 +179,7 @@ bot.on('message', async (msg) => {
         } catch (error) {
             console.error('Ошибка удаления сообщения:', error);
             if (error.code === 'ETELEGRAM' && error.response?.body?.error_code === 400) {
-                delete lastMessageId[chatId]; // Очистка, если сообщение не найдено
+                delete lastMessageId[chatId]; // Очистка при ошибке 400
             }
         }
     }

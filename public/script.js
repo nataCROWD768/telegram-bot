@@ -9,9 +9,11 @@ let products = [];
 let pendingReviews = [];
 let ws;
 
+const BASE_URL = 'https://telegram-bot-gmut.onrender.com'; // Единый URL для продакшена
+
 // Подключение к WebSocket (если используется)
 function connectWebSocket() {
-    ws = new WebSocket('ws://localhost:8080');
+    ws = new WebSocket('wss://telegram-bot-gmut.onrender.com'); // Обновлено на wss для продакшена
     ws.onopen = () => console.log('Подключено к WebSocket');
     ws.onmessage = (event) => {
         const message = JSON.parse(event.data);
@@ -40,8 +42,8 @@ function connectWebSocket() {
 // Загрузка продуктов с бэкенда
 async function loadProducts() {
     try {
-        console.log('Попытка загрузить продукты с https://telegram-bot-gmut.onrender.com/api/products');
-        const response = await fetch('https://telegram-bot-gmut.onrender.com/api/products');
+        console.log(`Попытка загрузить продукты с ${BASE_URL}/api/products`);
+        const response = await fetch(`${BASE_URL}/api/products`);
         console.log('Ответ от сервера:', response);
         if (!response.ok) {
             const errorText = await response.text();
@@ -54,20 +56,6 @@ async function loadProducts() {
     } catch (error) {
         console.error('Ошибка при загрузке продуктов:', error.message);
         alert('Не удалось загрузить продукты. Попробуйте позже.');
-    }
-}
-
-// Синхронизация отзывов с бэкендом
-async function syncReviews() {
-    try {
-        const response = await fetch('http://localhost:3000/sync-reviews', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ pendingReviews })
-        });
-        if (!response.ok) throw new Error('Не удалось синхронизировать отзывы');
-    } catch (error) {
-        console.error('Ошибка при синхронизации отзывов:', error);
     }
 }
 
@@ -208,18 +196,14 @@ function showProductDetail(product) {
         if (selectedRating > 0 && comment.trim() !== '') {
             const review = {
                 productId: product._id,
-                user: 'Пользователь',
+                user: 'Пользователь', // Можно заменить на реальное имя пользователя
                 rating: selectedRating,
-                comment: comment,
-                status: 'pending'
+                comment: comment
             };
-            pendingReviews.push(review);
-            alert('Отзыв отправлен на модерацию.');
+            sendReviewToAdmin(review);
             document.getElementById(`review-comment-${product._id}`).value = '';
             stars.forEach(s => s.classList.remove('filled'));
             selectedRating = 0;
-            sendReviewToAdmin(review);
-            syncReviews();
         } else {
             alert('Пожалуйста, выберите рейтинг и напишите отзыв.');
         }
@@ -228,7 +212,7 @@ function showProductDetail(product) {
 
 // Отправка отзыва на сервер
 function sendReviewToAdmin(review) {
-    fetch('http://localhost:3000/api/reviews', { // Замените на ваш URL в продакшене
+    fetch(`${BASE_URL}/api/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -244,6 +228,8 @@ function sendReviewToAdmin(review) {
             if (data.success) {
                 console.log('Отзыв сохранён на сервере:', data);
                 alert('Отзыв отправлен на модерацию.');
+                // Обновляем локальный список продуктов
+                loadProducts(); // Перезагружаем продукты для актуальности
             } else {
                 console.error('Ошибка сохранения отзыва:', data);
                 alert('Ошибка при отправке отзыва');
