@@ -3,6 +3,8 @@ Telegram.WebApp.ready();
 let allProducts = [];
 const API_URL = 'https://telegram-bot-gmut.onrender.com/api/products';
 
+console.log('Инициализация Web App...');
+
 function loadProducts(products) {
     console.log('Загрузка продуктов:', products);
     const productList = document.getElementById('product-list');
@@ -175,10 +177,19 @@ fetch(API_URL, {
         }
     })
     .catch(error => {
-        console.error('Ошибка загрузки товаров:', error);
+        console.error('Ошибка загрузки товаров:', error.message);
         const productList = document.getElementById('product-list');
         if (productList) {
             productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки товаров: ' + error.message + '</p>';
         }
         Telegram.WebApp.showAlert('Ошибка загрузки товаров: ' + error.message);
+
+        // Тестовые данные для отладки
+        const testProducts = [
+            { _id: "1", name: "Тест 1", description: "Описание", image: "https://via.placeholder.com/80", clubPrice: 1000, clientPrice: 1200, averageRating: 4.5 },
+            { _id: "2", name: "Тест 2", description: "Описание", image: "https://via.placeholder.com/80", clubPrice: 1500, clientPrice: 1800, averageRating: 4.0 }
+        ];
+        console.log('Использование тестовых данных:', testProducts);
+        allProducts = testProducts;
+        loadProducts(allProducts);
     });
