@@ -1,5 +1,5 @@
 body {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Roboto', sans-serif; /* Оставляем Roboto как основной шрифт */
     background-color: #f8f9fa;
     margin: 0;
     padding: 0;
@@ -17,7 +17,7 @@ body {
     width: 390px;
     background: linear-gradient(45deg, #1e3a8a, #3b82f6);
     color: white;
-    padding: 8px 15px; /* Уменьшена высота шапки */
+    padding: 8px 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -26,7 +26,7 @@ body {
 }
 
 .header-title {
-    font-size: 16px; /* Уменьшен размер текста "ВИТРИНА" */
+    font-size: 16px;
     margin: 0;
     font-weight: 500;
     text-transform: uppercase;
@@ -34,19 +34,19 @@ body {
 }
 
 .search-bar {
-    width: 120px; /* Уменьшена ширина строки поиска */
+    width: 100px; /* Уменьшаем ширину окна поиска с 120px до 100px */
 }
 
 #search-input {
     width: 100%;
-    padding: 4px 10px; /* Уменьшены отступы для компактности */
-    font-size: 12px; /* Уменьшен шрифт */
+    padding: 4px 8px; /* Уменьшаем внутренние отступы для компактности */
+    font-size: 12px;
     border: none;
-    border-radius: 20px; /* Более закругленные углы */
+    border-radius: 20px;
     background-color: rgba(255, 255, 255, 0.95);
     color: #333;
     box-sizing: border-box;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1); /* Легкая тень */
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
 }
 
@@ -60,7 +60,7 @@ body {
 }
 
 #showcase {
-    margin-top: 50px; /* Уменьшен отступ под шапкой */
+    margin-top: 60px; /* Увеличиваем отступ сетки продуктов от шапки с 50px до 60px */
 }
 
 .product-grid {
@@ -86,8 +86,8 @@ body {
 }
 
 .card-image {
-    width: 100%; /* Изображение занимает всю ширину карточки */
-    height: 70px; /* Уменьшена высота для баланса */
+    width: 100%;
+    height: 80px; /* Устанавливаем фиксированную высоту для изображения, чуть больше для баланса */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -108,21 +108,22 @@ body {
 }
 
 .card-content {
-    width: 100%; /* Текстовая часть занимает всю ширину карточки */
-    padding: 4px; /* Уменьшены отступы для компактности */
-    flex-grow: 1;
+    width: 100%;
+    height: 80px; /* Устанавливаем такую же высоту, как у изображения, для равенства частей */
+    padding: 4px 2px; /* Уменьшаем боковые отступы с 4px до 2px для большего количества букв */
+    flex-grow: 0; /* Отключаем растягивание, фиксируем высоту */
     display: flex;
     flex-direction: column;
 }
 
 .card-content h3 {
-    font-size: 10px; /* Еще уменьшен шрифт */
-    font-weight: 500;
-    margin: 0 0 2px; /* Уменьшены отступы для большей вместимости */
-    padding: 0 2px; /* Уменьшены боковые отступы внутри текста */
+    font-family: 'Open Sans', sans-serif; /* Меняем шрифт на Open Sans для лучшей читаемости мелкого текста */
+    font-size: 9px; /* Уменьшаем шрифт с 10px до 9px для длинных названий */
+    font-weight: 600; /* Увеличиваем вес шрифта для читаемости */
+    margin: 0 0 2px;
     color: #2c3e50;
-    line-height: 1.1; /* Уменьшена высота строки */
-    max-height: 22px; /* Ограничение на 2 строки */
+    line-height: 1.1;
+    max-height: 20px; /* Ограничиваем высоту для 2 строк с меньшим шрифтом */
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -155,6 +156,7 @@ body {
     margin-top: auto;
 }
 
+/* Остальные стили оставляем без изменений */
 #product-detail {
     padding: 15px;
 }
