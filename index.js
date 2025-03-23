@@ -36,7 +36,6 @@ app.use(express.static(path.join(__dirname, 'public'), {
     setHeaders: (res, filePath) => console.log(`Раздача файла: ${filePath}`)
 }));
 
-// Подключение к MongoDB
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB подключен'))
     .catch(err => {
@@ -44,7 +43,6 @@ mongoose.connect(process.env.MONGODB_URI)
         process.exit(1);
     });
 
-// Настройка вебхука
 const setupWebhook = async () => {
     if (isLocal) {
         console.log('Локальный режим: polling активен');
@@ -72,7 +70,6 @@ const setupWebhook = async () => {
     }
 };
 
-// Синхронизация продуктов из data/products.js
 const syncProducts = async () => {
     try {
         console.log('Принудительная синхронизация товаров...');
@@ -88,7 +85,6 @@ const syncProducts = async () => {
     }
 };
 
-// Эндпоинт для получения продуктов
 app.get('/api/products', async (req, res) => {
     console.log('Получен запрос на /api/products');
     try {
@@ -110,7 +106,6 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-// Эндпоинт для сохранения отзывов из веб-интерфейса
 app.post('/api/reviews', async (req, res) => {
     try {
         const { productId, username, rating, comment, isApproved } = req.body;
@@ -126,7 +121,7 @@ app.post('/api/reviews', async (req, res) => {
         console.log('Отзыв сохранён из веб-интерфейса:', review);
 
         const product = await Product.findById(productId);
-        const message = `Новый отзыв на модерации:\nТовар: ${product ? product.name : productId}\nПользователь: ${username || 'Аноним'}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
+        const message = `Новый отзыв на модерации:\nТовар: ${product ? product.name : 'Неизвестный товар'}\nПользователь: ${username || 'Аноним'}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
         await bot.sendMessage(ADMIN_ID, message, {
             reply_markup: {
                 inline_keyboard: [
@@ -145,7 +140,6 @@ app.post('/api/reviews', async (req, res) => {
     }
 });
 
-// Обработчик команды /start
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const username = msg.from.username || msg.from.first_name;
@@ -179,7 +173,7 @@ bot.on('message', async (msg) => {
         } catch (error) {
             console.error('Ошибка удаления сообщения:', error);
             if (error.code === 'ETELEGRAM' && error.response?.body?.error_code === 400) {
-                delete lastMessageId[chatId]; // Очистка при ошибке 400
+                delete lastMessageId[chatId];
             }
         }
     }
@@ -208,12 +202,13 @@ bot.on('message', async (msg) => {
             if (reviews.length === 0) {
                 newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов');
             } else {
-                const reviewList = reviews.map(r =>
-                    `Товар: ${r.productId.name}\n` +
-                    `Пользователь: ${r.username}\n` +
-                    `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
-                    `Комментарий: ${r.comment}`
-                ).join('\n---\n');
+                const reviewList = reviews.map(r => {
+                    const productName = r.productId ? r.productId.name : 'Неизвестный товар'; // Проверка на null
+                    return `Товар: ${productName}\n` +
+                        `Пользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\n` +
+                        `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
+                        `Комментарий: ${r.comment}`;
+                }).join('\n---\n');
                 newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы:\n\n${reviewList}`, { parse_mode: 'Markdown' });
             }
             lastMessageId[chatId] = newMessage.message_id;
@@ -264,7 +259,6 @@ app.post(`/bot${BOT_TOKEN}`, (req, res) => {
     res.sendStatus(200);
 });
 
-// Обработка данных от веб-приложения
 bot.on('web_app_data', async (msg) => {
     const chatId = msg.chat.id;
     const data = JSON.parse(msg.web_app_data.data);
@@ -285,9 +279,10 @@ bot.on('web_app_data', async (msg) => {
                 await bot.sendMessage(chatId, '❌ Товар не найден');
                 return;
             }
+            const username = msg.from.username ? `@${msg.from.username}` : 'Аноним';
             const review = new Review({
                 userId: chatId.toString(),
-                username: msg.from.username || 'Аноним',
+                username,
                 productId,
                 rating,
                 comment,
@@ -302,7 +297,7 @@ bot.on('web_app_data', async (msg) => {
                 : 0;
             await Product.updateOne({ _id: productId }, { averageRating });
 
-            const message = `Новый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${msg.from.username || 'Аноним'}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
+            const message = `Новый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${username}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
             await bot.sendMessage(ADMIN_ID, message, {
                 reply_markup: {
                     inline_keyboard: [
@@ -323,7 +318,6 @@ bot.on('web_app_data', async (msg) => {
     }
 });
 
-// Запуск сервера
 const startServer = async () => {
     await setupWebhook();
     await syncProducts();
