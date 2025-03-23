@@ -14,27 +14,27 @@ body {
 .header {
     position: fixed;
     top: 0;
-    width: 360px; /* Выравниваем по ширине сетки: 390px (контейнер) - 15px (padding слева) - 15px (padding справа) = 360px */
-    background: linear-gradient(135deg, #2a2a72, #009ffd); /* Более стильный градиент, как в топ-магазинах */
+    width: 360px;
+    background: linear-gradient(135deg, #2a2a72, #009ffd);
     color: white;
     padding: 8px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Усиленная тень для глубины */
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Тонкая белая рамка снизу */
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     z-index: 1000;
 }
 
 .header-title {
-    font-family: 'Cinzel', serif; /* Очень красивый шрифт */
+    font-family: 'Cinzel', serif;
     font-size: 16px;
     margin: 0;
-    font-weight: 700; /* Жирный шрифт для акцента */
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 2px; /* Увеличиваем межбуквенный интервал */
+    letter-spacing: 2px;
     line-height: 20px;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3); /* Легкая тень для текста */
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 .search-bar {
@@ -85,14 +85,12 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    height: 200px;
+    height: 147px; /* Уменьшаем высоту карточки: 80px (изображение) + 67px (контент) */
     position: relative;
 }
 
-/* Убираем анимацию при наведении */
 .product-card:hover {
-    /* Удаляем transform и усиление тени */
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Оставляем тень как в исходном состоянии */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
 }
 
 .card-image {
@@ -111,14 +109,9 @@ body {
     display: block;
 }
 
-/* Убираем увеличение изображения при наведении */
-.product-card:hover .card-image img {
-    /* Удаляем transform */
-}
-
 .card-content {
     width: 100%;
-    height: 120px;
+    height: 67px; /* Уменьшаем высоту: 34px (название) + 19px (цены) + 14px (кнопка) */
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -132,7 +125,7 @@ body {
     margin: 0;
     color: #2c3e50;
     line-height: 1.2;
-    max-height: 30px;
+    max-height: 30px; /* 5 строк: 5px * 1.2 * 5 = 30px */
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -142,15 +135,17 @@ body {
     top: 4px;
     left: 4px;
     right: 4px;
+    height: 30px; /* Фиксированная высота контейнера */
 }
 
 .prices {
     display: flex;
     justify-content: space-between;
     position: absolute;
-    top: 50px;
+    top: 34px; /* 4px (отступ сверху) + 30px (высота названия) */
     left: 4px;
     right: 4px;
+    height: 19px; /* Фиксированная высота: 9px (эмблема) + 10px (клубная цена) */
 }
 
 .price-container {
@@ -212,6 +207,7 @@ body {
     bottom: 4px;
     left: 4px;
     right: 4px;
+    height: 10px; /* Фиксированная высота: 10px (кнопка) */
     text-align: center;
 }
 
@@ -227,6 +223,7 @@ body {
     border-radius: 10px;
     border: 1px solid #c7d2fe;
     transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
+    line-height: 1; /* Устанавливаем line-height для точного соответствия высоте */
 }
 
 .card-button a:hover {
