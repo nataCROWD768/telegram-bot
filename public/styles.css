@@ -85,7 +85,7 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    height: 176px; /* Новая высота: 80px (изображение) + 96px (контент) */
+    height: 182px; /* Новая высота: 80px (изображение) + 102px (контент) */
     position: relative;
 }
 
@@ -111,7 +111,7 @@ body {
 
 .card-content {
     width: 100%;
-    height: 96px; /* Новая высота: 49px (название) + 23px (цены) + 24px (кнопка) */
+    height: 102px; /* Новая высота: 39px (название) + 23px (цены) + 40px (кнопка) */
     padding: 0;
     display: flex;
     flex-direction: column;
@@ -119,13 +119,13 @@ body {
 }
 
 .card-content h3 {
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Roboto', sans-serif; /* Меняем шрифт на Roboto */
     font-size: 5px;
     font-weight: 600;
     margin: 0;
     color: #2c3e50;
     line-height: 1.2;
-    max-height: 45px; /* Увеличиваем: 5px * 1.2 * 5 + запас = 45px */
+    max-height: 35px; /* Уменьшаем: 5px * 1.2 * 5 + запас = 35px */
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -135,14 +135,14 @@ body {
     top: 4px;
     left: 4px;
     right: 4px;
-    height: 45px; /* Увеличиваем фиксированную высоту */
+    height: 35px; /* Уменьшаем фиксированную высоту */
 }
 
 .prices {
     display: flex;
     justify-content: space-between;
     position: absolute;
-    top: 53px; /* 4px (отступ сверху) + 45px (высота названия) + 4px (отступ) */
+    top: 43px; /* 4px (отступ сверху) + 35px (высота названия) + 4px (отступ) */
     left: 4px;
     right: 4px;
     height: 19px;
@@ -204,10 +204,10 @@ body {
 
 .card-button {
     position: absolute;
-    top: 76px; /* 53px (top цен) + 19px (высота цен) + 4px (отступ) */
+    top: 66px; /* 43px (top цен) + 19px (высота цен) + 4px (отступ) */
     left: 4px;
     right: 4px;
-    height: 16px; /* Увеличиваем высоту для гармоничного отображения */
+    height: 32px;
     text-align: center;
 }
 
