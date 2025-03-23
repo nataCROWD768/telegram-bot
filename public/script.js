@@ -1,9 +1,8 @@
-// Проверяем, что мы в Telegram Web App
 if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
     Telegram.WebApp.ready();
     console.log('Telegram Web App инициализирован');
 } else {
-    console.error('Telegram Web App не доступен. Возможно, страница открыта вне Telegram.');
+    console.error('Telegram Web App не доступен');
 }
 
 let allProducts = [];
@@ -16,7 +15,7 @@ function loadProducts(products) {
     const productList = document.getElementById('product-list');
     if (!productList) {
         console.error('Элемент #product-list не найден');
-        if (Telegram.WebApp) Telegram.WebApp.showAlert('Ошибка: контейнер для товаров не найден');
+        if (Telegram.WebApp) Telegram.WebApp.showAlert('Ошибка: #product-list не найден');
         return;
     }
     productList.innerHTML = '';
@@ -138,12 +137,9 @@ function showProductDetail(product) {
                 document.getElementById('review-comment').value = '';
                 stars.forEach(s => s.classList.remove('filled'));
                 detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
-            } else {
-                console.error('Telegram.WebApp не доступен для отправки отзыва');
             }
         } else {
             if (Telegram.WebApp) Telegram.WebApp.showAlert('Выберите рейтинг и введите комментарий');
-            else console.error('Ошибка: рейтинг или комментарий отсутствуют');
         }
     });
 }
