@@ -78,7 +78,6 @@ function renderProducts(productArray) {
     productArray.forEach(product => {
         const card = document.createElement('div');
         card.className = 'product-card';
-        // Проверяем наличие подтверждённых отзывов и averageRating > 0
         const hasReviews = product.reviews && product.reviews.some(review => review.isApproved) && product.averageRating > 0;
         const ratingHtml = hasReviews ? `<div class="rating">★ ${product.averageRating.toFixed(1)}</div>` : '';
         card.innerHTML = `
@@ -133,7 +132,6 @@ function showProductDetail(product) {
     searchBar.style.display = 'none';
     backBtn.style.display = 'flex';
 
-    // Проверяем наличие подтверждённых отзывов и averageRating > 0
     const hasReviews = product.reviews && product.reviews.some(review => review.isApproved) && product.averageRating > 0;
     const ratingHtml = hasReviews ? `<div class="product-detail-rating">★ ${product.averageRating.toFixed(1)}</div>` : '';
 
@@ -228,19 +226,28 @@ function showProductDetail(product) {
     });
 }
 
-// Отправка отзыва администратору
+// Отправка отзыва администратору и на сервер
 function sendReviewToAdmin(review) {
     const botToken = '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8';
     const adminChatId = '942851377';
 
     const message = `Новый отзыв на модерации:\nПродукт ID: ${review.productId}\nПользователь: ${review.user}\nРейтинг: ${review.rating}\nКомментарий: ${review.comment}`;
 
+    // Отправка уведомления в Telegram с кнопками
     fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
             chat_id: adminChatId,
-            text: message
+            text: message,
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: 'Одобрить', callback_data: `approve_review_${review.productId}_${Date.now()}` },
+                        { text: 'Отклонить', callback_data: `reject_review_${review.productId}_${Date.now()}` }
+                    ]
+                ]
+            }
         })
     })
         .then(response => response.json())
@@ -249,6 +256,25 @@ function sendReviewToAdmin(review) {
             else console.error('Ошибка отправки уведомления:', data);
         })
         .catch(error => console.error('Ошибка:', error));
+
+    // Отправка отзыва на сервер для сохранения в MongoDB
+    fetch('http://localhost:3000/api/reviews', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            productId: review.productId,
+            username: review.user,
+            rating: review.rating,
+            comment: review.comment,
+            isApproved: false // Изначально отзыв неподтверждён
+        })
+    })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) console.log('Отзыв сохранён на сервере:', data);
+            else console.error('Ошибка сохранения отзыва:', data);
+        })
+        .catch(error => console.error('Ошибка отправки отзыва на сервер:', error));
 }
 
 // Отображение списка отзывов
@@ -274,7 +300,7 @@ function showReviews(page = 1) {
     products.forEach(product => {
         if (product.reviews) {
             product.reviews.forEach(review => {
-                if (review.isApproved) { // Добавляем только подтверждённые отзывы
+                if (review.isApproved) {
                     allReviews.push({ ...review, productName: product.name });
                 }
             });

@@ -114,6 +114,41 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
+// Эндпоинт для сохранения отзывов из веб-интерфейса
+app.post('/api/reviews', async (req, res) => {
+    try {
+        const { productId, username, rating, comment, isApproved } = req.body;
+        const review = new Review({
+            userId: 'web_user_' + Date.now(), // Временный userId для веб-пользователя
+            username: username || 'Аноним',
+            productId,
+            rating,
+            comment,
+            isApproved: isApproved || false
+        });
+        await review.save();
+        console.log('Отзыв сохранён из веб-интерфейса:', review);
+
+        // Отправка уведомления администратору
+        const message = `Новый отзыв на модерации:\nТовар ID: ${productId}\nПользователь: ${username || 'Аноним'}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
+        await bot.sendMessage(ADMIN_ID, message, {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: 'Одобрить', callback_data: `approve_review_${review._id}` },
+                        { text: 'Отклонить', callback_data: `reject_review_${review._id}` }
+                    ]
+                ]
+            }
+        });
+
+        res.json({ success: true, review });
+    } catch (error) {
+        console.error('Ошибка сохранения отзыва:', error);
+        res.status(500).json({ success: false, error: 'Ошибка сохранения отзыва' });
+    }
+});
+
 // Обработчик команды /start
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
@@ -170,18 +205,17 @@ bot.on('message', async (msg) => {
             lastMessageId[chatId] = newMessage.message_id;
             break;
         case 'Отзывы':
-            const reviews = await Review.find().populate('productId', 'name');
+            const reviews = await Review.find({ isApproved: true }).populate('productId', 'name');
             if (reviews.length === 0) {
-                newMessage = await bot.sendMessage(chatId, '📝 Отзывов пока нет');
+                newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов');
             } else {
                 const reviewList = reviews.map(r =>
                     `Товар: ${r.productId.name}\n` +
                     `Пользователь: ${r.username}\n` +
                     `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
-                    `Комментарий: ${r.comment}\n` +
-                    `Статус: ${r.isApproved ? 'Утверждён' : 'На модерации'}\n`
+                    `Комментарий: ${r.comment}`
                 ).join('\n---\n');
-                newMessage = await bot.sendMessage(chatId, `📝 Все отзывы:\n\n${reviewList}`, { parse_mode: 'Markdown' });
+                newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы:\n\n${reviewList}`, { parse_mode: 'Markdown' });
             }
             lastMessageId[chatId] = newMessage.message_id;
             break;
@@ -231,6 +265,7 @@ app.post(`/bot${BOT_TOKEN}`, (req, res) => {
     res.sendStatus(200);
 });
 
+// Обработка данных от веб-приложения
 bot.on('web_app_data', async (msg) => {
     const chatId = msg.chat.id;
     const data = JSON.parse(msg.web_app_data.data);
@@ -267,6 +302,19 @@ bot.on('web_app_data', async (msg) => {
                 ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
                 : 0;
             await Product.updateOne({ _id: productId }, { averageRating });
+
+            // Отправка уведомления администратору
+            const message = `Новый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${msg.from.username || 'Аноним'}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
+            await bot.sendMessage(ADMIN_ID, message, {
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: 'Одобрить', callback_data: `approve_review_${review._id}` },
+                            { text: 'Отклонить', callback_data: `reject_review_${review._id}` }
+                        ]
+                    ]
+                }
+            });
 
             const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
             lastMessageId[chatId] = newMessage.message_id;
