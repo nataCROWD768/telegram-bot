@@ -78,10 +78,13 @@ function renderProducts(productArray) {
     productArray.forEach(product => {
         const card = document.createElement('div');
         card.className = 'product-card';
+        // Проверяем наличие подтверждённых отзывов и averageRating > 0
+        const hasReviews = product.reviews && product.reviews.some(review => review.isApproved) && product.averageRating > 0;
+        const ratingHtml = hasReviews ? `<div class="rating">★ ${product.averageRating.toFixed(1)}</div>` : '';
         card.innerHTML = `
             <div class="card-image">
                 <img src="${product.image || '/images/placeholder.jpg'}" alt="${product.name}">
-                <div class="rating">★ ${product.averageRating || 0}</div>
+                ${ratingHtml}
             </div>
             <div class="card-content">
                 <h3>${product.name}</h3>
@@ -130,10 +133,14 @@ function showProductDetail(product) {
     searchBar.style.display = 'none';
     backBtn.style.display = 'flex';
 
+    // Проверяем наличие подтверждённых отзывов и averageRating > 0
+    const hasReviews = product.reviews && product.reviews.some(review => review.isApproved) && product.averageRating > 0;
+    const ratingHtml = hasReviews ? `<div class="product-detail-rating">★ ${product.averageRating.toFixed(1)}</div>` : '';
+
     productDetailContent.innerHTML = `
         <div class="product-detail-image">
             <img src="${product.image || '/images/placeholder.jpg'}" alt="${product.name}">
-            <div class="product-detail-rating">★ ${product.averageRating || 0}</div>
+            ${ratingHtml}
         </div>
         <div class="product-detail-info">
             <h3>${product.name}</h3>
@@ -154,8 +161,8 @@ function showProductDetail(product) {
                 <p>${product.description || 'Описание отсутствует'}</p>
             </div>
             <div class="product-detail-reviews">
-                <h4>Отзывы (${product.reviews ? product.reviews.length : 0})</h4>
-                ${product.reviews && product.reviews.length > 0 ? product.reviews.map(review => `
+                <h4>Отзывы (${product.reviews ? product.reviews.filter(r => r.isApproved).length : 0})</h4>
+                ${product.reviews && product.reviews.length > 0 ? product.reviews.filter(r => r.isApproved).map(review => `
                     <div class="review">
                         <p><strong>${review.username || 'Аноним'}</strong> (★ ${review.rating})</p>
                         <p>${review.comment}</p>
@@ -267,7 +274,9 @@ function showReviews(page = 1) {
     products.forEach(product => {
         if (product.reviews) {
             product.reviews.forEach(review => {
-                allReviews.push({ ...review, productName: product.name });
+                if (review.isApproved) { // Добавляем только подтверждённые отзывы
+                    allReviews.push({ ...review, productName: product.name });
+                }
             });
         }
     });
