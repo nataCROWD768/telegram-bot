@@ -1,201 +1,226 @@
-if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
-    Telegram.WebApp.ready();
-    console.log('Telegram Web App инициализирован');
-} else {
-    console.error('Telegram Web App не доступен');
+body {
+    font-family: 'Roboto', sans-serif;
+    background-color: #f8f9fa;
+    margin: 0;
+    padding: 0;
 }
 
-let allProducts = [];
-const API_URL = 'https://telegram-bot-gmut.onrender.com/api/products';
-
-console.log('Инициализация Web App...');
-
-function loadProducts(products) {
-    console.log('Загрузка продуктов:', products);
-    const productList = document.getElementById('product-list');
-    if (!productList) {
-        console.error('Элемент #product-list не найден');
-        if (Telegram.WebApp) Telegram.WebApp.showAlert('Ошибка: #product-list не найден');
-        return;
-    }
-    productList.innerHTML = '';
-
-    if (!products || products.length === 0) {
-        console.log('Товары отсутствуют');
-        productList.innerHTML = '<p style="text-align: center; color: #888;">Товары не найдены</p>';
-        return;
-    }
-
-    products.forEach((product, index) => {
-        console.log(`Создание карточки ${index + 1} для:`, product.name);
-        const card = document.createElement('div');
-        card.className = 'product-card card';
-        card.innerHTML = `
-            <div class="card-image">
-                <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/80';">
-            </div>
-            <div class="card-content">
-                <h3>${product.name}</h3>
-                <div class="prices">
-                    <span class="club-price">${product.clubPrice} ₽</span>
-                    <span class="client-price">${product.clientPrice} ₽</span>
-                </div>
-                <div class="rating">★ ${product.averageRating.toFixed(1)}</div>
-            </div>
-        `;
-        card.addEventListener('click', () => showProductDetail(product));
-        productList.appendChild(card);
-    });
-    console.log('Все карточки добавлены в DOM');
+.container {
+    width: 390px;
+    margin: 0 auto;
+    padding: 0;
 }
 
-function showProductDetail(product) {
-    console.log('Открытие деталей для:', product.name);
-    const showcase = document.getElementById('showcase');
-    const detail = document.getElementById('product-detail');
-    const detailContent = document.getElementById('product-detail-content');
-
-    if (!showcase || !detail || !detailContent) {
-        console.error('Не найдены элементы для отображения деталей');
-        return;
-    }
-
-    showcase.style.display = 'none';
-    detail.style.display = 'block';
-
-    const reviewsHtml = product.reviews && product.reviews.length > 0
-        ? product.reviews.map(r => `
-            <div class="review">
-                <span class="username">${r.username}</span>: 
-                <span class="rating">★ ${r.rating}</span>
-                <p>${r.comment}</p>
-            </div>
-        `).join('')
-        : '<p>Отзывов пока нет</p>';
-
-    detailContent.innerHTML = `
-        <div class="card-image">
-            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/80';">
-        </div>
-        <div class="card-content">
-            <h2>${product.name}</h2>
-            <div class="prices">
-                <span class="club-price">Клубная: ${product.clubPrice} ₽</span>
-                <span class="client-price">Клиентская: ${product.clientPrice} ₽</span>
-            </div>
-            <div class="rating">Рейтинг: ★ ${product.averageRating.toFixed(1)}</div>
-            <div class="description">
-                <h5>Описание</h5>
-                <p>${product.description}</p>
-            </div>
-            <div class="reviews">
-                <h5>Отзывы</h5>
-                ${reviewsHtml}
-            </div>
-            <div class="review-form">
-                <h5>Оставить отзыв</h5>
-                <div class="rating-stars" data-rating="0">
-                    <span class="star" data-value="1">★</span>
-                    <span class="star" data-value="2">★</span>
-                    <span class="star" data-value="3">★</span>
-                    <span class="star" data-value="4">★</span>
-                    <span class="star" data-value="5">★</span>
-                </div>
-                <textarea id="review-comment" class="materialize-textarea" placeholder="Ваш отзыв..."></textarea>
-                <a class="submit-btn btn waves-effect waves-light" data-id="${product._id}">Отправить отзыв</a>
-                <div id="review-status" style="color: #27ae60; margin-top: 10px;"></div>
-            </div>
-        </div>
-    `;
-
-    const stars = detailContent.querySelectorAll('.rating-stars .star');
-    stars.forEach(star => {
-        star.addEventListener('click', () => {
-            const rating = parseInt(star.getAttribute('data-value'));
-            stars.forEach(s => s.classList.toggle('filled', parseInt(s.getAttribute('data-value')) <= rating));
-            detailContent.querySelector('.rating-stars').setAttribute('data-rating', rating);
-            console.log('Рейтинг выбран:', rating);
-        });
-    });
-
-    const submitBtn = detailContent.querySelector('.submit-btn');
-    submitBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const productId = product._id;
-        const rating = parseInt(detailContent.querySelector('.rating-stars').getAttribute('data-rating'));
-        const comment = document.getElementById('review-comment').value.trim();
-        const status = document.getElementById('review-status');
-
-        console.log('Проверка данных отзыва:', { productId, rating, comment });
-
-        if (rating > 0 && comment) {
-            const reviewData = { type: 'review', productId, rating, comment };
-            console.log('Отправка отзыва:', reviewData);
-            if (Telegram.WebApp) {
-                Telegram.WebApp.sendData(JSON.stringify(reviewData));
-                status.textContent = 'Отзыв отправлен! Ожидает модерации.';
-                document.getElementById('review-comment').value = '';
-                stars.forEach(s => s.classList.remove('filled'));
-                detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
-            }
-        } else {
-            if (Telegram.WebApp) Telegram.WebApp.showAlert('Выберите рейтинг и введите комментарий');
-        }
-    });
+.header {
+    position: fixed;
+    top: 0;
+    width: 390px;
+    background: linear-gradient(45deg, #1e3a8a, #3b82f6);
+    color: white;
+    padding: 8px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
 }
 
-console.log('Отправка запроса к:', API_URL);
-fetch(API_URL, {
-    method: 'GET',
-    headers: {
-        'Accept': 'application/json',
-    }
-})
-    .then(response => {
-        console.log('Статус ответа:', response.status);
-        if (!response.ok) {
-            throw new Error(`HTTP ошибка: ${response.status}`);
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Полные данные от API:', data);
-        allProducts = data.products || [];
-        console.log('Товары для отображения:', allProducts);
-        loadProducts(allProducts);
+.header-title {
+    font-size: 16px;
+    margin: 0;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
 
-        const searchInput = document.getElementById('search-input');
-        if (searchInput) {
-            console.log('Поиск инициализирован');
-            searchInput.addEventListener('input', () => {
-                const query = searchInput.value.toLowerCase();
-                const filteredProducts = allProducts.filter(product =>
-                    product.name.toLowerCase().includes(query) ||
-                    product.description.toLowerCase().includes(query)
-                );
-                loadProducts(filteredProducts);
-            });
-        } else {
-            console.error('Элемент #search-input не найден');
-        }
+.search-bar {
+    width: 100px;
+}
 
-        const scrollTopBtn = document.getElementById('scroll-top-btn');
-        if (allProducts.length > 8) {
-            window.addEventListener('scroll', () => {
-                scrollTopBtn.style.display = window.scrollY > 300 ? 'block' : 'none';
-            });
-            scrollTopBtn.addEventListener('click', () => {
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            });
-        } else {
-            scrollTopBtn.style.display = 'none';
-        }
-    })
-    .catch(error => {
-        console.error('Ошибка загрузки товаров:', error.message);
-        const productList = document.getElementById('product-list');
-        if (productList) {
-            productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки: ' + error.message + '</p>';
-        }
-        if (Telegram.WebApp) Telegram.WebApp.showAlert('Ошибка загрузки товаров: ' + error.message);
-    });
+#search-input {
+    width: 100%;
+    padding: 4px 8px;
+    font-size: 12px;
+    border: none;
+    border-radius: 20px;
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #333;
+    box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+#search-input:focus {
+    outline: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+#search-input::placeholder {
+    color: #888;
+}
+
+#showcase {
+    margin-top: 60px;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    padding: 10px;
+}
+
+.product-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 180px;
+}
+
+.product-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.card-image {
+    width: 100%;
+    height: 80px;
+    overflow: hidden;
+    background-color: #f0f0f0;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+    transition: transform 0.3s ease;
+    display: block;
+}
+
+.product-card:hover .card-image img {
+    transform: scale(1.05);
+}
+
+.card-content {
+    width: 100%;
+    height: 100px;
+    padding: 2px 2px;
+    flex-grow: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-content h3 {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 8px;
+    font-weight: 600;
+    margin: 2px 0 1px;
+    color: #2c3e50;
+    line-height: 1.2;
+    max-height: 19.2px; /* Высота для 2 строк (8px * 1.2 * 2) */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+.prices {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 1px;
+    font-family: 'Open Sans', sans-serif;
+    line-height: 1.1; /* Уменьшаем высоту строки для компактности */
+}
+
+.club-price {
+    color: #16a34a;
+    font-weight: 600;
+    font-size: 8px; /* Уменьшаем шрифт для клубной цены */
+}
+
+.client-price {
+    color: #ef4444;
+    text-decoration: line-through;
+    font-size: 7px; /* Уменьшаем шрифт для клиентской цены */
+    opacity: 0.8;
+}
+
+.rating {
+    color: #f59e0b;
+    font-size: 8px;
+    margin-top: auto;
+    font-family: 'Open Sans', sans-serif;
+}
+
+#product-detail {
+    padding: 15px;
+}
+
+.description, .reviews, .review-form {
+    margin-top: 15px;
+}
+
+.review {
+    border-bottom: 1px solid #eee;
+    padding: 8px 0;
+}
+
+.rating-stars .star {
+    font-size: 20px;
+    cursor: pointer;
+    color: #d1d5db;
+}
+
+.rating-stars .star.filled {
+    color: #f59e0b;
+}
+
+#review-comment {
+    width: 100%;
+    min-height: 80px;
+    margin-top: 8px;
+    font-size: 13px;
+    border-radius: 4px;
+    border: 1px solid #d1d5db;
+    padding: 8px;
+}
+
+.submit-btn {
+    margin-top: 8px;
+    background-color: #1e3a8a;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 13px;
+    transition: background-color 0.3s ease;
+}
+
+.submit-btn:hover {
+    background-color: #3b82f6;
+}
+
+.scroll-top-btn {
+    position: fixed;
+    bottom: 15px;
+    right: 15px;
+    background-color: #1e3a8a;
+    color: white;
+    padding: 8px 12px;
+    border-radius: 50%;
+    text-decoration: none;
+    display: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease;
+}
+
+.scroll-top-btn:hover {
+    background-color: #3b82f6;
+}
