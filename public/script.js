@@ -1,4 +1,4 @@
-// Массив продуктов (адаптирован из первого документа)
+// Массив продуктов
 const products = [
     { id: 1, name: 'НАБОР «МОЛОДОСТЬ»', description: 'Описание 1', image: '/images/image1.jpg', clubPrice: 1000, clientPrice: 1200, rating: 4.5 },
     { id: 2, name: 'МАСЛО СBD, 10%', description: 'Описание 2', image: '/images/image2.jpg', clubPrice: 1500, clientPrice: 1800, rating: 4.0 },
@@ -22,14 +22,14 @@ function renderProducts(productArray) {
         card.innerHTML = `
             <div class="card-image">
                 <img src="${product.image}" alt="${product.name}">
+                <div class="rating">★ ${product.rating}</div>
             </div>
             <div class="card-content">
                 <h3>${product.name}</h3>
                 <div class="prices">
-                    <span class="club-price">${product.clubPrice} Р</span>
-                    <span class="client-price">${product.clientPrice} Р</span>
+                    <span class="club-price">Клубная цена: ${product.clubPrice} Р</span>
+                    <span class="client-price">Клиентская цена: ${product.clientPrice} Р</span>
                 </div>
-                <div class="rating">★ ${product.rating}</div>
             </div>
         `;
         productList.appendChild(card);

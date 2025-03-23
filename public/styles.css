@@ -39,7 +39,7 @@ body {
 
 #search-input {
     width: 100%;
-    padding: 4px 8px;
+    padding: 2px 8px; /* Уменьшаем padding, чтобы уменьшить высоту в 2 раза */
     font-size: 12px;
     border: none;
     border-radius: 20px;
@@ -48,6 +48,7 @@ body {
     box-sizing: border-box;
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
+    height: 20px; /* Устанавливаем фиксированную высоту (было около 40px, теперь 20px) */
 }
 
 #search-input:focus {
@@ -60,7 +61,7 @@ body {
 }
 
 #showcase {
-    margin-top: 60px;
+    margin-top: 70px; /* Увеличиваем отступ от шапки (было 60px, теперь 70px) */
 }
 
 .product-grid {
@@ -79,6 +80,7 @@ body {
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
     height: 180px;
+    position: relative; /* Добавляем position: relative для позиционирования рейтинга */
 }
 
 .product-card:hover {
@@ -91,6 +93,7 @@ body {
     height: 80px;
     overflow: hidden;
     background-color: #f0f0f0;
+    position: relative; /* Добавляем position: relative для рейтинга */
 }
 
 .card-image img {
@@ -122,7 +125,7 @@ body {
     margin: 0 0 1px;
     color: #2c3e50;
     line-height: 1.2;
-    max-height: 56px; /* Высота для 5 строк (7px * 1.2 * 5) */
+    max-height: 56px;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
@@ -134,12 +137,18 @@ body {
     display: flex;
     flex-direction: column;
     margin-bottom: 1px;
+    font-family: 'Open Sans', sans-serif;
 }
 
 .club-price {
     color: #16a34a;
     font-weight: 600;
     font-size: 9px;
+    background-color: #e6f4ea; /* Добавляем светло-зеленый фон */
+    padding: 2px 4px;
+    border-radius: 3px;
+    display: inline-block;
+    margin-bottom: 1px;
 }
 
 .client-price {
@@ -147,12 +156,22 @@ body {
     text-decoration: line-through;
     font-size: 8px;
     opacity: 0.8;
+    background-color: #fee2e2; /* Добавляем светло-красный фон */
+    padding: 2px 4px;
+    border-radius: 3px;
+    display: inline-block;
 }
 
 .rating {
     color: #f59e0b;
     font-size: 8px;
-    margin-top: auto;
+    position: absolute; /* Позиционируем рейтинг */
+    top: 5px; /* Отступ сверху */
+    right: 5px; /* Отступ справа */
+    background-color: rgba(255, 255, 255, 0.8); /* Полупрозрачный белый фон */
+    padding: 2px 4px;
+    border-radius: 3px;
+    z-index: 1; /* Устанавливаем поверх изображения */
 }
 
 #product-detail {
