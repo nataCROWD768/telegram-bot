@@ -307,7 +307,7 @@ body {
 .product-detail-prices {
     display: flex;
     align-items: center;
-    gap: 10px; /* Небольшой отступ между ценами */
+    gap: 10px;
     margin-bottom: 15px;
 }
 
@@ -454,6 +454,46 @@ body {
 
 .submit-btn:hover {
     background-color: #3b82f6;
+}
+
+/* Стили для списка отзывов */
+#reviews-section {
+    margin-top: 50px;
+    padding: 15px;
+}
+
+.reviews-list {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 15px;
+}
+
+.page-btn {
+    background: #d1d5db;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.3s ease;
+}
+
+.page-btn.active {
+    background: #1e3a8a;
+    color: white;
+}
+
+.page-btn:hover {
+    background: #3b82f6;
+    color: white;
 }
 
 .scroll-top-btn {

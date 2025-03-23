@@ -6,7 +6,7 @@ function isMobileDevice() {
 
 // Данные о продуктах
 const products = [
-    { id: 1, name: 'НАБОР «МОЛОДОСТЬ»', description: 'Набор для ухода за кожей, включающий увлажняющий крем, сыворотку и маску для лица. Идеально подходит для сохранения молодости и сияния кожи.', image: '/images/image1.jpg', clubPrice: 1000, clientPrice: 1200, rating: 4.5, reviews: [{ user: 'Анна', rating: 5, comment: 'Отличный набор! Кожа стала мягче и сияет.' }, { user: 'Мария', rating: 4, comment: 'Хороший продукт, но маска немного липкая.' }] },
+    { id: 1, name: 'НАБОР «МОЛОДОСТЬ»', description: 'Набор для ухода за кожей, включающий увлажняющий крем, сыворотку и маску для лица. Идеально подходит для сохранения молодости и сияния кожи.', image: '/images/image1.jpg', clubPrice: 1000, clientPrice: 1200, rating: 4.5, reviews: [{ user: 'Анна', rating: 5, comment: 'Отличный набор! Кожа стала мягче и сияет.', status: 'approved' }, { user: 'Мария', rating: 4, comment: 'Хороший продукт, но маска немного липкая.', status: 'approved' }] },
     { id: 2, name: 'МАСЛО СBD, 10%', description: 'Натуральное масло CBD 10% для снятия стресса и улучшения сна. Подходит для ежедневного использования.', image: '/images/image2.jpg', clubPrice: 1500, clientPrice: 1800, rating: 4.0, reviews: [] },
     { id: 3, name: 'БИОЙОДИН 150', description: 'Биологически активная добавка с йодом для поддержки щитовидной железы и общего здоровья.', image: '/images/image3.jpg', clubPrice: 2000, clientPrice: 2400, rating: 4.8, reviews: [] },
     { id: 4, name: 'БИОЛАСТИН', description: 'Средство для укрепления волос и ногтей с биотином и коллагеном.', image: '/images/image4.jpg', clubPrice: 800, clientPrice: 1000, rating: 3.5, reviews: [] },
@@ -16,6 +16,9 @@ const products = [
     { id: 8, name: 'ХВОЙНЫЙ БАЛЬЗАМ', description: 'Хвойный бальзам для тела с успокаивающим эффектом.', image: '/images/image8.jpg', clubPrice: 1600, clientPrice: 1900, rating: 4.7, reviews: [] },
     { id: 9, name: 'ВОДНЫЙ ЭКСТРАКТ ПРОПОЛИСА', description: 'Водный экстракт прополиса для укрепления иммунитета.', image: '/images/image9.jpg', clubPrice: 1300, clientPrice: 1500, rating: 4.4, reviews: [] }
 ];
+
+// Хранилище для отзывов на модерации
+let pendingReviews = [];
 
 // Функция для рендеринга списка товаров
 function renderProducts(productArray) {
@@ -65,6 +68,7 @@ function renderProducts(productArray) {
 function showProductDetail(product) {
     const showcase = document.getElementById('showcase');
     const productDetail = document.getElementById('product-detail');
+    const reviewsSection = document.getElementById('reviews-section');
     const productDetailContent = document.querySelector('.product-detail-content');
     const headerTitle = document.querySelector('.header-title');
     const searchBar = document.querySelector('.search-bar');
@@ -72,6 +76,7 @@ function showProductDetail(product) {
 
     // Скрываем витрину и показываем карточку товара
     showcase.style.display = 'none';
+    reviewsSection.style.display = 'none';
     productDetail.style.display = 'block';
 
     // Скрываем заголовок "Витрина" и строку поиска, показываем кнопку "Назад"
@@ -104,8 +109,8 @@ function showProductDetail(product) {
                 <p>${product.description}</p>
             </div>
             <div class="product-detail-reviews">
-                <h4>Отзывы (${product.reviews.length})</h4>
-                ${product.reviews.length > 0 ? product.reviews.map(review => `
+                <h4>Отзывы (${product.reviews.filter(r => r.status === 'approved').length})</h4>
+                ${product.reviews.filter(r => r.status === 'approved').length > 0 ? product.reviews.filter(r => r.status === 'approved').map(review => `
                     <div class="review">
                         <p><strong>${review.user}</strong> (★ ${review.rating})</p>
                         <p>${review.comment}</p>
@@ -132,6 +137,7 @@ function showProductDetail(product) {
         productDetail.style.display = 'none';
         showcase.style.display = 'block';
         headerTitle.style.display = 'block';
+        headerTitle.textContent = 'Витрина';
         searchBar.style.display = 'flex';
         backBtn.style.display = 'none';
     });
@@ -153,15 +159,127 @@ function showProductDetail(product) {
     document.querySelector(`.submit-btn[data-id="${product.id}"]`).addEventListener('click', () => {
         const comment = document.getElementById(`review-comment-${product.id}`).value;
         if (selectedRating > 0 && comment.trim() !== '') {
-            product.reviews.push({
+            const review = {
+                productId: product.id,
                 user: 'Пользователь', // Здесь можно добавить авторизацию для имени
                 rating: selectedRating,
-                comment: comment
-            });
-            showProductDetail(product); // Обновляем карточку товара
+                comment: comment,
+                status: 'pending' // Статус "на модерации"
+            };
+            pendingReviews.push(review);
+            alert('Отзыв отправлен на модерацию.');
+            document.getElementById(`review-comment-${product.id}`).value = ''; // Очищаем поле
+            stars.forEach(s => s.classList.remove('filled')); // Сбрасываем рейтинг
+            selectedRating = 0;
+            sendReviewToAdmin(review); // Отправляем отзыв администратору
         } else {
             alert('Пожалуйста, выберите рейтинг и напишите отзыв.');
         }
+    });
+}
+
+// Функция для отправки отзыва администратору (имитация)
+function sendReviewToAdmin(review) {
+    console.log('Новый отзыв на модерации:', review);
+    // Здесь можно добавить реальную отправку администратору, например, через Telegram Bot API
+    // Для демонстрации просто добавим отзыв в список pendingReviews
+    renderAdminPanel();
+}
+
+// Функция для рендеринга панели администратора (имитация)
+function renderAdminPanel() {
+    // В реальном приложении это будет отдельный интерфейс для администратора
+    console.log('Панель администратора:');
+    pendingReviews.forEach((review, index) => {
+        console.log(`Отзыв ${index + 1}:`, review);
+        console.log(`Продукт ID: ${review.productId}, Пользователь: ${review.user}, Рейтинг: ${review.rating}, Комментарий: ${review.comment}`);
+        console.log(`Действия: Подтвердить (approveReview(${index})) | Отклонить (rejectReview(${index}))`);
+    });
+}
+
+// Функция для подтверждения отзыва
+function approveReview(index) {
+    const review = pendingReviews[index];
+    const product = products.find(p => p.id === review.productId);
+    review.status = 'approved';
+    product.reviews.push(review);
+    pendingReviews.splice(index, 1); // Удаляем из списка на модерации
+    console.log('Отзыв подтверждён:', review);
+    renderAdminPanel();
+}
+
+// Функция для отклонения отзыва
+function rejectReview(index) {
+    const review = pendingReviews[index];
+    pendingReviews.splice(index, 1); // Удаляем из списка на модерации
+    console.log('Отзыв отклонён:', review);
+    renderAdminPanel();
+}
+
+// Функция для отображения списка отзывов с пагинацией
+function showReviews(page = 1) {
+    const showcase = document.getElementById('showcase');
+    const productDetail = document.getElementById('product-detail');
+    const reviewsSection = document.getElementById('reviews-section');
+    const reviewsList = document.getElementById('reviews-list');
+    const pagination = document.getElementById('pagination');
+    const headerTitle = document.querySelector('.header-title');
+    const searchBar = document.querySelector('.search-bar');
+    const backBtn = document.getElementById('back-to-showcase');
+
+    // Скрываем витрину и карточку товара, показываем список отзывов
+    showcase.style.display = 'none';
+    productDetail.style.display = 'none';
+    reviewsSection.style.display = 'block';
+
+    // Обновляем шапку
+    headerTitle.style.display = 'block';
+    headerTitle.textContent = 'Отзывы';
+    searchBar.style.display = 'none';
+    backBtn.style.display = 'flex';
+
+    // Собираем все подтверждённые отзывы
+    const allReviews = [];
+    products.forEach(product => {
+        product.reviews.forEach(review => {
+            if (review.status === 'approved') {
+                allReviews.push({ ...review, productName: product.name });
+            }
+        });
+    });
+
+    // Пагинация
+    const reviewsPerPage = 5;
+    const totalPages = Math.ceil(allReviews.length / reviewsPerPage);
+    const start = (page - 1) * reviewsPerPage;
+    const end = start + reviewsPerPage;
+    const paginatedReviews = allReviews.slice(start, end);
+
+    // Рендерим отзывы
+    reviewsList.innerHTML = paginatedReviews.length > 0 ? paginatedReviews.map(review => `
+        <div class="review">
+            <p><strong>${review.user}</strong> о продукте <strong>${review.productName}</strong> (★ ${review.rating})</p>
+            <p>${review.comment}</p>
+        </div>
+    `).join('') : '<p>Пока нет отзывов.</p>';
+
+    // Рендерим пагинацию
+    pagination.innerHTML = '';
+    for (let i = 1; i <= totalPages; i++) {
+        const pageBtn = document.createElement('button');
+        pageBtn.textContent = i;
+        pageBtn.className = i === page ? 'page-btn active' : 'page-btn';
+        pageBtn.addEventListener('click', () => showReviews(i));
+        pagination.appendChild(pageBtn);
+    }
+
+    // Обработчик для кнопки "Назад"
+    backBtn.addEventListener('click', () => {
+        reviewsSection.style.display = 'none';
+        showcase.style.display = 'block';
+        headerTitle.textContent = 'Витрина';
+        searchBar.style.display = 'flex';
+        backBtn.style.display = 'none';
     });
 }
 
@@ -183,4 +301,25 @@ document.addEventListener('DOMContentLoaded', () => {
         );
         renderProducts(filteredProducts);
     });
+
+    // Обработчик для кнопки "Отзывы" в главном меню Telegram-бота
+    if (window.Telegram && window.Telegram.WebApp) {
+        const tg = window.Telegram.WebApp;
+        tg.MainButton.hide(); // Скрываем главную кнопку, если она не нужна
+
+        // Добавляем обработчик для команды /reviews (или другой команды, связанной с кнопкой "Отзывы")
+        tg.onEvent('mainButtonClicked', () => {
+            // Здесь можно проверить, какая команда была вызвана, но для простоты предположим, что это "Отзывы"
+            showReviews();
+        });
+
+        // Подписываемся на события от бота (например, через команды)
+        tg.onEvent('message', (msg) => {
+            if (msg.text === '/reviews') {
+                showReviews();
+            }
+        });
+
+        tg.expand(); // Разворачиваем приложение
+    }
 });
