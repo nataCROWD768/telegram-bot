@@ -11,14 +11,16 @@ let ws;
 
 const BASE_URL = 'https://telegram-bot-gmut.onrender.com';
 
-// Подключение к WebSocket (если используется)
+// Подключение к WebSocket
 function connectWebSocket() {
     ws = new WebSocket('wss://telegram-bot-gmut.onrender.com');
     ws.onopen = () => console.log('Подключено к WebSocket');
     ws.onmessage = (event) => {
         const message = JSON.parse(event.data);
+        console.log('Получено сообщение WebSocket:', message);
         if (message.type === 'update_products') {
             products = message.data;
+            console.log('Обновлены продукты через WebSocket:', products);
             renderProducts(products);
             const productDetail = document.getElementById('product-detail');
             if (productDetail.style.display === 'block') {
@@ -274,8 +276,9 @@ function showReviews(page = 1) {
             });
         }
     });
+    console.log('Все одобренные отзывы:', allReviews);
 
-    const reviewsPerPage = 10; // 10 отзывов на страницу
+    const reviewsPerPage = 10;
     const totalReviews = allReviews.length;
     const totalPages = Math.ceil(totalReviews / reviewsPerPage);
     const start = (page - 1) * reviewsPerPage;
@@ -289,13 +292,11 @@ function showReviews(page = 1) {
         </div>
     `).join('') : '<p>Пока нет отзывов.</p>';
 
-    // Пагинация
     pagination.innerHTML = '';
     if (totalReviews > reviewsPerPage) {
         const paginationContainer = document.createElement('div');
         paginationContainer.className = 'pagination-container';
 
-        // Кнопка "Назад"
         const prevBtn = document.createElement('button');
         prevBtn.textContent = '←';
         prevBtn.className = 'pagination-btn' + (page === 1 ? ' disabled' : '');
@@ -303,7 +304,6 @@ function showReviews(page = 1) {
         prevBtn.addEventListener('click', () => showReviews(page - 1));
         paginationContainer.appendChild(prevBtn);
 
-        // Номера страниц с эллипсисами
         const maxVisiblePages = 5;
         let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
         let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -350,7 +350,6 @@ function showReviews(page = 1) {
             paginationContainer.appendChild(lastPage);
         }
 
-        // Кнопка "Вперёд"
         const nextBtn = document.createElement('button');
         nextBtn.textContent = '→';
         nextBtn.className = 'pagination-btn' + (page === totalPages ? ' disabled' : '');

@@ -72,12 +72,21 @@ const setupWebhook = async () => {
 
 const syncProducts = async () => {
     try {
-        console.log('Принудительная синхронизация товаров...');
-        await Product.deleteMany({});
-        console.log('Коллекция products очищена');
+        console.log('Синхронизация товаров...');
+        const existingProducts = await Product.find();
+        const existingProductNames = existingProducts.map(p => p.name);
+
         for (const productData of initialProducts) {
-            const newProduct = await Product.create(productData);
-            console.log('Добавлен новый товар:', newProduct);
+            if (!existingProductNames.includes(productData.name)) {
+                const newProduct = await Product.create(productData);
+                console.log('Добавлен новый товар:', newProduct);
+            } else {
+                await Product.updateOne(
+                    { name: productData.name },
+                    { $set: productData }
+                );
+                console.log(`Обновлён товар: ${productData.name}`);
+            }
         }
         console.log('Товары синхронизированы');
     } catch (error) {
@@ -89,19 +98,18 @@ app.get('/api/products', async (req, res) => {
     console.log('Получен запрос на /api/products');
     try {
         const products = await Product.find();
-        console.log('Найденные товары:', products);
         if (!products || products.length === 0) {
             console.log('Товары не найдены в базе данных');
             return res.status(404).json({ error: 'Товары не найдены' });
         }
         const productsWithReviews = await Promise.all(products.map(async (product) => {
             const reviews = await Review.find({ productId: product._id, isApproved: true });
+            console.log(`Отзывы для продукта ${product.name}:`, reviews);
             return { ...product.toObject(), reviews };
         }));
-        console.log('Отправка данных клиенту:', productsWithReviews);
         res.json({ products: productsWithReviews, total: products.length });
     } catch (error) {
-        console.error('Ошибка API /api/products:', error.message);
+        console.error('Ошибка API /api/products:', error.stack);
         res.status(500).json({ error: 'Ошибка загрузки товаров' });
     }
 });
@@ -203,7 +211,7 @@ bot.on('message', async (msg) => {
                 newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов');
             } else {
                 const reviewList = reviews.map(r => {
-                    const productName = r.productId ? r.productId.name : 'Неизвестный товар'; // Проверка на null
+                    const productName = r.productId ? r.productId.name : 'Неизвестный товар';
                     return `Товар: ${productName}\n` +
                         `Пользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\n` +
                         `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
@@ -320,10 +328,44 @@ bot.on('web_app_data', async (msg) => {
 
 const startServer = async () => {
     await setupWebhook();
-    await syncProducts();
+    // await syncProducts(); // Закомментировано, чтобы не перезаписывать продукты при каждом запуске
     app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 };
 
+// Экспортируем moderateReviews для использования в других модулях
+const moderateReviews = async (bot, chatId) => {
+    try {
+        const reviews = await Review.find({ isApproved: false }).populate('productId', 'name');
+        console.log('Загруженные отзывы на модерацию:', reviews);
+
+        if (reviews.length === 0) {
+            const msg = await bot.sendMessage(chatId, 'Нет отзывов на модерации');
+            lastMessageId[chatId] = msg.message_id;
+            return;
+        }
+
+        const reviewList = reviews.map(r => {
+            const productName = r.productId ? r.productId.name : 'Неизвестный товар';
+            return `ID: ${r._id}\nТовар: ${productName}\nПользователь: ${r.username}\nРейтинг: ${r.rating}\nКомментарий: ${r.comment}`;
+        }).join('\n---\n');
+
+        const msg = await bot.sendMessage(chatId, `Отзывы на модерации:\n\n${reviewList}`, {
+            reply_markup: {
+                inline_keyboard: reviews.map(r => [
+                    { text: 'Одобрить', callback_data: `approve_review_${r._id}` },
+                    { text: 'Отклонить', callback_data: `reject_review_${r._id}` }
+                ])
+            }
+        });
+        lastMessageId[chatId] = msg.message_id;
+    } catch (error) {
+        console.error('Ошибка загрузки отзывов в админ-панели:', error.stack);
+        await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов');
+    }
+};
+
 startServer();
+
+module.exports = { moderateReviews };
