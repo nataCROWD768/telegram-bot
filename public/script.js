@@ -1,14 +1,14 @@
-// Массив продуктов
+// Массив продуктов (адаптирован из первого документа)
 const products = [
-    { id: 1, name: "НАСЫЩАЯ МОЛОЧНОСТЬ", clubPrice: 1000, clientPrice: 1200, rating: 4.5, image: "images/product1.jpg" },
-    { id: 2, name: "CONTROL RGP - молекулярный гель на основе Фукуса и Арганового масла", clubPrice: 1500, clientPrice: 1800, rating: 4.0, image: "images/product2.jpg" },
-    { id: 3, name: "ВИОЛЮР", clubPrice: 2000, clientPrice: 2400, rating: 4.8, image: "images/product3.jpg" },
-    { id: 4, name: "БИОЛАСТ", clubPrice: 800, clientPrice: 1000, rating: 3.5, image: "images/product4.jpg" },
-    { id: 5, name: "CONTROL RGP", clubPrice: 1200, clientPrice: 1400, rating: 4.2, image: "images/product5.jpg" },
-    { id: 6, name: "DETOX RGP", clubPrice: 1100, clientPrice: 1300, rating: 4.3, image: "images/product6.jpg" },
-    { id: 7, name: "SLIM RGP", clubPrice: 900, clientPrice: 1100, rating: 4.1, image: "images/product7.jpg" },
-    { id: 8, name: "ХВОЙНЫЙ", clubPrice: 1600, clientPrice: 1900, rating: 4.7, image: "images/product8.jpg" },
-    { id: 9, name: "ВОДАНИЙ", clubPrice: 1300, clientPrice: 1500, rating: 4.4, image: "images/product9.jpg" }
+    { id: 1, name: 'НАБОР «МОЛОДОСТЬ»', description: 'Описание 1', image: '/images/image1.jpg', clubPrice: 1000, clientPrice: 1200, rating: 4.5 },
+    { id: 2, name: 'МАСЛО СBD, 10%', description: 'Описание 2', image: '/images/image2.jpg', clubPrice: 1500, clientPrice: 1800, rating: 4.0 },
+    { id: 3, name: 'БИОЙОДИН 150', description: 'Описание 3', image: '/images/image3.jpg', clubPrice: 2000, clientPrice: 2400, rating: 4.8 },
+    { id: 4, name: 'БИОЛАСТИН', description: 'Описание 4', image: '/images/image4.jpg', clubPrice: 800, clientPrice: 1000, rating: 3.5 },
+    { id: 5, name: 'CONTROL RGP - молекулярный гель на основе Фукуса и Арганового масла', description: 'Описание 5', image: '/images/image5.jpg', clubPrice: 1200, clientPrice: 1400, rating: 4.2 },
+    { id: 6, name: 'DETOX RGP - молекулярный гель на основе Фукуса и Арганового масла', description: 'Описание 6', image: '/images/image6.jpg', clubPrice: 1100, clientPrice: 1300, rating: 4.3 },
+    { id: 7, name: 'SLIM RGP - молекулярный гель на основе Фукуса и Арганового масла', description: 'Описание 7', image: '/images/image7.jpg', clubPrice: 900, clientPrice: 1100, rating: 4.1 },
+    { id: 8, name: 'ХВОЙНЫЙ БАЛЬЗАМ', description: 'Описание 8', image: '/images/image8.jpg', clubPrice: 1600, clientPrice: 1900, rating: 4.7 },
+    { id: 9, name: 'ВОДНЫЙ ЭКСТРАКТ ПРОПОЛИСА', description: 'Описание 9', image: '/images/image9.jpg', clubPrice: 1300, clientPrice: 1500, rating: 4.4 }
 ];
 
 // Функция для рендеринга списка товаров
