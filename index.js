@@ -119,7 +119,7 @@ app.post('/api/reviews', async (req, res) => {
     try {
         const { productId, username, rating, comment, isApproved } = req.body;
         const review = new Review({
-            userId: 'web_user_' + Date.now(), // Временный userId для веб-пользователя
+            userId: 'web_user_' + Date.now(),
             username: username || 'Аноним',
             productId,
             rating,
@@ -129,8 +129,8 @@ app.post('/api/reviews', async (req, res) => {
         await review.save();
         console.log('Отзыв сохранён из веб-интерфейса:', review);
 
-        // Отправка уведомления администратору
-        const message = `Новый отзыв на модерации:\nТовар ID: ${productId}\nПользователь: ${username || 'Аноним'}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
+        const product = await Product.findById(productId);
+        const message = `Новый отзыв на модерации:\nТовар: ${product ? product.name : productId}\nПользователь: ${username || 'Аноним'}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
         await bot.sendMessage(ADMIN_ID, message, {
             reply_markup: {
                 inline_keyboard: [
@@ -182,6 +182,9 @@ bot.on('message', async (msg) => {
             await bot.deleteMessage(chatId, lastMessageId[chatId]);
         } catch (error) {
             console.error('Ошибка удаления сообщения:', error);
+            if (error.code === 'ETELEGRAM' && error.response?.body?.error_code === 400) {
+                delete lastMessageId[chatId]; // Очистка, если сообщение не найдено
+            }
         }
     }
 
@@ -303,7 +306,6 @@ bot.on('web_app_data', async (msg) => {
                 : 0;
             await Product.updateOne({ _id: productId }, { averageRating });
 
-            // Отправка уведомления администратору
             const message = `Новый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${msg.from.username || 'Аноним'}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
             await bot.sendMessage(ADMIN_ID, message, {
                 reply_markup: {
@@ -328,7 +330,7 @@ bot.on('web_app_data', async (msg) => {
 // Запуск сервера
 const startServer = async () => {
     await setupWebhook();
-    await syncProducts(); // Синхронизация продуктов при запуске
+    await syncProducts();
     app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
