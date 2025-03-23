@@ -162,7 +162,7 @@ bot.on('message', async (msg) => {
             await showProfile(bot, chatId);
             break;
         case 'Витрина':
-            newMessage = await bot.sendMessage(chatId, 'В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система) - в конечную стоимость продукта не входит:\n' +
+            newMessage = await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n' +
                 '- прибыль компании \n' +
                 '- маркетинговое вознаграждение', {
                 reply_markup: {
