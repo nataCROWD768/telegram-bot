@@ -236,11 +236,11 @@ const moderateReviews = async (bot, chatId) => {
         for (const review of reviews) {
             const productName = review.productId ? review.productId.name : 'Неизвестный товар';
             const reviewText = `
+                Дата: ${formatDate(review.createdAt)}
                 Товар: ${productName}
                 Пользователь: ${review.username.startsWith('@') ? review.username : '@' + review.username}
                 Рейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
                 Комментарий: ${review.comment}
-                Дата: ${formatDate(review.createdAt)}
             `;
             await bot.sendMessage(chatId, reviewText, {
                 reply_markup: {

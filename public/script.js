@@ -169,9 +169,9 @@ function showProductDetail(product) {
                 <h4>Отзывы (${product.reviews ? product.reviews.filter(r => r.isApproved).length : 0})</h4>
                 ${product.reviews && product.reviews.length > 0 ? product.reviews.filter(r => r.isApproved).map(review => `
                     <div class="review">
+                        <p class="review-date">Дата: ${formatDate(review.createdAt)}</p>
                         <p><strong>${review.username.startsWith('@') ? review.username : '@' + review.username}</strong> (★ ${review.rating})</p>
                         <p>${review.comment}</p>
-                        <p class="review-date">Дата: ${formatDate(review.createdAt)}</p>
                     </div>
                 `).join('') : '<p>Пока нет отзывов.</p>'}
             </div>

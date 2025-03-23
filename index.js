@@ -248,7 +248,9 @@ bot.on('message', async (msg) => {
             break;
         case 'Отзывы':
             const reviewsPerPage = 10;
-            const reviews = await Review.find({ isApproved: true }).populate('productId', 'name');
+            const reviews = await Review.find({ isApproved: true })
+                .populate('productId', 'name')
+                .sort({ createdAt: -1 }); // Сортировка по убыванию даты
             console.log('Загруженные подтверждённые отзывы для Telegram:', reviews);
 
             if (reviews.length === 0) {
@@ -264,11 +266,11 @@ bot.on('message', async (msg) => {
 
                     const reviewList = paginatedReviews.map(r => {
                         const productName = r.productId ? r.productId.name : 'Неизвестный товар';
-                        return `Товар: ${productName}\n` +
+                        return `Дата: ${formatDate(r.createdAt)}\n` +
+                            `Товар: ${productName}\n` +
                             `Пользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\n` +
                             `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
-                            `Комментарий: ${r.comment}\n` +
-                            `Дата: ${formatDate(r.createdAt)}`;
+                            `Комментарий: ${r.comment}`;
                     }).join('\n---\n');
 
                     const inlineKeyboard = [];
@@ -335,7 +337,9 @@ bot.on('callback_query', async (callbackQuery) => {
     if (data.startsWith('reviews_page_')) {
         const page = parseInt(data.split('_')[2]);
         const reviewsPerPage = 10;
-        const reviews = await Review.find({ isApproved: true }).populate('productId', 'name');
+        const reviews = await Review.find({ isApproved: true })
+            .populate('productId', 'name')
+            .sort({ createdAt: -1 }); // Сортировка по убыванию даты
         const totalPages = Math.ceil(reviews.length / reviewsPerPage);
 
         const start = (page - 1) * reviewsPerPage;
@@ -344,11 +348,11 @@ bot.on('callback_query', async (callbackQuery) => {
 
         const reviewList = paginatedReviews.map(r => {
             const productName = r.productId ? r.productId.name : 'Неизвестный товар';
-            return `Товар: ${productName}\n` +
+            return `Дата: ${formatDate(r.createdAt)}\n` +
+                `Товар: ${productName}\n` +
                 `Пользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\n` +
                 `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
-                `Комментарий: ${r.comment}\n` +
-                `Дата: ${formatDate(r.createdAt)}`;
+                `Комментарий: ${r.comment}`;
         }).join('\n---\n');
 
         const inlineKeyboard = [];
