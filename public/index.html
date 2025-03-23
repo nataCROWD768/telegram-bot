@@ -2,38 +2,29 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=390, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Витрина</title>
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;600&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <!-- Подключаем шрифты -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Open+Sans:wght@400;600&family=Playfair+Display:wght@400;600&display=swap" rel="stylesheet">
+    <!-- Подключаем Font Awesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="container">
-        <header class="header">
-            <h1 class="header-title">ВИТРИНА</h1>
+        <div class="header">
+            <h1 class="header-title">Витрина</h1>
             <div class="search-bar">
                 <input type="text" id="search-input" placeholder="Поиск...">
             </div>
-        </header>
+        </div>
         <div id="showcase">
             <div class="product-grid" id="product-list"></div>
-            <a href="#" id="scroll-top-btn" class="scroll-top-btn">↑</a>
         </div>
-        <div id="product-detail" style="display: none;">
-            <div id="product-detail-content"></div>
-            <a href="#" onclick="document.getElementById('product-detail').style.display='none'; document.getElementById('showcase').style.display='block'; return false;" class="btn waves-effect waves-light">Назад</a>
-        </div>
+        <div id="product-detail" style="display: none;"></div>
     </div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+    <a href="#" class="scroll-top-btn">↑</a>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="script.js"></script>
-    <script>
-        (function(){
-            function c(){
-                var b = a.contentDocument || a.contentWindow.document;
-                if(b){
-                    var d = b.createElement('script');
-                    d.innerHTML = "window.__CF$cv$params={r:'924beec79e7bdd20',t:'MTc0MjcxMTk3OC4wMDAwMDA='};
+</body>
+</html>

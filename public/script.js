@@ -29,11 +29,11 @@ function renderProducts(productArray) {
                 <div class="prices">
                     <div class="price-container">
                         <span class="club-price">${product.clubPrice} Р</span>
-                        <span class="price-label">Клубная</span>
+                        <i class="fas fa-crown price-icon"></i> <!-- Иконка короны для клубной цены -->
                     </div>
                     <div class="price-container">
                         <span class="client-price">${product.clientPrice} Р</span>
-                        <span class="price-label">Клиент. цена</span>
+                        <i class="fas fa-user price-icon"></i> <!-- Иконка пользователя для клиентской цены -->
                     </div>
                 </div>
             </div>

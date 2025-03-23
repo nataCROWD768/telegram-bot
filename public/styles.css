@@ -31,13 +31,13 @@ body {
     font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 1px;
-    line-height: 20px; /* Устанавливаем высоту строки, чтобы выровнять по центру */
+    line-height: 20px;
 }
 
 .search-bar {
     width: 100px;
     display: flex;
-    align-items: center; /* Выравниваем строку поиска по центру */
+    align-items: center;
 }
 
 #search-input {
@@ -64,7 +64,7 @@ body {
 }
 
 #showcase {
-    margin-top: 50px; /* Уменьшаем отступ от шапки (было 70px, теперь 50px) */
+    margin-top: 50px;
 }
 
 .product-grid {
@@ -138,15 +138,15 @@ body {
 
 .prices {
     display: flex;
-    justify-content: space-between; /* Располагаем цены напротив друг друга */
+    justify-content: space-between;
     margin-bottom: 1px;
-    font-family: 'Open Sans', sans-serif;
+    font-family: 'Playfair Display', serif; /* Используем красивый шрифт для цен */
 }
 
 .price-container {
     display: flex;
     flex-direction: column;
-    align-items: center; /* Центрируем текст и цену */
+    align-items: center;
 }
 
 .club-price {
@@ -156,6 +156,8 @@ body {
     background-color: #e6f4ea;
     padding: 2px 4px;
     border-radius: 3px;
+    font-family: 'Playfair Display', serif; /* Красивый шрифт */
+    letter-spacing: 0.5px; /* Добавляем небольшой межбуквенный интервал */
 }
 
 .client-price {
@@ -166,12 +168,21 @@ body {
     background-color: #fee2e2;
     padding: 2px 4px;
     border-radius: 3px;
+    font-family: 'Playfair Display', serif; /* Красивый шрифт */
+    letter-spacing: 0.5px; /* Добавляем небольшой межбуквенный интервал */
 }
 
-.price-label {
-    font-size: 6px;
-    color: #666;
-    margin-top: 1px;
+.price-icon {
+    font-size: 10px; /* Размер иконки */
+    margin-top: 2px;
+}
+
+.club-price + .price-icon {
+    color: #16a34a; /* Цвет иконки для клубной цены */
+}
+
+.client-price + .price-icon {
+    color: #ef4444; /* Цвет иконки для клиентской цены */
 }
 
 .rating {
