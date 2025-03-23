@@ -118,9 +118,28 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
+app.get('/api/reviews', async (req, res) => {
+    console.log('Получен запрос на /api/reviews');
+    try {
+        const reviews = await Review.find({ isApproved: true }).populate('productId', 'name');
+        console.log('Все подтверждённые отзывы:', reviews);
+        const formattedReviews = reviews.map(review => ({
+            ...review.toObject(),
+            productName: review.productId ? review.productId.name : 'Неизвестный товар'
+        }));
+        res.json({ reviews: formattedReviews, total: formattedReviews.length });
+    } catch (error) {
+        console.error('Ошибка API /api/reviews:', error.stack);
+        res.status(500).json({ error: 'Ошибка загрузки отзывов' });
+    }
+});
+
 app.post('/api/reviews', async (req, res) => {
     try {
         const { productId, username, rating, comment, isApproved } = req.body;
+        if (!productId || !mongoose.Types.ObjectId.isValid(productId)) {
+            return res.status(400).json({ success: false, error: 'Неверный productId' });
+        }
         const review = new Review({
             userId: 'web_user_' + Date.now(),
             username: username || 'Аноним',
@@ -280,7 +299,7 @@ bot.on('web_app_data', async (msg) => {
     if (data.type === 'review') {
         const { productId, rating, comment } = data;
         console.log('Попытка сохранить отзыв:', { productId, rating, comment });
-        if (!rating || rating < 1 || rating > 5 || !comment || !productId) {
+        if (!rating || rating < 1 || rating > 5 || !comment || !productId || !mongoose.Types.ObjectId.isValid(productId)) {
             console.log('Ошибка валидации отзыва:', { productId, rating, comment });
             await bot.sendMessage(chatId, '❌ Неверный формат отзыва');
             return;

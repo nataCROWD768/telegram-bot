@@ -209,14 +209,16 @@ const deleteProduct = async (bot, chatId) => {
 const moderateReviews = async (bot, chatId) => {
     try {
         const reviews = await Review.find({ isApproved: false }).populate('productId', 'name');
+        console.log('Загруженные отзывы на модерацию:', reviews);
         if (reviews.length === 0) {
             await bot.sendMessage(chatId, '📝 Нет отзывов на модерацию');
             return;
         }
 
         for (const review of reviews) {
+            const productName = review.productId ? review.productId.name : 'Неизвестный товар';
             const reviewText = `
-                Товар: ${review.productId.name}
+                Товар: ${productName}
                 Пользователь: ${review.username.startsWith('@') ? review.username : '@' + review.username}
                 Рейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
                 Комментарий: ${review.comment}
@@ -250,12 +252,15 @@ const handleAdminCallback = async (bot, callbackQuery) => {
                 await bot.sendMessage(chatId, '❌ Отзыв не найден');
                 return;
             }
-            const reviews = await Review.find({ productId: review.productId, isApproved: true });
-            const averageRating = reviews.length > 0
-                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-                : 0;
-            await Product.updateOne({ _id: review.productId }, { averageRating });
-            await bot.editMessageText(`Отзыв одобрен!\nТовар: ${review.productId.name}`, {
+            const productName = review.productId ? review.productId.name : 'Неизвестный товар';
+            if (review.productId) {
+                const reviews = await Review.find({ productId: review.productId, isApproved: true });
+                const averageRating = reviews.length > 0
+                    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                    : 0;
+                await Product.updateOne({ _id: review.productId }, { averageRating });
+            }
+            await bot.editMessageText(`Отзыв одобрен!\nТовар: ${productName}`, {
                 chat_id: chatId,
                 message_id: callbackQuery.message.message_id
             });
@@ -271,13 +276,16 @@ const handleAdminCallback = async (bot, callbackQuery) => {
                 await bot.sendMessage(chatId, '❌ Отзыв не найден');
                 return;
             }
+            const productName = review.productId ? review.productId.name : 'Неизвестный товар';
             await Review.deleteOne({ _id: reviewId });
-            const reviews = await Review.find({ productId: review.productId, isApproved: true });
-            const averageRating = reviews.length > 0
-                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-                : 0;
-            await Product.updateOne({ _id: review.productId }, { averageRating });
-            await bot.editMessageText(`Отзыв отклонён и удалён!\nТовар: ${review.productId.name}`, {
+            if (review.productId) {
+                const reviews = await Review.find({ productId: review.productId, isApproved: true });
+                const averageRating = reviews.length > 0
+                    ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                    : 0;
+                await Product.updateOne({ _id: review.productId }, { averageRating });
+            }
+            await bot.editMessageText(`Отзыв отклонён и удалён!\nТовар: ${productName}`, {
                 chat_id: chatId,
                 message_id: callbackQuery.message.message_id
             });

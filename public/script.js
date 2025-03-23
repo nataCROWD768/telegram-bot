@@ -247,7 +247,7 @@ function sendReviewToAdmin(review) {
 }
 
 // Отображение списка отзывов с пагинацией
-function showReviews(page = 1) {
+async function showReviews(page = 1) {
     const showcase = document.getElementById('showcase');
     const productDetail = document.getElementById('product-detail');
     const reviewsSection = document.getElementById('reviews-section');
@@ -265,107 +265,106 @@ function showReviews(page = 1) {
     searchBar.style.display = 'none';
     backBtn.style.display = 'flex';
 
-    const allReviews = [];
-    products.forEach(product => {
-        if (product.reviews && product.reviews.length > 0) {
-            product.reviews.forEach(review => {
-                if (review.isApproved) {
-                    allReviews.push({ ...review, productName: product.name });
+    try {
+        const response = await fetch(`${BASE_URL}/api/reviews`);
+        if (!response.ok) throw new Error('Не удалось загрузить отзывы');
+        const data = await response.json();
+        const allReviews = data.reviews;
+        console.log('Все подтверждённые отзывы для отображения:', allReviews);
+
+        const reviewsPerPage = 10;
+        const totalReviews = allReviews.length;
+        const totalPages = Math.ceil(totalReviews / reviewsPerPage);
+        const start = (page - 1) * reviewsPerPage;
+        const end = Math.min(start + reviewsPerPage, totalReviews);
+        const paginatedReviews = allReviews.slice(start, end);
+
+        reviewsList.innerHTML = paginatedReviews.length > 0 ? paginatedReviews.map(review => `
+            <div class="review">
+                <p><strong>${review.username.startsWith('@') ? review.username : '@' + review.username}</strong> о продукте <strong>${review.productName}</strong> (★ ${review.rating})</p>
+                <p>${review.comment}</p>
+            </div>
+        `).join('') : '<p>Пока нет подтверждённых отзывов.</p>';
+
+        pagination.innerHTML = '';
+        if (totalReviews > reviewsPerPage) {
+            const paginationContainer = document.createElement('div');
+            paginationContainer.className = 'pagination-container';
+
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '←';
+            prevBtn.className = 'pagination-btn' + (page === 1 ? ' disabled' : '');
+            prevBtn.disabled = page === 1;
+            prevBtn.addEventListener('click', () => showReviews(page - 1));
+            paginationContainer.appendChild(prevBtn);
+
+            const maxVisiblePages = 5;
+            let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+            let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+            if (endPage - startPage + 1 < maxVisiblePages) {
+                startPage = Math.max(1, endPage - maxVisiblePages + 1);
+            }
+
+            if (startPage > 1) {
+                const firstPage = document.createElement('button');
+                firstPage.textContent = '1';
+                firstPage.className = 'pagination-btn';
+                firstPage.addEventListener('click', () => showReviews(1));
+                paginationContainer.appendChild(firstPage);
+
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.className = 'pagination-ellipsis';
+                    paginationContainer.appendChild(ellipsis);
                 }
-            });
-        }
-    });
-    console.log('Все подтверждённые отзывы для отображения:', allReviews);
-
-    const reviewsPerPage = 10;
-    const totalReviews = allReviews.length;
-    const totalPages = Math.ceil(totalReviews / reviewsPerPage);
-    const start = (page - 1) * reviewsPerPage;
-    const end = Math.min(start + reviewsPerPage, totalReviews);
-    const paginatedReviews = allReviews.slice(start, end);
-
-    reviewsList.innerHTML = paginatedReviews.length > 0 ? paginatedReviews.map(review => `
-        <div class="review">
-            <p><strong>${review.username.startsWith('@') ? review.username : '@' + review.username}</strong> о продукте <strong>${review.productName}</strong> (★ ${review.rating})</p>
-            <p>${review.comment}</p>
-        </div>
-    `).join('') : '<p>Пока нет подтверждённых отзывов.</p>';
-
-    pagination.innerHTML = '';
-    if (totalReviews > reviewsPerPage) {
-        const paginationContainer = document.createElement('div');
-        paginationContainer.className = 'pagination-container';
-
-        const prevBtn = document.createElement('button');
-        prevBtn.textContent = '←';
-        prevBtn.className = 'pagination-btn' + (page === 1 ? ' disabled' : '');
-        prevBtn.disabled = page === 1;
-        prevBtn.addEventListener('click', () => showReviews(page - 1));
-        paginationContainer.appendChild(prevBtn);
-
-        const maxVisiblePages = 5;
-        let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
-        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-        if (endPage - startPage + 1 < maxVisiblePages) {
-            startPage = Math.max(1, endPage - maxVisiblePages + 1);
-        }
-
-        if (startPage > 1) {
-            const firstPage = document.createElement('button');
-            firstPage.textContent = '1';
-            firstPage.className = 'pagination-btn';
-            firstPage.addEventListener('click', () => showReviews(1));
-            paginationContainer.appendChild(firstPage);
-
-            if (startPage > 2) {
-                const ellipsis = document.createElement('span');
-                ellipsis.textContent = '...';
-                ellipsis.className = 'pagination-ellipsis';
-                paginationContainer.appendChild(ellipsis);
-            }
-        }
-
-        for (let i = startPage; i <= endPage; i++) {
-            const pageBtn = document.createElement('button');
-            pageBtn.textContent = i;
-            pageBtn.className = 'pagination-btn' + (i === page ? ' active' : '');
-            pageBtn.addEventListener('click', () => showReviews(i));
-            paginationContainer.appendChild(pageBtn);
-        }
-
-        if (endPage < totalPages) {
-            if (endPage < totalPages - 1) {
-                const ellipsis = document.createElement('span');
-                ellipsis.textContent = '...';
-                ellipsis.className = 'pagination-ellipsis';
-                paginationContainer.appendChild(ellipsis);
             }
 
-            const lastPage = document.createElement('button');
-            lastPage.textContent = totalPages;
-            lastPage.className = 'pagination-btn';
-            lastPage.addEventListener('click', () => showReviews(totalPages));
-            paginationContainer.appendChild(lastPage);
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.className = 'pagination-btn' + (i === page ? ' active' : '');
+                pageBtn.addEventListener('click', () => showReviews(i));
+                paginationContainer.appendChild(pageBtn);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.className = 'pagination-ellipsis';
+                    paginationContainer.appendChild(ellipsis);
+                }
+
+                const lastPage = document.createElement('button');
+                lastPage.textContent = totalPages;
+                lastPage.className = 'pagination-btn';
+                lastPage.addEventListener('click', () => showReviews(totalPages));
+                paginationContainer.appendChild(lastPage);
+            }
+
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = '→';
+            nextBtn.className = 'pagination-btn' + (page === totalPages ? ' disabled' : '');
+            nextBtn.disabled = page === totalPages;
+            nextBtn.addEventListener('click', () => showReviews(page + 1));
+            paginationContainer.appendChild(nextBtn);
+
+            pagination.appendChild(paginationContainer);
         }
 
-        const nextBtn = document.createElement('button');
-        nextBtn.textContent = '→';
-        nextBtn.className = 'pagination-btn' + (page === totalPages ? ' disabled' : '');
-        nextBtn.disabled = page === totalPages;
-        nextBtn.addEventListener('click', () => showReviews(page + 1));
-        paginationContainer.appendChild(nextBtn);
-
-        pagination.appendChild(paginationContainer);
+        backBtn.onclick = () => {
+            reviewsSection.style.display = 'none';
+            showcase.style.display = 'block';
+            headerTitle.textContent = 'Витрина';
+            searchBar.style.display = 'flex';
+            backBtn.style.display = 'none';
+        };
+    } catch (error) {
+        console.error('Ошибка загрузки отзывов:', error);
+        reviewsList.innerHTML = '<p>Ошибка загрузки отзывов.</p>';
     }
-
-    backBtn.onclick = () => {
-        reviewsSection.style.display = 'none';
-        showcase.style.display = 'block';
-        headerTitle.textContent = 'Витрина';
-        searchBar.style.display = 'flex';
-        backBtn.style.display = 'none';
-    };
 }
 
 // Инициализация
