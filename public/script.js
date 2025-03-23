@@ -46,14 +46,13 @@ async function loadProducts() {
     try {
         console.log(`Попытка загрузить продукты с ${BASE_URL}/api/products`);
         const response = await fetch(`${BASE_URL}/api/products`);
-        console.log('Ответ от сервера:', response);
         if (!response.ok) {
             const errorText = await response.text();
             throw new Error(`Не удалось загрузить продукты. Статус: ${response.status}, Текст: ${errorText}`);
         }
         const data = await response.json();
         products = data.products;
-        console.log('Продукты загружены:', products);
+        console.log('Продукты и отзывы загружены:', products);
         renderProducts(products);
     } catch (error) {
         console.error('Ошибка при загрузке продуктов:', error.message);
@@ -235,7 +234,7 @@ function sendReviewToAdmin(review) {
             if (data.success) {
                 console.log('Отзыв сохранён на сервере:', data);
                 alert('Отзыв отправлен на модерацию.');
-                loadProducts();
+                loadProducts(); // Перезагружаем продукты после отправки отзыва
             } else {
                 console.error('Ошибка сохранения отзыва:', data);
                 alert('Ошибка при отправке отзыва');
@@ -268,7 +267,7 @@ function showReviews(page = 1) {
 
     const allReviews = [];
     products.forEach(product => {
-        if (product.reviews) {
+        if (product.reviews && product.reviews.length > 0) {
             product.reviews.forEach(review => {
                 if (review.isApproved) {
                     allReviews.push({ ...review, productName: product.name });
@@ -276,7 +275,7 @@ function showReviews(page = 1) {
             });
         }
     });
-    console.log('Все одобренные отзывы:', allReviews);
+    console.log('Все подтверждённые отзывы для отображения:', allReviews);
 
     const reviewsPerPage = 10;
     const totalReviews = allReviews.length;
@@ -290,7 +289,7 @@ function showReviews(page = 1) {
             <p><strong>${review.username.startsWith('@') ? review.username : '@' + review.username}</strong> о продукте <strong>${review.productName}</strong> (★ ${review.rating})</p>
             <p>${review.comment}</p>
         </div>
-    `).join('') : '<p>Пока нет отзывов.</p>';
+    `).join('') : '<p>Пока нет подтверждённых отзывов.</p>';
 
     pagination.innerHTML = '';
     if (totalReviews > reviewsPerPage) {

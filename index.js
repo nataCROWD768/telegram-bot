@@ -105,8 +105,12 @@ app.get('/api/products', async (req, res) => {
         const productsWithReviews = await Promise.all(products.map(async (product) => {
             const reviews = await Review.find({ productId: product._id, isApproved: true });
             console.log(`Отзывы для продукта ${product.name}:`, reviews);
-            return { ...product.toObject(), reviews };
+            const averageRating = reviews.length > 0
+                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                : product.averageRating || 0;
+            return { ...product.toObject(), reviews, averageRating };
         }));
+        console.log('Отправка данных клиенту:', productsWithReviews);
         res.json({ products: productsWithReviews, total: products.length });
     } catch (error) {
         console.error('Ошибка API /api/products:', error.stack);
@@ -207,6 +211,7 @@ bot.on('message', async (msg) => {
             break;
         case 'Отзывы':
             const reviews = await Review.find({ isApproved: true }).populate('productId', 'name');
+            console.log('Загруженные подтверждённые отзывы для Telegram:', reviews);
             if (reviews.length === 0) {
                 newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов');
             } else {
@@ -334,7 +339,7 @@ const startServer = async () => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 };
 
-// Экспортируем moderateReviews для использования в других модулях
+// Функция модерации отзывов
 const moderateReviews = async (bot, chatId) => {
     try {
         const reviews = await Review.find({ isApproved: false }).populate('productId', 'name');
