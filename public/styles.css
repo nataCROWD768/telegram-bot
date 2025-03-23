@@ -370,8 +370,11 @@ body {
     margin: 0;
 }
 
-.product-detail-reviews {
-    margin-bottom: 20px;
+/* Фиксированная ширина для отзывов и формы */
+.review-container {
+    width: 300px; /* Фиксированная ширина, равная форме "Оставить отзыв" */
+    max-width: 100%;
+    margin: 0 auto 20px; /* Центрирование и отступ снизу */
 }
 
 .product-detail-reviews h4 {
@@ -385,6 +388,8 @@ body {
 .review {
     border-bottom: 1px solid #eee;
     padding: 8px 0;
+    width: 100%; /* Занимает всю ширину контейнера */
+    word-wrap: break-word; /* Перенос длинных слов */
 }
 
 .review p {
@@ -398,10 +403,9 @@ body {
 }
 
 .product-detail-review-form {
-    margin-bottom: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center; /* Выравнивание всех элементов по центру */
+    align-items: center;
 }
 
 .product-detail-review-form h4 {
@@ -426,20 +430,18 @@ body {
     color: #f59e0b;
 }
 
-/* Удлинённое поле ввода отзыва */
-textarea[id^="review-comment-"] { /* Селектор для всех textarea с id, начинающимся на review-comment- */
-    width: 90%; /* Удлинённое поле, занимает почти всю ширину с небольшим отступом */
-    min-height: 100px; /* Увеличенная высота поля */
-    margin: 0 0 10px 0; /* Отступ снизу для пространства перед кнопкой */
+textarea[id^="review-comment-"] {
+    width: 100%; /* Занимает всю ширину контейнера */
+    min-height: 100px;
+    margin: 0 0 10px 0;
     font-size: 13px;
     border-radius: 4px;
     border: 1px solid #d1d5db;
     padding: 8px;
     box-sizing: border-box;
-    resize: vertical; /* Позволяем изменять высоту, но не ширину */
+    resize: vertical;
 }
 
-/* Стили для кнопки "Отправить" */
 .submit-btn {
     background-color: #1e3a8a;
     color: white;
@@ -450,41 +452,8 @@ textarea[id^="review-comment-"] { /* Селектор для всех textarea �
     font-size: 13px;
     cursor: pointer;
     transition: background-color 0.3s ease;
-    width: auto; /* Кнопка сохраняет свою естественную ширину */
-    align-self: center; /* Центрирование кнопки под полем ввода */
-}
-
-#review-comment-1,
-#review-comment-2,
-#review-comment-3,
-#review-comment-4,
-#review-comment-5,
-#review-comment-6,
-#review-comment-7,
-#review-comment-8,
-#review-comment-9 {
-    width: 100%;
-    min-height: 80px;
-    margin-top: 8px;
-    font-size: 13px;
-    border-radius: 4px;
-    border: 1px solid #d1d5db;
-    padding: 8px;
-    box-sizing: border-box;
-}
-
-.submit-btn {
-    margin-top: 8px;
-    background-color: #1e3a8a;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 4px;
-    border: none;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 13px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
+    width: auto;
+    align-self: center;
 }
 
 .submit-btn:hover {
@@ -504,6 +473,50 @@ textarea[id^="review-comment-"] { /* Селектор для всех textarea �
     padding: 15px;
 }
 
+/* Стили для пагинации */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 5px;
+}
+
+.pagination-btn {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #333;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.pagination-btn:hover:not(.disabled) {
+    background-color: #f5f5f5;
+    border-color: #bbb;
+}
+
+.pagination-btn.active {
+    background-color: #1e3a8a;
+    color: white;
+    border-color: #1e3a8a;
+}
+
+.pagination-btn.disabled {
+    color: #aaa;
+    cursor: not-allowed;
+    border-color: #eee;
+}
+
+.pagination-ellipsis {
+    padding: 8px 12px;
+    font-size: 12px;
+    color: #666;
+}
+
+/* Удаляем старые стили пагинации */
 .pagination {
     display: flex;
     justify-content: center;
@@ -512,25 +525,10 @@ textarea[id^="review-comment-"] { /* Селектор для всех textarea �
 }
 
 .page-btn {
-    background: #d1d5db;
-    border: none;
-    padding: 5px 10px;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background 0.3s ease;
+    display: none; /* Убираем старые стили, используем pagination-btn */
 }
 
-.page-btn.active {
-    background: #1e3a8a;
-    color: white;
-}
-
-.page-btn:hover {
-    background: #3b82f6;
-    color: white;
-}
-
+/* Стили для кнопки "Наверх" */
 .scroll-top-btn {
     position: fixed;
     bottom: 15px;
@@ -547,4 +545,22 @@ textarea[id^="review-comment-"] { /* Селектор для всех textarea �
 
 .scroll-top-btn:hover {
     background-color: #3b82f6;
+}
+
+/* Адаптивность */
+@media (max-width: 320px) {
+    .review-container {
+        width: 100%;
+        padding: 5px;
+    }
+
+    .pagination-btn {
+        padding: 6px 10px;
+        font-size: 10px;
+    }
+
+    .pagination-ellipsis {
+        padding: 6px 10px;
+        font-size: 10px;
+    }
 }

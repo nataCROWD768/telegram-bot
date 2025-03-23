@@ -9,7 +9,7 @@ let products = [];
 let pendingReviews = [];
 let ws;
 
-const BASE_URL = 'https://telegram-bot-gmut.onrender.com'; // Единый URL для продакшена
+const BASE_URL = 'https://telegram-bot-gmut.onrender.com';
 
 // Подключение к WebSocket (если используется)
 function connectWebSocket() {
@@ -146,7 +146,7 @@ function showProductDetail(product) {
                 <h4>Описание</h4>
                 <p>${product.description || 'Описание отсутствует'}</p>
             </div>
-            <div class="product-detail-reviews">
+            <div class="product-detail-reviews review-container">
                 <h4>Отзывы (${product.reviews ? product.reviews.filter(r => r.isApproved).length : 0})</h4>
                 ${product.reviews && product.reviews.length > 0 ? product.reviews.filter(r => r.isApproved).map(review => `
                     <div class="review">
@@ -155,7 +155,7 @@ function showProductDetail(product) {
                     </div>
                 `).join('') : '<p>Пока нет отзывов.</p>'}
             </div>
-            <div class="product-detail-review-form">
+            <div class="product-detail-review-form review-container">
                 <h4>Оставить отзыв</h4>
                 <div class="rating-stars" id="rating-stars-${product._id}">
                     <span class="star" data-value="1">★</span>
@@ -194,7 +194,6 @@ function showProductDetail(product) {
     document.querySelector(`.submit-btn[data-id="${product._id}"]`).addEventListener('click', () => {
         const comment = document.getElementById(`review-comment-${product._id}`).value;
         if (selectedRating > 0 && comment.trim() !== '') {
-            // Получаем Telegram-username, если доступен
             const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
             const username = tg && tg.initDataUnsafe && tg.initDataUnsafe.user
                 ? (tg.initDataUnsafe.user.username ? `@${tg.initDataUnsafe.user.username}` : 'Аноним')
@@ -234,7 +233,7 @@ function sendReviewToAdmin(review) {
             if (data.success) {
                 console.log('Отзыв сохранён на сервере:', data);
                 alert('Отзыв отправлен на модерацию.');
-                loadProducts(); // Обновляем продукты для отображения новых данных
+                loadProducts();
             } else {
                 console.error('Ошибка сохранения отзыва:', data);
                 alert('Ошибка при отправке отзыва');
@@ -246,7 +245,7 @@ function sendReviewToAdmin(review) {
         });
 }
 
-// Отображение списка отзывов
+// Отображение списка отзывов с пагинацией
 function showReviews(page = 1) {
     const showcase = document.getElementById('showcase');
     const productDetail = document.getElementById('product-detail');
@@ -276,10 +275,11 @@ function showReviews(page = 1) {
         }
     });
 
-    const reviewsPerPage = 5;
-    const totalPages = Math.ceil(allReviews.length / reviewsPerPage);
+    const reviewsPerPage = 10; // 10 отзывов на страницу
+    const totalReviews = allReviews.length;
+    const totalPages = Math.ceil(totalReviews / reviewsPerPage);
     const start = (page - 1) * reviewsPerPage;
-    const end = start + reviewsPerPage;
+    const end = Math.min(start + reviewsPerPage, totalReviews);
     const paginatedReviews = allReviews.slice(start, end);
 
     reviewsList.innerHTML = paginatedReviews.length > 0 ? paginatedReviews.map(review => `
@@ -289,13 +289,76 @@ function showReviews(page = 1) {
         </div>
     `).join('') : '<p>Пока нет отзывов.</p>';
 
+    // Пагинация
     pagination.innerHTML = '';
-    for (let i = 1; i <= totalPages; i++) {
-        const pageBtn = document.createElement('button');
-        pageBtn.textContent = i;
-        pageBtn.className = i === page ? 'page-btn active' : 'page-btn';
-        pageBtn.addEventListener('click', () => showReviews(i));
-        pagination.appendChild(pageBtn);
+    if (totalReviews > reviewsPerPage) {
+        const paginationContainer = document.createElement('div');
+        paginationContainer.className = 'pagination-container';
+
+        // Кнопка "Назад"
+        const prevBtn = document.createElement('button');
+        prevBtn.textContent = '←';
+        prevBtn.className = 'pagination-btn' + (page === 1 ? ' disabled' : '');
+        prevBtn.disabled = page === 1;
+        prevBtn.addEventListener('click', () => showReviews(page - 1));
+        paginationContainer.appendChild(prevBtn);
+
+        // Номера страниц с эллипсисами
+        const maxVisiblePages = 5;
+        let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
+        let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+
+        if (endPage - startPage + 1 < maxVisiblePages) {
+            startPage = Math.max(1, endPage - maxVisiblePages + 1);
+        }
+
+        if (startPage > 1) {
+            const firstPage = document.createElement('button');
+            firstPage.textContent = '1';
+            firstPage.className = 'pagination-btn';
+            firstPage.addEventListener('click', () => showReviews(1));
+            paginationContainer.appendChild(firstPage);
+
+            if (startPage > 2) {
+                const ellipsis = document.createElement('span');
+                ellipsis.textContent = '...';
+                ellipsis.className = 'pagination-ellipsis';
+                paginationContainer.appendChild(ellipsis);
+            }
+        }
+
+        for (let i = startPage; i <= endPage; i++) {
+            const pageBtn = document.createElement('button');
+            pageBtn.textContent = i;
+            pageBtn.className = 'pagination-btn' + (i === page ? ' active' : '');
+            pageBtn.addEventListener('click', () => showReviews(i));
+            paginationContainer.appendChild(pageBtn);
+        }
+
+        if (endPage < totalPages) {
+            if (endPage < totalPages - 1) {
+                const ellipsis = document.createElement('span');
+                ellipsis.textContent = '...';
+                ellipsis.className = 'pagination-ellipsis';
+                paginationContainer.appendChild(ellipsis);
+            }
+
+            const lastPage = document.createElement('button');
+            lastPage.textContent = totalPages;
+            lastPage.className = 'pagination-btn';
+            lastPage.addEventListener('click', () => showReviews(totalPages));
+            paginationContainer.appendChild(lastPage);
+        }
+
+        // Кнопка "Вперёд"
+        const nextBtn = document.createElement('button');
+        nextBtn.textContent = '→';
+        nextBtn.className = 'pagination-btn' + (page === totalPages ? ' disabled' : '');
+        nextBtn.disabled = page === totalPages;
+        nextBtn.addEventListener('click', () => showReviews(page + 1));
+        paginationContainer.appendChild(nextBtn);
+
+        pagination.appendChild(paginationContainer);
     }
 
     backBtn.onclick = () => {
