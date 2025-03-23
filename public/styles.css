@@ -14,24 +14,27 @@ body {
 .header {
     position: fixed;
     top: 0;
-    width: 390px;
-    background: linear-gradient(45deg, #1e3a8a, #3b82f6);
+    width: 360px; /* Выравниваем по ширине сетки: 390px (контейнер) - 15px (padding слева) - 15px (padding справа) = 360px */
+    background: linear-gradient(135deg, #2a2a72, #009ffd); /* Более стильный градиент, как в топ-магазинах */
     color: white;
     padding: 8px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); /* Усиленная тень для глубины */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2); /* Тонкая белая рамка снизу */
     z-index: 1000;
 }
 
 .header-title {
+    font-family: 'Cinzel', serif; /* Очень красивый шрифт */
     font-size: 16px;
     margin: 0;
-    font-weight: 500;
+    font-weight: 700; /* Жирный шрифт для акцента */
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 2px; /* Увеличиваем межбуквенный интервал */
     line-height: 20px;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3); /* Легкая тень для текста */
 }
 
 .search-bar {
@@ -82,14 +85,14 @@ body {
     display: flex;
     flex-direction: column;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
     height: 200px;
     position: relative;
 }
 
+/* Убираем анимацию при наведении */
 .product-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    /* Удаляем transform и усиление тени */
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1); /* Оставляем тень как в исходном состоянии */
 }
 
 .card-image {
@@ -105,12 +108,12 @@ body {
     height: 100%;
     object-fit: cover;
     object-position: center;
-    transition: transform 0.3s ease;
     display: block;
 }
 
+/* Убираем увеличение изображения при наведении */
 .product-card:hover .card-image img {
-    transform: scale(1.05);
+    /* Удаляем transform */
 }
 
 .card-content {
@@ -124,12 +127,12 @@ body {
 
 .card-content h3 {
     font-family: 'Open Sans', sans-serif;
-    font-size: 5px; /* Уменьшаем шрифт на 1px (было 6px) */
+    font-size: 5px;
     font-weight: 600;
     margin: 0;
     color: #2c3e50;
     line-height: 1.2;
-    max-height: 30px; /* 5 строк: 5px * 1.2 * 5 = 30px */
+    max-height: 30px;
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
