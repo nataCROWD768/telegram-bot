@@ -28,13 +28,16 @@ function renderProducts(productArray) {
                 <h3>${product.name}</h3>
                 <div class="prices">
                     <div class="price-container">
-                        <span class="club-price">${product.clubPrice} Р</span>
-                        <i class="fas fa-crown price-icon"></i> <!-- Иконка короны для клубной цены -->
+                        <i class="fas fa-crown price-icon"></i>
+                        <span class="club-price">${product.clubPrice} ₽</span>
                     </div>
                     <div class="price-container">
-                        <span class="client-price">${product.clientPrice} Р</span>
-                        <i class="fas fa-user price-icon"></i> <!-- Иконка пользователя для клиентской цены -->
+                        <i class="fas fa-user price-icon"></i>
+                        <span class="client-price">${product.clientPrice} ₽</span>
                     </div>
+                </div>
+                <div class="card-button">
+                    <a href="#">Перейти в карточку товара</a>
                 </div>
             </div>
         `;

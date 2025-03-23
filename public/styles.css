@@ -71,7 +71,7 @@ body {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 8px;
-    padding: 10px;
+    padding: 10px 15px;
 }
 
 .product-card {
@@ -82,7 +82,7 @@ body {
     flex-direction: column;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
-    height: 180px;
+    height: 200px; /* Увеличиваем высоту карточки, чтобы вместить кнопку */
     position: relative;
 }
 
@@ -114,7 +114,7 @@ body {
 
 .card-content {
     width: 100%;
-    height: 100px;
+    height: 120px; /* Увеличиваем высоту контента, чтобы вместить кнопку */
     padding: 2px 1px;
     flex-grow: 0;
     display: flex;
@@ -125,7 +125,7 @@ body {
     font-family: 'Open Sans', sans-serif;
     font-size: 7px;
     font-weight: 600;
-    margin: 0 0 1px;
+    margin: 4px 0 4px; /* Добавляем отступ сверху (4px) и снизу (4px) */
     color: #2c3e50;
     line-height: 1.2;
     max-height: 56px;
@@ -139,14 +139,27 @@ body {
 .prices {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 1px;
-    font-family: 'Playfair Display', serif; /* Используем красивый шрифт для цен */
+    margin-bottom: 4px; /* Небольшой отступ снизу */
+    font-family: 'Merriweather', serif;
 }
 
 .price-container {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.price-icon {
+    font-size: 10px;
+    margin-bottom: 2px;
+}
+
+.club-price + .price-icon {
+    color: #16a34a;
+}
+
+.client-price + .price-icon {
+    color: #ef4444;
 }
 
 .club-price {
@@ -156,8 +169,8 @@ body {
     background-color: #e6f4ea;
     padding: 2px 4px;
     border-radius: 3px;
-    font-family: 'Playfair Display', serif; /* Красивый шрифт */
-    letter-spacing: 0.5px; /* Добавляем небольшой межбуквенный интервал */
+    font-family: 'Merriweather', serif;
+    letter-spacing: 0.5px;
 }
 
 .client-price {
@@ -168,21 +181,8 @@ body {
     background-color: #fee2e2;
     padding: 2px 4px;
     border-radius: 3px;
-    font-family: 'Playfair Display', serif; /* Красивый шрифт */
-    letter-spacing: 0.5px; /* Добавляем небольшой межбуквенный интервал */
-}
-
-.price-icon {
-    font-size: 10px; /* Размер иконки */
-    margin-top: 2px;
-}
-
-.club-price + .price-icon {
-    color: #16a34a; /* Цвет иконки для клубной цены */
-}
-
-.client-price + .price-icon {
-    color: #ef4444; /* Цвет иконки для клиентской цены */
+    font-family: 'Merriweather', serif;
+    letter-spacing: 0.5px;
 }
 
 .rating {
@@ -195,6 +195,31 @@ body {
     padding: 2px 4px;
     border-radius: 3px;
     z-index: 1;
+}
+
+.card-button {
+    margin-top: auto; /* Размещаем кнопку в самом низу */
+    text-align: center;
+    padding: 4px 0;
+}
+
+.card-button a {
+    display: inline-block;
+    background: linear-gradient(45deg, #1e3a8a, #3b82f6); /* Градиент, как у шапки */
+    color: white;
+    font-family: 'Merriweather', serif;
+    font-size: 7px;
+    font-weight: 600;
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-button a:hover {
+    transform: scale(1.05);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
 }
 
 #product-detail {
