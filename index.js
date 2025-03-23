@@ -339,38 +339,4 @@ const startServer = async () => {
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 };
 
-// Функция модерации отзывов
-const moderateReviews = async (bot, chatId) => {
-    try {
-        const reviews = await Review.find({ isApproved: false }).populate('productId', 'name');
-        console.log('Загруженные отзывы на модерацию:', reviews);
-
-        if (reviews.length === 0) {
-            const msg = await bot.sendMessage(chatId, 'Нет отзывов на модерации');
-            lastMessageId[chatId] = msg.message_id;
-            return;
-        }
-
-        const reviewList = reviews.map(r => {
-            const productName = r.productId ? r.productId.name : 'Неизвестный товар';
-            return `ID: ${r._id}\nТовар: ${productName}\nПользователь: ${r.username}\nРейтинг: ${r.rating}\nКомментарий: ${r.comment}`;
-        }).join('\n---\n');
-
-        const msg = await bot.sendMessage(chatId, `Отзывы на модерации:\n\n${reviewList}`, {
-            reply_markup: {
-                inline_keyboard: reviews.map(r => [
-                    { text: 'Одобрить', callback_data: `approve_review_${r._id}` },
-                    { text: 'Отклонить', callback_data: `reject_review_${r._id}` }
-                ])
-            }
-        });
-        lastMessageId[chatId] = msg.message_id;
-    } catch (error) {
-        console.error('Ошибка загрузки отзывов в админ-панели:', error.stack);
-        await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов');
-    }
-};
-
 startServer();
-
-module.exports = { moderateReviews };
