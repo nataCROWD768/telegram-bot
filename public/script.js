@@ -4,6 +4,21 @@ function isMobileDevice() {
     return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
 }
 
+// Функция форматирования даты на русском языке
+function formatDate(date) {
+    const months = [
+        'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
+        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
+    ];
+    const d = new Date(date);
+    const day = d.getDate();
+    const month = months[d.getMonth()];
+    const year = d.getFullYear();
+    const hours = d.getHours().toString().padStart(2, '0');
+    const minutes = d.getMinutes().toString().padStart(2, '0');
+    return `${day} ${month} ${year}, ${hours}:${minutes}`;
+}
+
 // Глобальные переменные
 let products = [];
 let pendingReviews = [];
@@ -153,6 +168,7 @@ function showProductDetail(product) {
                     <div class="review">
                         <p><strong>${review.username.startsWith('@') ? review.username : '@' + review.username}</strong> (★ ${review.rating})</p>
                         <p>${review.comment}</p>
+                        <p class="review-date">Дата: ${formatDate(review.createdAt)}</p>
                     </div>
                 `).join('') : '<p>Пока нет отзывов.</p>'}
             </div>
