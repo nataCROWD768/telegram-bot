@@ -13,7 +13,7 @@ const BASE_URL = 'https://telegram-bot-gmut.onrender.com'; // Единый URL �
 
 // Подключение к WebSocket (если используется)
 function connectWebSocket() {
-    ws = new WebSocket('wss://telegram-bot-gmut.onrender.com'); // Обновлено на wss для продакшена
+    ws = new WebSocket('wss://telegram-bot-gmut.onrender.com');
     ws.onopen = () => console.log('Подключено к WebSocket');
     ws.onmessage = (event) => {
         const message = JSON.parse(event.data);
@@ -50,7 +50,7 @@ async function loadProducts() {
             throw new Error(`Не удалось загрузить продукты. Статус: ${response.status}, Текст: ${errorText}`);
         }
         const data = await response.json();
-        products = data.products; // Извлекаем массив продуктов
+        products = data.products;
         console.log('Продукты загружены:', products);
         renderProducts(products);
     } catch (error) {
@@ -150,7 +150,7 @@ function showProductDetail(product) {
                 <h4>Отзывы (${product.reviews ? product.reviews.filter(r => r.isApproved).length : 0})</h4>
                 ${product.reviews && product.reviews.length > 0 ? product.reviews.filter(r => r.isApproved).map(review => `
                     <div class="review">
-                        <p><strong>${review.username || 'Аноним'}</strong> (★ ${review.rating})</p>
+                        <p><strong>${review.username.startsWith('@') ? review.username : '@' + review.username}</strong> (★ ${review.rating})</p>
                         <p>${review.comment}</p>
                     </div>
                 `).join('') : '<p>Пока нет отзывов.</p>'}
@@ -194,9 +194,15 @@ function showProductDetail(product) {
     document.querySelector(`.submit-btn[data-id="${product._id}"]`).addEventListener('click', () => {
         const comment = document.getElementById(`review-comment-${product._id}`).value;
         if (selectedRating > 0 && comment.trim() !== '') {
+            // Получаем Telegram-username, если доступен
+            const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+            const username = tg && tg.initDataUnsafe && tg.initDataUnsafe.user
+                ? (tg.initDataUnsafe.user.username ? `@${tg.initDataUnsafe.user.username}` : 'Аноним')
+                : 'Аноним';
+
             const review = {
                 productId: product._id,
-                user: 'Пользователь', // Можно заменить на реальное имя пользователя
+                user: username,
                 rating: selectedRating,
                 comment: comment
             };
@@ -228,8 +234,7 @@ function sendReviewToAdmin(review) {
             if (data.success) {
                 console.log('Отзыв сохранён на сервере:', data);
                 alert('Отзыв отправлен на модерацию.');
-                // Обновляем локальный список продуктов
-                loadProducts(); // Перезагружаем продукты для актуальности
+                loadProducts(); // Обновляем продукты для отображения новых данных
             } else {
                 console.error('Ошибка сохранения отзыва:', data);
                 alert('Ошибка при отправке отзыва');
@@ -279,7 +284,7 @@ function showReviews(page = 1) {
 
     reviewsList.innerHTML = paginatedReviews.length > 0 ? paginatedReviews.map(review => `
         <div class="review">
-            <p><strong>${review.username || 'Аноним'}</strong> о продукте <strong>${review.productName}</strong> (★ ${review.rating})</p>
+            <p><strong>${review.username.startsWith('@') ? review.username : '@' + review.username}</strong> о продукте <strong>${review.productName}</strong> (★ ${review.rating})</p>
             <p>${review.comment}</p>
         </div>
     `).join('') : '<p>Пока нет отзывов.</p>';

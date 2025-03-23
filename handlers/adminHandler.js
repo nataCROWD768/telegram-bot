@@ -217,7 +217,7 @@ const moderateReviews = async (bot, chatId) => {
         for (const review of reviews) {
             const reviewText = `
                 Товар: ${review.productId.name}
-                Пользователь: ${review.username}
+                Пользователь: ${review.username.startsWith('@') ? review.username : '@' + review.username}
                 Рейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}
                 Комментарий: ${review.comment}
             `;
