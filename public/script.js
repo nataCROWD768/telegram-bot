@@ -20,11 +20,12 @@ function loadProducts(products) {
     }
 
     products.forEach(product => {
+        console.log('Создание карточки для:', product.name);
         const card = document.createElement('div');
         card.className = 'product-card card';
         card.innerHTML = `
             <div class="card-image">
-                <img src="${product.image}" alt="${product.name}">
+                <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/80';">
             </div>
             <div class="card-content">
                 <h3>${product.name}</h3>
@@ -60,7 +61,7 @@ function showProductDetail(product) {
 
     detailContent.innerHTML = `
         <div class="card-image">
-            <img src="${product.image}" alt="${product.name}">
+            <img src="${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/80';">
         </div>
         <div class="card-content">
             <h2>${product.name}</h2>
@@ -176,6 +177,8 @@ fetch(API_URL, {
     .catch(error => {
         console.error('Ошибка загрузки товаров:', error);
         const productList = document.getElementById('product-list');
-        if (productList) productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки товаров: ' + error.message + '</p>';
+        if (productList) {
+            productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки товаров: ' + error.message + '</p>';
+        }
         Telegram.WebApp.showAlert('Ошибка загрузки товаров: ' + error.message);
     });

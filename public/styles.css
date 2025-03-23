@@ -53,7 +53,7 @@ body {
 }
 
 #showcase {
-    margin-top: 70px; /* Отступ под фиксированную шапку */
+    margin-top: 70px;
 }
 
 .product-grid {
@@ -126,7 +126,6 @@ body {
     padding: 20px;
 }
 
-/* Остальные стили остаются без изменений */
 .description, .reviews, .review-form {
     margin-top: 20px;
 }
@@ -156,6 +155,10 @@ body {
     margin-top: 10px;
     background-color: #1976d2;
     color: white;
+    padding: 10px 20px;
+    border-radius: 4px;
+    text-decoration: none;
+    display: inline-block;
 }
 
 .submit-btn:hover {

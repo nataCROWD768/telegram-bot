@@ -37,7 +37,6 @@ app.use(express.static(path.join(__dirname, 'public'), {
     setHeaders: (res, filePath) => console.log(`Раздача файла: ${filePath}`)
 }));
 
-// Подключение к MongoDB
 mongoose.connect(process.env.MONGODB_URI)
     .then(() => console.log('MongoDB подключен'))
     .catch(err => {
@@ -45,7 +44,6 @@ mongoose.connect(process.env.MONGODB_URI)
         process.exit(1);
     });
 
-// Настройка Webhook
 const setupWebhook = async () => {
     if (isLocal) {
         console.log('Локальный режим: polling активен');
@@ -81,11 +79,10 @@ const setupWebhook = async () => {
     }
 };
 
-// Синхронизация товаров
 const syncProducts = async () => {
     try {
         console.log('Принудительная синхронизация товаров...');
-        await Product.deleteMany({}); // Очищаем коллекцию
+        await Product.deleteMany({});
         console.log('Коллекция products очищена');
         for (const productData of initialProducts) {
             const newProduct = await Product.create(productData);
@@ -97,7 +94,6 @@ const syncProducts = async () => {
     }
 };
 
-// API для получения товаров
 app.get('/api/products', async (req, res) => {
     console.log('Получен запрос на /api/products');
     try {
@@ -119,7 +115,6 @@ app.get('/api/products', async (req, res) => {
     }
 });
 
-// Обработка команды /start
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const username = msg.from.username || msg.from.first_name;
@@ -143,7 +138,6 @@ bot.onText(/\/start/, async (msg) => {
 
 const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.RENDER_APP_NAME}.onrender.com`;
 
-// Обработка сообщений
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     console.log(`Сообщение: "${msg.text}" от ${msg.from.username}`);
@@ -225,21 +219,18 @@ bot.on('message', async (msg) => {
     }
 });
 
-// Обработка callback-запросов
 bot.on('callback_query', (callbackQuery) => {
     console.log(`Callback: ${callbackQuery.data}`);
     handleCallback(bot, callbackQuery);
     handleAdminCallback(bot, callbackQuery);
 });
 
-// Webhook-обработчик
 app.post(`/bot${BOT_TOKEN}`, (req, res) => {
     console.log('Webhook получил данные:', JSON.stringify(req.body, null, 2));
     bot.processUpdate(req.body);
     res.sendStatus(200);
 });
 
-// Обработка данных от Web App
 bot.on('web_app_data', async (msg) => {
     const chatId = msg.chat.id;
     const data = JSON.parse(msg.web_app_data.data);
@@ -286,7 +277,6 @@ bot.on('web_app_data', async (msg) => {
     }
 });
 
-// Запуск сервера
 const startServer = async () => {
     await setupWebhook();
     await syncProducts();
