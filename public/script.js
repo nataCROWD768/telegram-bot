@@ -27,8 +27,14 @@ function renderProducts(productArray) {
             <div class="card-content">
                 <h3>${product.name}</h3>
                 <div class="prices">
-                    <span class="club-price">Клубная цена: ${product.clubPrice} Р</span>
-                    <span class="client-price">Клиентская цена: ${product.clientPrice} Р</span>
+                    <div class="price-container">
+                        <span class="club-price">${product.clubPrice} Р</span>
+                        <span class="price-label">Клубная</span>
+                    </div>
+                    <div class="price-container">
+                        <span class="client-price">${product.clientPrice} Р</span>
+                        <span class="price-label">Клиент. цена</span>
+                    </div>
                 </div>
             </div>
         `;
