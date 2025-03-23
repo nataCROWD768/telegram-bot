@@ -269,19 +269,19 @@ body {
 
 .product-detail-image {
     width: 100%;
-    height: auto; /* Высота автоматическая */
+    height: auto;
     position: relative;
     margin-bottom: 15px;
 }
 
 .product-detail-image img {
-    width: auto; /* Ширина автоматическая */
-    max-width: 100%; /* Не больше контейнера */
-    height: 200px; /* Фиксированная высота */
-    object-fit: contain; /* Сохраняем пропорции, изображение полностью видно */
+    width: auto;
+    max-width: 100%;
+    height: 200px;
+    object-fit: contain;
     object-position: center;
     display: block;
-    margin: 0 auto; /* Центрируем изображение */
+    margin: 0 auto;
 }
 
 .product-detail-rating {
@@ -306,7 +306,8 @@ body {
 
 .product-detail-prices {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    gap: 10px; /* Небольшой отступ между ценами */
     margin-bottom: 15px;
 }
 
@@ -324,7 +325,7 @@ body {
 .product-detail-prices .club-price {
     color: #16a34a;
     font-weight: 600;
-    font-size: 10px; /* Увеличиваем шрифт */
+    font-size: 10px;
     background-color: #e6f4ea;
     padding: 2px 4px;
     border-radius: 3px;
@@ -335,7 +336,7 @@ body {
 .product-detail-prices .client-price {
     color: #800020;
     text-decoration: none;
-    font-size: 10px; /* Увеличиваем шрифт */
+    font-size: 10px;
     opacity: 0.8;
     background-color: #f9e6e6;
     padding: 2px 4px;
