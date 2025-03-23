@@ -4,7 +4,7 @@ function isMobileDevice() {
     return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
 }
 
-// Данные о продуктов (будут загружаться с бэкенда)
+// Данные о продуктах (будут загружаться с бэкенда)
 let products = [];
 
 // Хранилище для отзывов на модерации
@@ -15,7 +15,7 @@ let ws;
 
 // Функция для подключения к WebSocket
 function connectWebSocket() {
-    ws = new WebSocket('ws://your-backend-url:8080');
+    ws = new WebSocket('ws://localhost:8080'); // Замените на ваш URL WebSocket
 
     ws.onopen = () => {
         console.log('Подключено к WebSocket');
@@ -54,12 +54,17 @@ function connectWebSocket() {
 // Функция для загрузки продуктов с бэкенда
 async function loadProducts() {
     try {
-        const response = await fetch('http://your-backend-url:3000/products');
-        if (!response.ok) throw new Error('Не удалось загрузить продукты');
+        console.log('Попытка загрузить продукты с http://localhost:3000/products');
+        const response = await fetch('http://localhost:3000/products'); // Замените на ваш URL API
+        console.log('Ответ от сервера:', response);
+        if (!response.ok) {
+            throw new Error(`Не удалось загрузить продукты. Статус: ${response.status}`);
+        }
         products = await response.json();
+        console.log('Продукты загружены:', products);
         renderProducts(products);
     } catch (error) {
-        console.error('Ошибка при загрузке продуктов:', error);
+        console.error('Ошибка при загрузке продуктов:', error.message);
         alert('Не удалось загрузить продукты. Попробуйте позже.');
     }
 }
@@ -67,7 +72,7 @@ async function loadProducts() {
 // Функция для синхронизации отзывов с бэкендом
 async function syncReviews() {
     try {
-        const response = await fetch('http://your-backend-url:3000/sync-reviews', {
+        const response = await fetch('http://localhost:3000/sync-reviews', { // Замените на ваш URL API
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ pendingReviews })

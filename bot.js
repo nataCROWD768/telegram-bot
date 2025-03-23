@@ -3,16 +3,18 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
 const WebSocket = require('ws');
+const cors = require('cors');
 
 const app = express();
 app.use(bodyParser.json());
+app.use(cors()); // Разрешаем CORS для всех доменов
 
 // Замените на ваш токен бота
-const token = 'YOUR_BOT_TOKEN';
+const token = '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8';
 const bot = new TelegramBot(token, { polling: true });
 
 // Замените на chat_id администратора
-const adminChatId = 'ADMIN_CHAT_ID';
+const adminChatId = '942851377';
 
 // Подключение к MongoDB
 mongoose.connect('mongodb+srv://nataCROWD768:april1987@cluster0.mongodb.net/reviews?retryWrites=true&w=majority', {
@@ -101,9 +103,12 @@ function notifyClients(data) {
 // API-эндпоинт для получения списка продуктов
 app.get('/products', async (req, res) => {
     try {
+        console.log('Получен запрос на /products');
         const products = await Product.find();
+        console.log('Продукты из базы данных:', products);
         res.status(200).json(products);
     } catch (error) {
+        console.error('Ошибка при получении продуктов:', error);
         res.status(500).json({ error: 'Ошибка при получении продуктов' });
     }
 });
