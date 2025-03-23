@@ -66,15 +66,24 @@ function showProductDetail(product) {
     const showcase = document.getElementById('showcase');
     const productDetail = document.getElementById('product-detail');
     const productDetailContent = document.querySelector('.product-detail-content');
+    const headerTitle = document.querySelector('.header-title');
+    const searchBar = document.querySelector('.search-bar');
+    const backBtn = document.getElementById('back-to-showcase');
 
     // Скрываем витрину и показываем карточку товара
     showcase.style.display = 'none';
     productDetail.style.display = 'block';
 
+    // Скрываем заголовок "Витрина" и строку поиска, показываем кнопку "Назад"
+    headerTitle.style.display = 'none';
+    searchBar.style.display = 'none';
+    backBtn.style.display = 'flex';
+
     // Формируем содержимое карточки товара
     productDetailContent.innerHTML = `
         <div class="product-detail-image">
             <img src="${product.image}" alt="${product.name}">
+            <div class="product-detail-rating">★ ${product.rating}</div>
         </div>
         <div class="product-detail-info">
             <h3>${product.name}</h3>
@@ -82,14 +91,13 @@ function showProductDetail(product) {
                 <div class="price-container">
                     <i class="fas fa-crown price-icon"></i>
                     <span class="club-price">${product.clubPrice} ₽</span>
+                    <span class="price-label">Клубная цена</span>
                 </div>
                 <div class="price-container">
                     <i class="fas fa-user price-icon"></i>
                     <span class="client-price">${product.clientPrice} ₽</span>
+                    <span class="price-label">Клиентская цена</span>
                 </div>
-            </div>
-            <div class="product-detail-rating">
-                <span>★ ${product.rating}</span>
             </div>
             <div class="product-detail-description">
                 <h4>Описание</h4>
@@ -120,9 +128,12 @@ function showProductDetail(product) {
     `;
 
     // Обработчик для кнопки "Назад"
-    document.getElementById('back-to-showcase').addEventListener('click', () => {
+    backBtn.addEventListener('click', () => {
         productDetail.style.display = 'none';
         showcase.style.display = 'block';
+        headerTitle.style.display = 'block';
+        searchBar.style.display = 'flex';
+        backBtn.style.display = 'none';
     });
 
     // Обработчик для звёзд рейтинга
