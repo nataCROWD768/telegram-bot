@@ -17,7 +17,7 @@ const bot = new TelegramBot(token, { polling: true });
 const adminChatId = '942851377';
 
 // Подключение к MongoDB
-mongoose.connect('mongodb+srv://nataCROWD768:april1987@cluster0.mongodb.net/reviews?retryWrites=true&w=majority', {
+mongoose.connect('mongodb+srv://nataCROWD768:april1987@cluster0.7hwwy.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', {
     useNewUrlParser: true,
     useUnifiedTopology: true
 })
