@@ -37,7 +37,7 @@ function renderProducts(productArray) {
                     </div>
                 </div>
                 <div class="card-button">
-                    <a href="#">Перейти в карточку товара</a>
+                    <a href="#">Карточка продукта</a>
                 </div>
             </div>
         `;
