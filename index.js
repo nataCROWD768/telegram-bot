@@ -229,21 +229,51 @@ bot.on('message', async (msg) => {
             lastMessageId[chatId] = newMessage.message_id;
             break;
         case 'Отзывы':
+            const reviewsPerPage = 10;
             const reviews = await Review.find({ isApproved: true }).populate('productId', 'name');
             console.log('Загруженные подтверждённые отзывы для Telegram:', reviews);
+
             if (reviews.length === 0) {
                 newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов');
+                lastMessageId[chatId] = newMessage.message_id;
             } else {
-                const reviewList = reviews.map(r => {
-                    const productName = r.productId ? r.productId.name : 'Неизвестный товар';
-                    return `Товар: ${productName}\n` +
-                        `Пользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\n` +
-                        `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
-                        `Комментарий: ${r.comment}`;
-                }).join('\n---\n');
-                newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы:\n\n${reviewList}`, { parse_mode: 'Markdown' });
+                const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+
+                const showReviewsPage = async (page = 1) => {
+                    const start = (page - 1) * reviewsPerPage;
+                    const end = Math.min(start + reviewsPerPage, reviews.length);
+                    const paginatedReviews = reviews.slice(start, end);
+
+                    const reviewList = paginatedReviews.map(r => {
+                        const productName = r.productId ? r.productId.name : 'Неизвестный товар';
+                        return `Товар: ${productName}\n` +
+                            `Пользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\n` +
+                            `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
+                            `Комментарий: ${r.comment}`;
+                    }).join('\n---\n');
+
+                    const inlineKeyboard = [];
+                    if (totalPages > 1) {
+                        const navigationButtons = [];
+                        if (page > 1) {
+                            navigationButtons.push({ text: '⬅️ Назад', callback_data: `reviews_page_${page - 1}` });
+                        }
+                        navigationButtons.push({ text: `Страница ${page} из ${totalPages}`, callback_data: 'noop' });
+                        if (page < totalPages) {
+                            navigationButtons.push({ text: 'Вперёд ➡️', callback_data: `reviews_page_${page + 1}` });
+                        }
+                        inlineKeyboard.push(navigationButtons);
+                    }
+
+                    newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`, {
+                        parse_mode: 'Markdown',
+                        reply_markup: { inline_keyboard: inlineKeyboard }
+                    });
+                    lastMessageId[chatId] = newMessage.message_id;
+                };
+
+                await showReviewsPage(1); // Показываем первую страницу
             }
-            lastMessageId[chatId] = newMessage.message_id;
             break;
         case '/admin':
             if (chatId.toString() !== ADMIN_ID) {
@@ -279,10 +309,56 @@ bot.on('message', async (msg) => {
     }
 });
 
-bot.on('callback_query', (callbackQuery) => {
-    console.log(`Callback: ${callbackQuery.data}`);
-    handleCallback(bot, callbackQuery);
-    handleAdminCallback(bot, callbackQuery);
+bot.on('callback_query', async (callbackQuery) => {
+    const chatId = callbackQuery.message.chat.id;
+    const data = callbackQuery.data;
+
+    if (data.startsWith('reviews_page_')) {
+        const page = parseInt(data.split('_')[2]);
+        const reviewsPerPage = 10;
+        const reviews = await Review.find({ isApproved: true }).populate('productId', 'name');
+        const totalPages = Math.ceil(reviews.length / reviewsPerPage);
+
+        const start = (page - 1) * reviewsPerPage;
+        const end = Math.min(start + reviewsPerPage, reviews.length);
+        const paginatedReviews = reviews.slice(start, end);
+
+        const reviewList = paginatedReviews.map(r => {
+            const productName = r.productId ? r.productId.name : 'Неизвестный товар';
+            return `Товар: ${productName}\n` +
+                `Пользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\n` +
+                `Рейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\n` +
+                `Комментарий: ${r.comment}`;
+        }).join('\n---\n');
+
+        const inlineKeyboard = [];
+        if (totalPages > 1) {
+            const navigationButtons = [];
+            if (page > 1) {
+                navigationButtons.push({ text: '⬅️ Назад', callback_data: `reviews_page_${page - 1}` });
+            }
+            navigationButtons.push({ text: `Страница ${page} из ${totalPages}`, callback_data: 'noop' });
+            if (page < totalPages) {
+                navigationButtons.push({ text: 'Вперёд ➡️', callback_data: `reviews_page_${page + 1}` });
+            }
+            inlineKeyboard.push(navigationButtons);
+        }
+
+        await bot.editMessageText(`📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`, {
+            chat_id: chatId,
+            message_id: callbackQuery.message.message_id,
+            parse_mode: 'Markdown',
+            reply_markup: { inline_keyboard: inlineKeyboard }
+        });
+
+        bot.answerCallbackQuery(callbackQuery.id);
+    } else if (data === 'noop') {
+        bot.answerCallbackQuery(callbackQuery.id); // Пустое действие для кнопки "Страница X из Y"
+    } else {
+        console.log(`Callback: ${callbackQuery.data}`);
+        handleCallback(bot, callbackQuery);
+        handleAdminCallback(bot, callbackQuery);
+    }
 });
 
 app.post(`/bot${BOT_TOKEN}`, (req, res) => {
