@@ -4,8 +4,11 @@ const ExcelJS = require('exceljs');
 const fs = require('fs').promises;
 const path = require('path');
 
-// Функция форматирования даты на русском языке
+// Функция форматирования даты на русском языке с проверкой
 const formatDate = (date) => {
+    if (!date || isNaN(new Date(date).getTime())) {
+        return 'Дата неизвестна';
+    }
     const months = [
         'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
         'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'

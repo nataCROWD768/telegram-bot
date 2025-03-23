@@ -4,8 +4,11 @@ function isMobileDevice() {
     return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
 }
 
-// Функция форматирования даты на русском языке
+// Функция форматирования даты на русском языке с проверкой
 function formatDate(date) {
+    if (!date || isNaN(new Date(date).getTime())) {
+        return 'Дата неизвестна';
+    }
     const months = [
         'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
         'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
