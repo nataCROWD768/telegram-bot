@@ -69,6 +69,7 @@ function showProductDetail(product) {
     const showcase = document.getElementById('showcase');
     const productDetail = document.getElementById('product-detail');
     const reviewsSection = document.getElementById('reviews-section');
+    const adminPanel = document.getElementById('admin-panel');
     const productDetailContent = document.querySelector('.product-detail-content');
     const headerTitle = document.querySelector('.header-title');
     const searchBar = document.querySelector('.search-bar');
@@ -77,6 +78,7 @@ function showProductDetail(product) {
     // Скрываем витрину и показываем карточку товара
     showcase.style.display = 'none';
     reviewsSection.style.display = 'none';
+    adminPanel.style.display = 'none';
     productDetail.style.display = 'block';
 
     // Скрываем заголовок "Витрина" и строку поиска, показываем кнопку "Назад"
@@ -178,22 +180,74 @@ function showProductDetail(product) {
     });
 }
 
-// Функция для отправки отзыва администратору (имитация)
+// Функция для отправки отзыва администратору
 function sendReviewToAdmin(review) {
     console.log('Новый отзыв на модерации:', review);
     // Здесь можно добавить реальную отправку администратору, например, через Telegram Bot API
-    // Для демонстрации просто добавим отзыв в список pendingReviews
-    renderAdminPanel();
+    renderAdminPanel(); // Обновляем интерфейс админ-панели
 }
 
-// Функция для рендеринга панели администратора (имитация)
+// Функция для рендеринга админ-панели
 function renderAdminPanel() {
-    // В реальном приложении это будет отдельный интерфейс для администратора
-    console.log('Панель администратора:');
-    pendingReviews.forEach((review, index) => {
-        console.log(`Отзыв ${index + 1}:`, review);
-        console.log(`Продукт ID: ${review.productId}, Пользователь: ${review.user}, Рейтинг: ${review.rating}, Комментарий: ${review.comment}`);
-        console.log(`Действия: Подтвердить (approveReview(${index})) | Отклонить (rejectReview(${index}))`);
+    const showcase = document.getElementById('showcase');
+    const productDetail = document.getElementById('product-detail');
+    const reviewsSection = document.getElementById('reviews-section');
+    const adminPanel = document.getElementById('admin-panel');
+    const pendingReviewsContainer = document.getElementById('pending-reviews');
+    const headerTitle = document.querySelector('.header-title');
+    const searchBar = document.querySelector('.search-bar');
+    const backBtn = document.getElementById('back-to-showcase');
+
+    // Скрываем другие разделы и показываем админ-панель
+    showcase.style.display = 'none';
+    productDetail.style.display = 'none';
+    reviewsSection.style.display = 'none';
+    adminPanel.style.display = 'block';
+
+    // Обновляем шапку
+    headerTitle.style.display = 'block';
+    headerTitle.textContent = 'Панель администратора';
+    searchBar.style.display = 'none';
+    backBtn.style.display = 'flex';
+
+    // Рендерим отзывы на модерации
+    pendingReviewsContainer.innerHTML = pendingReviews.length > 0 ? pendingReviews.map((review, index) => `
+        <div class="pending-review">
+            <p><strong>Продукт ID:</strong> ${review.productId}</p>
+            <p><strong>Пользователь:</strong> ${review.user}</p>
+            <p><strong>Рейтинг:</strong> ★ ${review.rating}</p>
+            <p><strong>Комментарий:</strong> ${review.comment}</p>
+            <div class="review-actions">
+                <button class="approve-btn" data-index="${index}">Подтвердить</button>
+                <button class="reject-btn" data-index="${index}">Отклонить</button>
+            </div>
+        </div>
+    `).join('') : '<p>Нет отзывов на модерации.</p>';
+
+    // Добавляем обработчики для кнопок "Подтвердить" и "Отклонить"
+    document.querySelectorAll('.approve-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'));
+            approveReview(index);
+            renderAdminPanel(); // Обновляем панель после действия
+        });
+    });
+
+    document.querySelectorAll('.reject-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const index = parseInt(e.target.getAttribute('data-index'));
+            rejectReview(index);
+            renderAdminPanel(); // Обновляем панель после действия
+        });
+    });
+
+    // Обработчик для кнопки "Назад"
+    backBtn.addEventListener('click', () => {
+        adminPanel.style.display = 'none';
+        showcase.style.display = 'block';
+        headerTitle.textContent = 'Витрина';
+        searchBar.style.display = 'flex';
+        backBtn.style.display = 'none';
     });
 }
 
@@ -205,7 +259,6 @@ function approveReview(index) {
     product.reviews.push(review);
     pendingReviews.splice(index, 1); // Удаляем из списка на модерации
     console.log('Отзыв подтверждён:', review);
-    renderAdminPanel();
 }
 
 // Функция для отклонения отзыва
@@ -213,7 +266,6 @@ function rejectReview(index) {
     const review = pendingReviews[index];
     pendingReviews.splice(index, 1); // Удаляем из списка на модерации
     console.log('Отзыв отклонён:', review);
-    renderAdminPanel();
 }
 
 // Функция для отображения списка отзывов с пагинацией
@@ -221,6 +273,7 @@ function showReviews(page = 1) {
     const showcase = document.getElementById('showcase');
     const productDetail = document.getElementById('product-detail');
     const reviewsSection = document.getElementById('reviews-section');
+    const adminPanel = document.getElementById('admin-panel');
     const reviewsList = document.getElementById('reviews-list');
     const pagination = document.getElementById('pagination');
     const headerTitle = document.querySelector('.header-title');
@@ -230,6 +283,7 @@ function showReviews(page = 1) {
     // Скрываем витрину и карточку товара, показываем список отзывов
     showcase.style.display = 'none';
     productDetail.style.display = 'none';
+    adminPanel.style.display = 'none';
     reviewsSection.style.display = 'block';
 
     // Обновляем шапку
@@ -302,21 +356,17 @@ document.addEventListener('DOMContentLoaded', () => {
         renderProducts(filteredProducts);
     });
 
-    // Обработчик для кнопки "Отзывы" в главном меню Telegram-бота
+    // Обработчик для кнопки "Отзывы" и админ-панели в Telegram-боте
     if (window.Telegram && window.Telegram.WebApp) {
         const tg = window.Telegram.WebApp;
         tg.MainButton.hide(); // Скрываем главную кнопку, если она не нужна
 
-        // Добавляем обработчик для команды /reviews (или другой команды, связанной с кнопкой "Отзывы")
-        tg.onEvent('mainButtonClicked', () => {
-            // Здесь можно проверить, какая команда была вызвана, но для простоты предположим, что это "Отзывы"
-            showReviews();
-        });
-
-        // Подписываемся на события от бота (например, через команды)
+        // Подписываемся на события от бота (через команды)
         tg.onEvent('message', (msg) => {
             if (msg.text === '/reviews') {
                 showReviews();
+            } else if (msg.text === '/admin') {
+                renderAdminPanel();
             }
         });
 
