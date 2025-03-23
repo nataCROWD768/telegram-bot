@@ -164,7 +164,7 @@ body {
 }
 
 .client-price + .price-icon {
-    color: #800020; /* Меняем цвет иконки на бордовый, чтобы соответствовать цене */
+    color: #800020;
 }
 
 .club-price {
@@ -179,11 +179,11 @@ body {
 }
 
 .client-price {
-    color: #800020; /* Меняем цвет на бордовый */
+    color: #800020;
     text-decoration: none;
     font-size: 5px;
     opacity: 0.8;
-    background-color: #f9e6e6; /* Меняем фон на светло-бордовый */
+    background-color: #f9e6e6;
     padding: 1px 3px;
     border-radius: 3px;
     font-family: 'Merriweather', serif;
@@ -233,17 +233,142 @@ body {
     animation: tada 1s;
 }
 
+/* Стили для карточки товара */
 #product-detail {
+    margin-top: 50px;
     padding: 15px;
 }
 
-.description, .reviews, .review-form {
-    margin-top: 15px;
+.product-detail-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.back-btn {
+    background: none;
+    border: none;
+    color: #1e3a8a;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px;
+}
+
+.back-btn:hover {
+    color: #3b82f6;
+}
+
+.product-detail-title {
+    font-family: 'Cinzel', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0;
+    flex-grow: 1;
+    text-align: center;
+}
+
+.product-detail-content {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+}
+
+.product-detail-image {
+    width: 100%;
+    height: 200px;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 15px;
+}
+
+.product-detail-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.product-detail-info h3 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0 0 10px;
+}
+
+.product-detail-prices {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+}
+
+.product-detail-rating {
+    color: #f59e0b;
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+
+.product-detail-description {
+    margin-bottom: 20px;
+}
+
+.product-detail-description h4 {
+    font-family: 'Merriweather', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 5px;
+}
+
+.product-detail-description p {
+    font-size: 12px;
+    color: #4b5563;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.product-detail-reviews {
+    margin-bottom: 20px;
+}
+
+.product-detail-reviews h4 {
+    font-family: 'Merriweather', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 10px;
 }
 
 .review {
     border-bottom: 1px solid #eee;
     padding: 8px 0;
+}
+
+.review p {
+    margin: 0;
+    font-size: 12px;
+    color: #4b5563;
+}
+
+.review p strong {
+    color: #2c3e50;
+}
+
+.product-detail-review-form h4 {
+    font-family: 'Merriweather', serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #2c3e50;
+    margin: 0 0 10px;
+}
+
+.rating-stars {
+    margin-bottom: 10px;
 }
 
 .rating-stars .star {
@@ -256,7 +381,15 @@ body {
     color: #f59e0b;
 }
 
-#review-comment {
+#review-comment-1,
+#review-comment-2,
+#review-comment-3,
+#review-comment-4,
+#review-comment-5,
+#review-comment-6,
+#review-comment-7,
+#review-comment-8,
+#review-comment-9 {
     width: 100%;
     min-height: 80px;
     margin-top: 8px;
@@ -264,6 +397,7 @@ body {
     border-radius: 4px;
     border: 1px solid #d1d5db;
     padding: 8px;
+    box-sizing: border-box;
 }
 
 .submit-btn {
@@ -272,9 +406,11 @@ body {
     color: white;
     padding: 8px 16px;
     border-radius: 4px;
+    border: none;
     text-decoration: none;
     display: inline-block;
     font-size: 13px;
+    cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
