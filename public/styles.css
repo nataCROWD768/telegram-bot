@@ -17,7 +17,7 @@ body {
     width: 390px;
     background: linear-gradient(45deg, #1e3a8a, #3b82f6);
     color: white;
-    padding: 8px 20px; /* Устанавливаем отступы 20px слева и справа */
+    padding: 8px 20px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -38,7 +38,7 @@ body {
     width: 100px;
     display: flex;
     align-items: center;
-    margin-left: -10px; /* Смещаем влево, чтобы выровнять с учетом padding шапки */
+    margin-left: -10px;
 }
 
 #search-input {
@@ -116,17 +116,17 @@ body {
 .card-content {
     width: 100%;
     height: 120px;
-    padding: 2px 4px; /* Добавляем отступы слева и справа, чтобы содержимое не прилегало к краям */
-    flex-grow: 0;
+    padding: 2px 4px;
     display: flex;
     flex-direction: column;
+    position: relative; /* Для фиксированного позиционирования дочерних элементов */
 }
 
 .card-content h3 {
     font-family: 'Open Sans', sans-serif;
     font-size: 7px;
     font-weight: 600;
-    margin: 4px 0 4px;
+    margin: 0;
     color: #2c3e50;
     line-height: 1.2;
     max-height: 42px; /* 5 строк: 7px * 1.2 * 5 = 42px */
@@ -135,13 +135,19 @@ body {
     display: -webkit-box;
     -webkit-line-clamp: 5;
     -webkit-box-orient: vertical;
+    position: absolute;
+    top: 4px; /* Фиксированное положение сверху */
+    left: 4px;
+    right: 4px;
 }
 
 .prices {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 4px;
-    font-family: 'Merriweather', serif;
+    position: absolute;
+    top: 50px; /* Фиксированное положение ниже названия */
+    left: 4px;
+    right: 4px;
 }
 
 .price-container {
@@ -151,8 +157,8 @@ body {
 }
 
 .price-icon {
-    font-size: 10px;
-    margin-bottom: 2px;
+    font-size: 8px; /* Уменьшаем размер иконки (было 10px) */
+    margin-bottom: 1px; /* Уменьшаем отступ снизу */
 }
 
 .club-price + .price-icon {
@@ -166,9 +172,9 @@ body {
 .club-price {
     color: #16a34a;
     font-weight: 600;
-    font-size: 8px; /* Уменьшаем размер шрифта (было 9px) */
+    font-size: 7px; /* Уменьшаем размер шрифта (было 8px) */
     background-color: #e6f4ea;
-    padding: 2px 4px;
+    padding: 1px 3px; /* Уменьшаем padding */
     border-radius: 3px;
     font-family: 'Merriweather', serif;
     letter-spacing: 0.5px;
@@ -177,10 +183,10 @@ body {
 .client-price {
     color: #ef4444;
     text-decoration: line-through;
-    font-size: 7px; /* Уменьшаем размер шрифта (было 8px) */
+    font-size: 6px; /* Уменьшаем размер шрифта (было 7px) */
     opacity: 0.8;
     background-color: #fee2e2;
-    padding: 2px 4px;
+    padding: 1px 3px; /* Уменьшаем padding */
     border-radius: 3px;
     font-family: 'Merriweather', serif;
     letter-spacing: 0.5px;
@@ -199,29 +205,31 @@ body {
 }
 
 .card-button {
-    margin-top: auto;
+    position: absolute;
+    bottom: 4px; /* Фиксированное положение снизу */
+    left: 4px;
+    right: 4px;
     text-align: center;
-    padding: 4px 0;
 }
 
 .card-button a {
     display: inline-block;
-    background: linear-gradient(45deg, #ff6f61, #ff9f80); /* Яркий градиент для кнопки */
-    color: white;
+    background: #e0e7ff; /* Мягкий светло-синий цвет, гармонирующий с белой карточкой */
+    color: #1e3a8a; /* Темно-синий текст для контраста */
     font-family: 'Merriweather', serif;
-    font-size: 6px; /* Маленький размер шрифта */
+    font-size: 6px;
     font-weight: 600;
     text-decoration: none;
-    padding: 3px 6px; /* Уменьшенные отступы для маленькой кнопки */
-    border-radius: 15px; /* Скругленные углы */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    padding: 2px 6px; /* Уменьшенные отступы */
+    border-radius: 10px; /* Меньше скругление для минимализма */
+    border: 1px solid #c7d2fe; /* Тонкая рамка для элегантности */
+    transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
 
 .card-button a:hover {
-    transform: scale(1.05);
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
-    animation: pulse 0.5s infinite; /* Анимация из Animate.css */
+    background: #c7d2fe; /* Чуть темнее при наведении */
+    color: #1e40af;
+    transform: scale(1.02); /* Легкое увеличение */
 }
 
 #product-detail {
