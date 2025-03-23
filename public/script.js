@@ -1,4 +1,10 @@
-Telegram.WebApp.ready();
+// Проверяем, что мы в Telegram Web App
+if (typeof Telegram !== 'undefined' && Telegram.WebApp) {
+    Telegram.WebApp.ready();
+    console.log('Telegram Web App инициализирован');
+} else {
+    console.error('Telegram Web App не доступен. Возможно, страница открыта вне Telegram.');
+}
 
 let allProducts = [];
 const API_URL = 'https://telegram-bot-gmut.onrender.com/api/products';
@@ -10,10 +16,10 @@ function loadProducts(products) {
     const productList = document.getElementById('product-list');
     if (!productList) {
         console.error('Элемент #product-list не найден');
-        Telegram.WebApp.showAlert('Ошибка: контейнер для товаров не найден');
+        if (Telegram.WebApp) Telegram.WebApp.showAlert('Ошибка: контейнер для товаров не найден');
         return;
     }
-    productList.innerHTML = ''; // Очищаем список перед добавлением
+    productList.innerHTML = '';
 
     if (!products || products.length === 0) {
         console.log('Товары отсутствуют');
@@ -126,18 +132,22 @@ function showProductDetail(product) {
         if (rating > 0 && comment) {
             const reviewData = { type: 'review', productId, rating, comment };
             console.log('Отправка отзыва:', reviewData);
-            Telegram.WebApp.sendData(JSON.stringify(reviewData));
-            status.textContent = 'Отзыв отправлен! Ожидает модерации.';
-            document.getElementById('review-comment').value = '';
-            stars.forEach(s => s.classList.remove('filled'));
-            detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
+            if (Telegram.WebApp) {
+                Telegram.WebApp.sendData(JSON.stringify(reviewData));
+                status.textContent = 'Отзыв отправлен! Ожидает модерации.';
+                document.getElementById('review-comment').value = '';
+                stars.forEach(s => s.classList.remove('filled'));
+                detailContent.querySelector('.rating-stars').setAttribute('data-rating', '0');
+            } else {
+                console.error('Telegram.WebApp не доступен для отправки отзыва');
+            }
         } else {
-            Telegram.WebApp.showAlert('Выберите рейтинг и введите комментарий');
+            if (Telegram.WebApp) Telegram.WebApp.showAlert('Выберите рейтинг и введите комментарий');
+            else console.error('Ошибка: рейтинг или комментарий отсутствуют');
         }
     });
 }
 
-// Выполняем запрос к API
 console.log('Отправка запроса к:', API_URL);
 fetch(API_URL, {
     method: 'GET',
@@ -191,5 +201,5 @@ fetch(API_URL, {
         if (productList) {
             productList.innerHTML = '<p style="text-align: center; color: #888;">Ошибка загрузки: ' + error.message + '</p>';
         }
-        Telegram.WebApp.showAlert('Ошибка загрузки товаров: ' + error.message);
+        if (Telegram.WebApp) Telegram.WebApp.showAlert('Ошибка загрузки товаров: ' + error.message);
     });
