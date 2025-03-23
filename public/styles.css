@@ -116,27 +116,27 @@ body {
 .card-content {
     width: 100%;
     height: 120px;
-    padding: 2px 4px;
+    padding: 0; /* Убираем padding, так как будем задавать отступы для дочерних элементов */
     display: flex;
     flex-direction: column;
-    position: relative; /* Для фиксированного позиционирования дочерних элементов */
+    position: relative;
 }
 
 .card-content h3 {
     font-family: 'Open Sans', sans-serif;
-    font-size: 7px;
+    font-size: 6px; /* Уменьшаем шрифт на 1px (было 7px) */
     font-weight: 600;
     margin: 0;
     color: #2c3e50;
     line-height: 1.2;
-    max-height: 42px; /* 5 строк: 7px * 1.2 * 5 = 42px */
+    max-height: 36px; /* 5 строк: 6px * 1.2 * 5 = 36px */
     overflow: hidden;
     text-overflow: ellipsis;
     display: -webkit-box;
     -webkit-line-clamp: 5;
     -webkit-box-orient: vertical;
     position: absolute;
-    top: 4px; /* Фиксированное положение сверху */
+    top: 4px;
     left: 4px;
     right: 4px;
 }
@@ -145,7 +145,7 @@ body {
     display: flex;
     justify-content: space-between;
     position: absolute;
-    top: 50px; /* Фиксированное положение ниже названия */
+    top: 50px;
     left: 4px;
     right: 4px;
 }
@@ -157,8 +157,8 @@ body {
 }
 
 .price-icon {
-    font-size: 8px; /* Уменьшаем размер иконки (было 10px) */
-    margin-bottom: 1px; /* Уменьшаем отступ снизу */
+    font-size: 8px;
+    margin-bottom: 1px;
 }
 
 .club-price + .price-icon {
@@ -172,9 +172,9 @@ body {
 .club-price {
     color: #16a34a;
     font-weight: 600;
-    font-size: 7px; /* Уменьшаем размер шрифта (было 8px) */
+    font-size: 6px; /* Уменьшаем шрифт на 1px (было 7px) */
     background-color: #e6f4ea;
-    padding: 1px 3px; /* Уменьшаем padding */
+    padding: 1px 3px;
     border-radius: 3px;
     font-family: 'Merriweather', serif;
     letter-spacing: 0.5px;
@@ -183,10 +183,10 @@ body {
 .client-price {
     color: #ef4444;
     text-decoration: line-through;
-    font-size: 6px; /* Уменьшаем размер шрифта (было 7px) */
+    font-size: 5px; /* Уменьшаем шрифт на 1px (было 6px) */
     opacity: 0.8;
     background-color: #fee2e2;
-    padding: 1px 3px; /* Уменьшаем padding */
+    padding: 1px 3px;
     border-radius: 3px;
     font-family: 'Merriweather', serif;
     letter-spacing: 0.5px;
@@ -206,7 +206,7 @@ body {
 
 .card-button {
     position: absolute;
-    bottom: 4px; /* Фиксированное положение снизу */
+    bottom: 4px;
     left: 4px;
     right: 4px;
     text-align: center;
@@ -214,22 +214,22 @@ body {
 
 .card-button a {
     display: inline-block;
-    background: #e0e7ff; /* Мягкий светло-синий цвет, гармонирующий с белой карточкой */
-    color: #1e3a8a; /* Темно-синий текст для контраста */
+    background: #e0e7ff;
+    color: #1e3a8a;
     font-family: 'Merriweather', serif;
-    font-size: 6px;
+    font-size: 5px; /* Уменьшаем шрифт на 1px (было 6px) */
     font-weight: 600;
     text-decoration: none;
-    padding: 2px 6px; /* Уменьшенные отступы */
-    border-radius: 10px; /* Меньше скругление для минимализма */
-    border: 1px solid #c7d2fe; /* Тонкая рамка для элегантности */
+    padding: 2px 6px;
+    border-radius: 10px;
+    border: 1px solid #c7d2fe;
     transition: background 0.3s ease, color 0.3s ease, transform 0.2s ease;
 }
 
 .card-button a:hover {
-    background: #c7d2fe; /* Чуть темнее при наведении */
+    background: #c7d2fe;
     color: #1e40af;
-    transform: scale(1.02); /* Легкое увеличение */
+    transform: scale(1.02);
 }
 
 #product-detail {
