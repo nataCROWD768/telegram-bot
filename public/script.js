@@ -40,8 +40,8 @@ function connectWebSocket() {
 // Загрузка продуктов с бэкенда
 async function loadProducts() {
     try {
-        console.log('Попытка загрузить продукты с http://localhost:3000/api/products');
-        const response = await fetch('http://localhost:3000/api/products');
+        console.log('Попытка загрузить продукты с https://telegram-bot-gmut.onrender.com/api/products');
+        const response = await fetch('https://telegram-bot-gmut.onrender.com/api/products');
         console.log('Ответ от сервера:', response);
         if (!response.ok) {
             const errorText = await response.text();
