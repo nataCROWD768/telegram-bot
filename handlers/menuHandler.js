@@ -6,7 +6,8 @@ const handleMainMenu = async (bot, chatId) => {
         ['Бонусы и продукт', 'Отзывы']
       ],
       resize_keyboard: true,
-      one_time_keyboard: false // Кнопки всегда видны
+      one_time_keyboard: false, // Клавиатура не исчезает после нажатия
+      persistent: true // Закрепляем клавиатуру (Telegram Bot API 6.4+)
     }
   });
   bot.lastMessageId = bot.lastMessageId || {};
