@@ -374,7 +374,7 @@ body {
 }
 
 .share-btn {
-    background-color: #3b82f6; /* Синий цвет, как в топ-магазинах */
+    background-color: #10b981; /* Изменил на зелёный, ассоциирующийся с отправкой */
     color: white;
     font-family: 'Roboto', sans-serif;
     font-size: 12px;
@@ -391,12 +391,16 @@ body {
 }
 
 .share-btn:hover {
-    background-color: #2563eb; /* Темнее при наведении */
+    background-color: #059669; /* Темнее при наведении */
     transform: scale(1.05);
 }
 
+.share-btn:active {
+    transform: scale(0.95); /* Эффект нажатия */
+}
+
 .share-btn::before {
-    content: "↗️"; /* Иконка "поделиться" */
+    content: "📤"; /* Изменил иконку на "отправить" */
     font-size: 14px;
 }
 
