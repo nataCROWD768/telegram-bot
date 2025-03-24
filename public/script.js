@@ -256,19 +256,17 @@ function showProductDetail(product, page = 1) {
     document.querySelector(`.share-btn[data-product-id="${product._id}"]`).addEventListener('click', () => {
         const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
         if (tg) {
-            const shareText = `
-✨ *${product.name}* ✨
-💎 Клубная цена: ${product.clubPrice.toLocaleString()} ₽
-💰 Клиентская цена: ${product.clientPrice.toLocaleString()} ₽
-📝 Описание: ${product.description || 'Описание отсутствует'}
-${product.image ? `Изображение: ${product.image}` : ''}
-            `.trim();
-
-            // Используем tg://share для вызова интерфейса отправки
-            const encodedText = encodeURIComponent(shareText);
-            const shareUrl = `tg://share?url=${encodedText}`;
-            tg.openTelegramLink(shareUrl);
-            console.log('Открыт интерфейс шаринга с текстом:', shareText);
+            const shareData = {
+                type: 'share',
+                productId: product._id,
+                name: product.name,
+                clubPrice: product.clubPrice,
+                clientPrice: product.clientPrice,
+                description: product.description,
+                image: product.image || 'https://via.placeholder.com/300'
+            };
+            tg.sendData(JSON.stringify(shareData));
+            console.log('Отправлены данные для шаринга:', shareData);
         } else {
             alert('Функция "Поделиться" доступна только в Telegram Web App.');
         }
