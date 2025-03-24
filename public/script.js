@@ -23,7 +23,7 @@ let ws;
 
 const BASE_URL = 'https://telegram-bot-gmut.onrender.com';
 
-// Подключение к WebSocket
+// Подключение к WebSocket (оставлено в комментариях, так как отключено на Render)
 function connectWebSocket() {
     ws = new WebSocket('wss://telegram-bot-gmut.onrender.com');
     ws.onopen = () => console.log('Подключено к WebSocket');
@@ -83,7 +83,7 @@ function renderProducts(productArray) {
         const ratingHtml = hasReviews ? `<div class="rating">★ ${product.averageRating.toFixed(1)}</div>` : '';
         card.innerHTML = `
             <div class="card-image">
-                <img src="${product.image || '/images/placeholder.jpg'}" alt="${product.name}">
+                <img src="${BASE_URL}/api/image/${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/150';">
                 ${ratingHtml}
             </div>
             <div class="card-content">
@@ -149,7 +149,7 @@ function showProductDetail(product, page = 1) {
 
     productDetailContent.innerHTML = `
         <div class="product-detail-image">
-            <img src="${product.image || '/images/placeholder.jpg'}" alt="${product.name}">
+            <img src="${BASE_URL}/api/image/${product.image}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/150';">
             ${ratingHtml}
         </div>
         <div class="product-detail-info">
@@ -262,7 +262,7 @@ function showProductDetail(product, page = 1) {
                     clubPrice: product.clubPrice,
                     clientPrice: product.clientPrice,
                     description: product.description,
-                    image: product.image ? `${BASE_URL}${product.image}` : 'https://via.placeholder.com/300'
+                    image: product.image // Передаём file_id
                 };
                 try {
                     console.log('Попытка отправить данные через tg.sendData:', shareData);

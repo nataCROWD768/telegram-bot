@@ -3,7 +3,9 @@ const Review = require('../models/review');
 const ExcelJS = require('exceljs');
 const fs = require('fs').promises;
 const path = require('path');
-const axios = require('axios');
+
+// ID специального чата для хранения изображений (замените на ваш chat_id)
+const STORAGE_CHAT_ID = '-2304626004'; // Например, ваш chat_id или id группы
 
 // Функция форматирования даты на русском языке с проверкой
 const formatDate = (date) => {
@@ -59,7 +61,7 @@ const showProducts = async (bot, chatId) => {
             { header: 'Цена (клуб)', key: 'clubPrice', width: 15 },
             { header: 'Цена (клиент)', key: 'clientPrice', width: 15 },
             { header: 'Рейтинг', key: 'averageRating', width: 10 },
-            { header: 'Изображение', key: 'image', width: 40 }
+            { header: 'Изображение (file_id)', key: 'image', width: 40 }
         ];
 
         worksheet.getRow(1).font = { bold: true, size: 12, color: { argb: 'FFFFFFFF' } };
@@ -145,21 +147,20 @@ const addProduct = async (bot, chatId) => {
 
                         const photo = msg.photo[msg.photo.length - 1];
                         const fileId = photo.file_id;
-                        const file = await bot.getFile(fileId);
-                        const fileUrl = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${file.file_path}`;
 
-                        // Скачиваем изображение
-                        const fileName = `image${Date.now()}.jpg`;
-                        // Если изображения перемещены в newFolder, используем этот путь
-                        const filePath = path.join(__dirname, '../public/images/newFolder', fileName);
-                        const response = await axios({
-                            url: fileUrl,
-                            method: 'GET',
-                            responseType: 'arraybuffer',
-                        });
-                        await fs.writeFile(filePath, response.data);
+                        // Отправляем изображение в специальный чат для хранения
+                        try {
+                            await bot.sendPhoto(STORAGE_CHAT_ID, fileId, {
+                                caption: `Изображение для товара: ${productData.name}`
+                            });
+                        } catch (error) {
+                            console.error('Ошибка отправки изображения в хранилище:', error);
+                            await bot.sendMessage(chatId, '❌ Ошибка при сохранении изображения');
+                            return;
+                        }
 
-                        productData.image = `/images/newFolder/${fileName}`;
+                        // Сохраняем file_id в базе данных
+                        productData.image = fileId;
 
                         try {
                             const product = new Product({
@@ -193,7 +194,7 @@ const editProduct = async (bot, chatId) => {
             await bot.sendMessage(chatId, '❌ Товар не найден');
             return;
         }
-        await bot.sendMessage(chatId, `Текущие данные:\n${product.name}|${product.description}|${product.clubPrice}|${product.clientPrice}|${product.image}\n\nВведите новые данные в формате:\n\`Название|Описание|Цена (клуб)|Цена (клиент)|URL изображения\``);
+        await bot.sendMessage(chatId, `Текущие данные:\n${product.name}|${product.description}|${product.clubPrice}|${product.clientPrice}|${product.image}\n\nВведите новые данные в формате:\n\`Название|Описание|Цена (клуб)|Цена (клиент)|file_id изображения\``);
         bot.once('message', async (msg) => {
             const [name, description, clubPrice, clientPrice, image] = msg.text.split('|');
             if (!name || !description || !clubPrice || !clientPrice || !image) {
@@ -201,6 +202,12 @@ const editProduct = async (bot, chatId) => {
                 return;
             }
             try {
+                // Если указан новый file_id, отправляем новое изображение в хранилище
+                if (image !== product.image) {
+                    await bot.sendPhoto(STORAGE_CHAT_ID, image, {
+                        caption: `Новое изображение для товара: ${name}`
+                    });
+                }
                 await Product.updateOne({ _id: productId }, {
                     name,
                     description,

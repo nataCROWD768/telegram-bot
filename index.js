@@ -20,7 +20,6 @@ const { showProfile } = require('./handlers/profileHandler');
 const Visit = require('./models/visit');
 const Product = require('./models/product');
 const Review = require('./models/review');
-const initialProducts = require('./data/products');
 require('dotenv').config();
 
 const app = express();
@@ -90,30 +89,6 @@ const setupWebhook = async () => {
     }
 };
 
-const syncProducts = async () => {
-    try {
-        console.log('Синхронизация товаров...');
-        const existingProducts = await Product.find();
-        const existingProductNames = existingProducts.map(p => p.name);
-
-        for (const productData of initialProducts) {
-            if (!existingProductNames.includes(productData.name)) {
-                const newProduct = await Product.create(productData);
-                console.log('Добавлен новый товар:', newProduct);
-            } else {
-                await Product.updateOne(
-                    { name: productData.name },
-                    { $set: productData }
-                );
-                console.log(`Обновлён товар: ${productData.name}`);
-            }
-        }
-        console.log('Товары синхронизированы');
-    } catch (error) {
-        console.error('Ошибка синхронизации товаров:', error.message);
-    }
-};
-
 // Кэширование для маршрута /api/products
 let productCache = null;
 let cacheTimestamp = 0;
@@ -149,6 +124,19 @@ app.get('/api/products', async (req, res) => {
     } catch (error) {
         console.error('Ошибка API /api/products:', error.stack);
         res.status(500).json({ error: 'Ошибка загрузки товаров' });
+    }
+});
+
+// Эндпоинт для получения URL изображения по file_id
+app.get('/api/image/:fileId', async (req, res) => {
+    try {
+        const fileId = req.params.fileId;
+        const file = await bot.getFile(fileId);
+        const fileUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${file.file_path}`;
+        res.redirect(fileUrl);
+    } catch (error) {
+        console.error('Ошибка получения изображения:', error);
+        res.status(500).json({ error: 'Не удалось загрузить изображение' });
     }
 });
 
@@ -346,10 +334,9 @@ bot.on('message', async (msg) => {
     }
 });
 
-// Добавляем обработку команды /search
 bot.onText(/\/search (.+)/, async (msg, match) => {
     const chatId = msg.chat.id;
-    const query = match[1]; // Текст после /search
+    const query = match[1];
     await searchProducts(bot, chatId, query);
 });
 
@@ -451,7 +438,8 @@ bot.on('web_app_data', async (msg) => {
             `.trim();
 
             console.log('Отправка фото в чат:', { chatId, image, caption });
-            const newMessage = await bot.sendPhoto(chatId, image || 'https://via.placeholder.com/300', {
+            // Используем file_id для отправки изображения
+            const newMessage = await bot.sendPhoto(chatId, image, {
                 caption,
                 parse_mode: 'Markdown'
             });
@@ -520,7 +508,6 @@ bot.on('web_app_data', async (msg) => {
 
 const startServer = async () => {
     await setupWebhook();
-    // await syncProducts(); // Закомментировано, чтобы не перезаписывать продукты при каждом запуске
     app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
     const PORT = process.env.PORT || 3000;
     app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
