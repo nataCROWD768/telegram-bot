@@ -469,51 +469,45 @@ app.post(`/bot${BOT_TOKEN}`, (req, res) => {
 // Обработка события web_app_data
 bot.on('web_app_data', async (msg) => {
     const chatId = msg.chat.id;
-    console.log('=== Начало обработки web_app_data ===');
-    console.log('Чат ID:', chatId);
-    console.log('Полное сообщение от Telegram:', JSON.stringify(msg, null, 2));
-    console.log('Сырые данные от Web App:', msg.web_app_data.data);
+    console.log('Получены данные от Web App:', msg.web_app_data.data);
 
     let data;
     try {
         data = JSON.parse(msg.web_app_data.data);
-        console.log('Распарсенные данные:', data);
     } catch (error) {
-        console.error('Ошибка парсинга JSON:', error.message);
+        console.error('Ошибка парсинга данных:', error);
         await bot.sendMessage(chatId, '❌ Ошибка обработки данных');
         return;
     }
 
     if (data.type === 'share') {
         const { productId, name, clubPrice, clientPrice, description, image } = data;
-        console.log('Обработка шаринга продукта:', { productId, name, clubPrice, clientPrice, description, image });
-
         try {
             const product = await Product.findById(productId);
             if (!product) {
-                console.log('Товар не найден в базе:', productId);
                 await bot.sendMessage(chatId, '❌ Товар не найден');
                 return;
             }
-            console.log('Найденный продукт:', product);
 
             const caption = `
 ✨ *${name}* ✨
+━━━━━━━━━━━━━━━━━━━
 💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽
 💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽
-📝 *Описание:* ${description || 'Описание отсутствует'}
+━━━━━━━━━━━━━━━━━━━
+📝 *Описание:* 
+${description || 'Описание отсутствует'}
+━━━━━━━━━━━━━━━━━━━
             `.trim();
 
-            console.log('Отправка фото в чат:', { chatId, image, caption });
             const newMessage = await bot.sendPhoto(chatId, image, {
                 caption,
                 parse_mode: 'Markdown'
             });
-            console.log('Карточка продукта успешно отправлена, message_id:', newMessage.message_id);
             bot.lastMessageId[chatId] = newMessage.message_id;
         } catch (error) {
-            console.error('Ошибка при отправке карточки продукта:', error.stack);
-            await bot.sendMessage(chatId, '❌ Ошибка при шаринге продукта: ' + error.message);
+            console.error('Ошибка при шаринге продукта:', error);
+            await bot.sendMessage(chatId, '❌ Ошибка при отправке продукта');
         }
     } else if (data.type === 'review') {
         const { productId, rating, comment } = data;
@@ -570,7 +564,6 @@ bot.on('web_app_data', async (msg) => {
     } else {
         console.log('Неизвестный тип данных:', data.type);
     }
-    console.log('=== Конец обработки web_app_data ===');
 });
 
 // Запуск сервера

@@ -374,34 +374,43 @@ body {
 }
 
 .share-btn {
-    background-color: #10b981; /* Изменил на зелёный, ассоциирующийся с отправкой */
+    background: linear-gradient(135deg, #34d399, #10b981); /* Градиент зелёного цвета */
     color: white;
     font-family: 'Roboto', sans-serif;
-    font-size: 12px;
+    font-size: 14px;
     font-weight: 500;
-    padding: 6px 12px;
-    border-radius: 20px; /* Закруглённые края */
+    padding: 8px 16px;
+    border-radius: 25px; /* Более закруглённые края */
     border: none;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 5px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    gap: 8px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .share-btn:hover {
-    background-color: #059669; /* Темнее при наведении */
-    transform: scale(1.05);
+    background: linear-gradient(135deg, #2dd4bf, #059669); /* Темнее при наведении */
+    transform: translateY(-2px); /* Лёгкий подъём */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
 }
 
 .share-btn:active {
     transform: scale(0.95); /* Эффект нажатия */
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-.share-btn::before {
-    content: "📤"; /* Изменил иконку на "отправить" */
-    font-size: 14px;
+.share-btn:disabled {
+    background: #9ca3af; /* Серый цвет при отключении */
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.share-icon {
+    font-size: 16px;
 }
 
 .product-detail-description {

@@ -165,7 +165,9 @@ function showProductDetail(product, page = 1) {
                     <span class="client-price">${product.clientPrice || 0} ₽</span>
                     <span class="price-label">Клиентская цена</span>
                 </div>
-                <button class="share-btn" data-product-id="${product._id}">Поделиться</button>
+                <button class="share-btn" data-product-id="${product._id}">
+                    <span class="share-icon">📤</span> Поделиться
+                </button>
             </div>
             <div class="product-detail-description">
                 <h4>Описание</h4>
@@ -245,21 +247,15 @@ function showProductDetail(product, page = 1) {
         }
     });
 
+    // Обработка кнопки "Поделиться"
     const shareButton = document.querySelector(`.share-btn[data-product-id="${product._id}"]`);
     if (shareButton) {
-        console.log('Кнопка "Поделиться" найдена в DOM:', shareButton);
-        shareButton.removeEventListener('click', shareButton._clickHandler);
-        shareButton._clickHandler = () => {
-            // Отключаем кнопку и показываем индикатор загрузки
+        shareButton.addEventListener('click', () => {
             shareButton.disabled = true;
-            shareButton.textContent = 'Отправка...';
+            shareButton.innerHTML = '<span class="share-icon">⏳</span> Отправка...';
 
-            console.log('Событие клика на кнопке "Поделиться" для продукта:', product._id);
-            console.log('Проверка window.Telegram:', window.Telegram);
-            const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+            const tg = window.Telegram?.WebApp;
             if (tg) {
-                console.log('Telegram Web App доступен:', tg);
-                console.log('Данные Telegram initDataUnsafe:', tg.initDataUnsafe);
                 const shareData = {
                     type: 'share',
                     productId: product._id,
@@ -267,30 +263,27 @@ function showProductDetail(product, page = 1) {
                     clubPrice: product.clubPrice,
                     clientPrice: product.clientPrice,
                     description: product.description,
-                    image: product.image // Передаём file_id
+                    image: product.image
                 };
                 try {
-                    console.log('Попытка отправить данные через tg.sendData:', shareData);
                     tg.sendData(JSON.stringify(shareData));
-                    console.log('Данные успешно отправлены через tg.sendData');
+                    setTimeout(() => {
+                        shareButton.disabled = false;
+                        shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
+                    }, 1000); // Имитация задержки для UX
                 } catch (error) {
-                    console.error('Ошибка при вызове tg.sendData:', error);
+                    console.error('Ошибка при отправке данных:', error);
                     alert('Ошибка при шаринге продукта');
-                } finally {
-                    // Включаем кнопку обратно
                     shareButton.disabled = false;
-                    shareButton.textContent = 'Поделиться';
+                    shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
                 }
             } else {
-                console.error('Telegram Web App не инициализирован');
-                alert('Функция "Поделиться" работает только в Telegram Web App');
+                console.error('Telegram Web App не доступен');
+                alert('Эта функция работает только в Telegram');
                 shareButton.disabled = false;
-                shareButton.textContent = 'Поделиться';
+                shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
             }
-        };
-        shareButton.addEventListener('click', shareButton._clickHandler);
-    } else {
-        console.error('Кнопка "Поделиться" не найдена в DOM для продукта:', product._id);
+        });
     }
 
     if (totalReviews > reviewsPerPage) {
