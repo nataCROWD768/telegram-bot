@@ -468,15 +468,7 @@ bot.on('web_app_data', async (msg) => {
 
             const newMessage = await bot.sendPhoto(chatId, image || 'https://via.placeholder.com/300', {
                 caption,
-                parse_mode: 'Markdown',
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: 'Открыть витрину', web_app: { url: `${webAppUrl}/index.html` } },
-                            { text: 'Переслать', switch_inline_query: '' }
-                        ]
-                    ]
-                }
+                parse_mode: 'Markdown'
             });
             lastMessageId[chatId] = newMessage.message_id;
         } catch (error) {
