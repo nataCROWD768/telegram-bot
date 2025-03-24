@@ -69,21 +69,22 @@ const setupWebhook = async () => {
     const appName = process.env.RENDER_APP_NAME || 'telegram-bot-gmut';
     const WEBHOOK_URL = `https://${appName}.onrender.com/bot${BOT_TOKEN}`;
     const telegramApi = `https://api.telegram.org/bot${BOT_TOKEN}`;
-    console.log(`Попытка установить webhook: ${WEBHOOK_URL}`);
+    console.log(`Попытка установить Webhook: ${WEBHOOK_URL}`);
 
     try {
         const deleteResponse = await axios.get(`${telegramApi}/deleteWebhook`);
-        console.log('Старый webhook удалён:', deleteResponse.data);
+        console.log('Результат удаления старого Webhook:', deleteResponse.data);
 
-        const setResponse = await axios.get(`${telegramApi}/setWebHook?url=${WEBHOOK_URL}`);
-        if (setResponse.data.ok) {
-            console.log(`Webhook успешно установлен: ${WEBHOOK_URL}`);
-        } else {
-            console.error('Ошибка установки webhook:', setResponse.data);
-            process.exit(1);
+        const setResponse = await axios.get(`${telegramApi}/setWebhook?url=${WEBHOOK_URL}`);
+        console.log('Результат установки Webhook:', setResponse.data);
+        if (!setResponse.data.ok) {
+            throw new Error(`Не удалось установить Webhook: ${setResponse.data.description}`);
         }
+
+        const webhookInfo = await axios.get(`${telegramApi}/getWebhookInfo`);
+        console.log('Текущая информация о Webhook:', webhookInfo.data);
     } catch (error) {
-        console.error('Ошибка настройки webhook:', error.response ? error.response.data : error.message);
+        console.error('Ошибка настройки Webhook:', error.message);
         process.exit(1);
     }
 };
@@ -395,6 +396,7 @@ bot.on('web_app_data', async (msg) => {
     const chatId = msg.chat.id;
     console.log('=== Начало обработки web_app_data ===');
     console.log('Чат ID:', chatId);
+    console.log('Полное сообщение от Telegram:', JSON.stringify(msg, null, 2));
     console.log('Сырые данные от Web App:', msg.web_app_data.data);
 
     let data;
@@ -407,58 +409,7 @@ bot.on('web_app_data', async (msg) => {
         return;
     }
 
-    if (data.type === 'review') {
-        const { productId, rating, comment } = data;
-        console.log('Попытка сохранить отзыв:', { productId, rating, comment });
-        if (!rating || rating < 1 || rating > 5 || !comment || !productId || !mongoose.Types.ObjectId.isValid(productId)) {
-            console.log('Ошибка валидации отзыва:', { productId, rating, comment });
-            await bot.sendMessage(chatId, '❌ Неверный формат отзыва');
-            return;
-        }
-        try {
-            const product = await Product.findById(productId);
-            if (!product) {
-                console.log('Товар не найден:', productId);
-                await bot.sendMessage(chatId, '❌ Товар не найден');
-                return;
-            }
-            const username = msg.from.username ? `@${msg.from.username}` : 'Аноним';
-            const review = new Review({
-                userId: chatId.toString(),
-                username,
-                productId,
-                rating,
-                comment,
-                isApproved: false
-            });
-            await review.save();
-            console.log('Отзыв сохранён:', review);
-
-            const reviews = await Review.find({ productId, isApproved: true });
-            const averageRating = reviews.length > 0
-                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
-                : 0;
-            await Product.updateOne({ _id: productId }, { averageRating });
-
-            const message = `Новый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${username}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
-            await bot.sendMessage(ADMIN_ID, message, {
-                reply_markup: {
-                    inline_keyboard: [
-                        [
-                            { text: 'Одобрить', callback_data: `approve_review_${review._id}` },
-                            { text: 'Отклонить', callback_data: `reject_review_${review._id}` }
-                        ]
-                    ]
-                }
-            });
-
-            const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
-            lastMessageId[chatId] = newMessage.message_id;
-        } catch (error) {
-            console.error('Ошибка сохранения отзыва:', error.stack);
-            await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва');
-        }
-    } else if (data.type === 'share') {
+    if (data.type === 'share') {
         const { productId, name, clubPrice, clientPrice, description, image } = data;
         console.log('Обработка шаринга продукта:', { productId, name, clubPrice, clientPrice, description, image });
 
