@@ -118,8 +118,8 @@ body {
     flex-direction: column;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
     position: relative;
-    height: auto; /* Убираем фиксированную высоту, чтобы карточка подстраивалась под контент */
-    min-height: 140px; /* Минимальная высота для пустых карточек */
+    height: auto;
+    min-height: 140px;
 }
 
 .product-card:hover {
@@ -128,11 +128,11 @@ body {
 
 .card-image {
     width: 100%;
-    height: auto; /* Убираем фиксированную высоту, чтобы изображение определяло размер */
+    height: auto;
     overflow: hidden;
     background-color: #f0f0f0;
     position: relative;
-    padding-top: 100%; /* Соотношение 1:1 для квадратных изображений */
+    padding-top: 100%;
 }
 
 .card-image img {
@@ -141,18 +141,18 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    object-fit: contain; /* Изображение полностью помещается без обрезки */
+    object-fit: contain;
     object-position: center;
     display: block;
 }
 
 .card-content {
     width: 100%;
-    padding: 4px; /* Уменьшаем внутренние отступы для компактности */
+    padding: 4px;
     display: flex;
     flex-direction: column;
     position: relative;
-    flex-grow: 1; /* Растягиваем контент на оставшееся пространство */
+    flex-grow: 1;
 }
 
 .card-content h3 {
@@ -173,8 +173,9 @@ body {
 .prices {
     display: flex;
     justify-content: space-between;
-    margin-top: 4px;
-    height: 19px;
+    margin-top: auto; /* Привязываем цены к нижней части контента, над кнопкой */
+    margin-bottom: 4px; /* Отступ от кнопки */
+    padding: 0 4px; /* Добавляем внутренние отступы для симметрии */
 }
 
 .price-container {
@@ -201,22 +202,24 @@ body {
     font-weight: 600;
     font-size: 6px;
     background-color: #e6f4ea;
-    padding: 1px 3px;
+    padding: 2px 4px; /* Увеличиваем отступы для симметрии */
     border-radius: 3px;
     font-family: 'Merriweather', serif;
     letter-spacing: 0.5px;
+    white-space: nowrap; /* Предотвращаем перенос текста */
 }
 
 .client-price {
     color: #800020;
     text-decoration: none;
-    font-size: 5px;
+    font-size: 6px; /* Увеличиваем до 6px для一致ности с клубной ценой */
     opacity: 0.8;
     background-color: #f9e6e6;
-    padding: 1px 3px;
+    padding: 2px 4px; /* Увеличиваем отступы, чтобы обводка помещалась */
     border-radius: 3px;
     font-family: 'Merriweather', serif;
     letter-spacing: 0.5px;
+    white-space: nowrap; /* Предотвращаем перенос текста */
 }
 
 .rating {
@@ -232,7 +235,7 @@ body {
 }
 
 .card-button {
-    margin-top: auto; /* Кнопка прижимается к нижней части карточки */
+    margin-top: 0; /* Убираем автоматический отступ, так как цены теперь над кнопкой */
     text-align: center;
     padding: 4px 0;
 }
@@ -246,11 +249,13 @@ body {
     font-weight: 600;
     text-decoration: none;
     padding: 4px 8px;
-    border-radius: 0;
+    border-radius: 4px; /* Закругляем углы для компактности */
     border: 1px solid #b0b7c0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.3s ease;
     line-height: 1;
+    width: auto; /* Убираем растяжку на всю ширину */
+    max-width: 70%; /* Ограничиваем максимальную ширину кнопки */
 }
 
 .card-button a:hover {
@@ -547,11 +552,11 @@ textarea[id^="review-comment-"] {
     }
 
     .product-card {
-        min-height: 130px; /* Уменьшаем минимальную высоту на узких экранах */
+        min-height: 130px;
     }
 
     .card-image {
-        padding-top: 100%; /* Сохраняем квадратное соотношение */
+        padding-top: 100%;
     }
 
     .card-content {
