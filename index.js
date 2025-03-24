@@ -466,12 +466,15 @@ bot.on('web_app_data', async (msg) => {
 📝 *Описание:* ${description || 'Описание отсутствует'}
             `.trim();
 
-            const newMessage = await bot.sendPhoto(chatId, image, {
+            const newMessage = await bot.sendPhoto(chatId, image || 'https://via.placeholder.com/300', {
                 caption,
                 parse_mode: 'Markdown',
                 reply_markup: {
                     inline_keyboard: [
-                        [{ text: 'Открыть витрину', web_app: { url: `${webAppUrl}/index.html` } }]
+                        [
+                            { text: 'Открыть витрину', web_app: { url: `${webAppUrl}/index.html` } },
+                            { text: 'Переслать', switch_inline_query: '' }
+                        ]
                     ]
                 }
             });
