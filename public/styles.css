@@ -147,20 +147,21 @@ body {
 }
 
 .card-content {
-    width: 100%;
+    width: 100%; /* Ограничиваем ширину контента шириной изображения */
     padding: 4px;
     display: flex;
     flex-direction: column;
     position: relative;
     flex-grow: 1;
+    box-sizing: border-box; /* Учитываем padding в ширине */
 }
 
 .card-content h3 {
     font-family: 'Roboto', sans-serif;
-    font-size: 5px;
+    font-size: 4px; /* Уменьшаем с 5px до 4px */
     font-weight: 600;
     margin: 0;
-    margin-bottom: 4px; /* Добавляем отступ снизу, равный отступу между ценами и кнопкой */
+    margin-bottom: 4px;
     color: #2c3e50;
     line-height: 1.2;
     max-height: 45px;
@@ -175,8 +176,10 @@ body {
     display: flex;
     justify-content: space-between;
     margin-top: auto;
-    margin-bottom: 4px; /* Отступ от кнопки остаётся 4px */
+    margin-bottom: 4px;
     padding: 0 4px;
+    width: 100%; /* Ограничиваем ширину цен шириной .card-content */
+    box-sizing: border-box;
 }
 
 .price-container {
@@ -201,7 +204,7 @@ body {
 .club-price {
     color: #16a34a;
     font-weight: 600;
-    font-size: 6px;
+    font-size: 5px; /* Уменьшаем с 6px до 5px */
     background-color: #e6f4ea;
     padding: 2px 4px;
     border-radius: 3px;
@@ -213,7 +216,7 @@ body {
 .client-price {
     color: #800020;
     text-decoration: none;
-    font-size: 6px;
+    font-size: 5px; /* Уменьшаем с 6px до 5px */
     opacity: 0.8;
     background-color: #f9e6e6;
     padding: 2px 4px;
@@ -239,6 +242,8 @@ body {
     margin-top: 0;
     text-align: center;
     padding: 4px 0;
+    width: 100%; /* Ограничиваем ширину кнопки шириной .card-content */
+    box-sizing: border-box;
 }
 
 .card-button a {
@@ -246,7 +251,7 @@ body {
     background: #d1d5db;
     color: #2c3e50;
     font-family: 'Roboto', sans-serif;
-    font-size: 5px;
+    font-size: 4px; /* Уменьшаем с 5px до 4px */
     font-weight: 600;
     text-decoration: none;
     padding: 4px 8px;
@@ -565,11 +570,24 @@ textarea[id^="review-comment-"] {
     }
 
     .card-content h3 {
-        margin-bottom: 4px; /* Сохраняем отступ в адаптивности */
+        font-size: 4px; /* Уменьшаем с 5px до 4px */
+        margin-bottom: 4px;
     }
 
     .prices {
-        margin-bottom: 4px; /* Сохраняем отступ в адаптивности */
+        margin-bottom: 4px;
+    }
+
+    .club-price {
+        font-size: 5px; /* Уменьшаем с 6px до 5px */
+    }
+
+    .client-price {
+        font-size: 5px; /* Уменьшаем с 6px до 5px */
+    }
+
+    .card-button a {
+        font-size: 4px; /* Уменьшаем с 5px до 4px */
     }
 
     .review-container {
