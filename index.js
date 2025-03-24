@@ -25,11 +25,12 @@ require('dotenv').config();
 
 const app = express();
 const isLocal = process.env.NODE_ENV !== 'production';
-const BOT_TOKEN = process.env.TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8';
+const BOT_TOKEN = process.env.BOT_TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzlksBIf6lwd8';
 const bot = new TelegramBot(BOT_TOKEN, { polling: isLocal });
 const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
-let lastMessageId = {};
+// Инициализируем lastMessageId как свойство бота
+bot.lastMessageId = {};
 
 // Функция форматирования даты на русском языке с проверкой
 const formatDate = (date) => {
@@ -113,9 +114,20 @@ const syncProducts = async () => {
     }
 };
 
+// Кэширование для маршрута /api/products
+let productCache = null;
+let cacheTimestamp = 0;
+const CACHE_DURATION = 5 * 60 * 1000; // 5 минут
+
 app.get('/api/products', async (req, res) => {
     console.log('Получен запрос на /api/products');
     try {
+        const now = Date.now();
+        if (productCache && now - cacheTimestamp < CACHE_DURATION) {
+            console.log('Возвращаем данные из кэша');
+            return res.json(productCache);
+        }
+
         const products = await Product.find();
         if (!products || products.length === 0) {
             console.log('Товары не найдены в базе данных');
@@ -130,7 +142,10 @@ app.get('/api/products', async (req, res) => {
             return { ...product.toObject(), reviews, averageRating };
         }));
         console.log('Отправка данных клиенту:', productsWithReviews);
-        res.json({ products: productsWithReviews, total: products.length });
+
+        productCache = { products: productsWithReviews, total: products.length };
+        cacheTimestamp = now;
+        res.json(productCache);
     } catch (error) {
         console.error('Ошибка API /api/products:', error.stack);
         res.status(500).json({ error: 'Ошибка загрузки товаров' });
@@ -199,10 +214,10 @@ bot.onText(/\/start/, async (msg) => {
             await Visit.create({ username, userId: chatId });
             await bot.sendVideoNote(chatId, welcomeVideo);
             const welcomeMsg = await bot.sendMessage(chatId, `✨ Добро пожаловать!\n${companyInfo}`, { parse_mode: 'Markdown' });
-            lastMessageId[chatId] = welcomeMsg.message_id;
+            bot.lastMessageId[chatId] = welcomeMsg.message_id;
         } else {
             const returnMsg = await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown' });
-            lastMessageId[chatId] = returnMsg.message_id;
+            bot.lastMessageId[chatId] = returnMsg.message_id;
         }
         await handleMainMenu(bot, chatId);
     } catch (error) {
@@ -217,13 +232,13 @@ bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
     console.log(`Сообщение: "${msg.text}" от ${msg.from.username}`);
 
-    if (lastMessageId[chatId] && lastMessageId[chatId] !== msg.message_id) {
+    if (bot.lastMessageId[chatId] && bot.lastMessageId[chatId] !== msg.message_id) {
         try {
-            await bot.deleteMessage(chatId, lastMessageId[chatId]);
+            await bot.deleteMessage(chatId, bot.lastMessageId[chatId]);
         } catch (error) {
             console.error('Ошибка удаления сообщения:', error);
             if (error.code === 'ETELEGRAM' && error.response?.body?.error_code === 400) {
-                delete lastMessageId[chatId];
+                delete bot.lastMessageId[chatId];
             }
         }
     }
@@ -241,11 +256,11 @@ bot.on('message', async (msg) => {
                     inline_keyboard: [[{ text: '🛒 Открыть витрину:', web_app: { url: `${webAppUrl}/index.html` } }]]
                 }
             });
-            lastMessageId[chatId] = newMessage.message_id;
+            bot.lastMessageId[chatId] = newMessage.message_id;
             break;
         case 'Бонусы и продукт':
             newMessage = await bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)');
-            lastMessageId[chatId] = newMessage.message_id;
+            bot.lastMessageId[chatId] = newMessage.message_id;
             break;
         case 'Отзывы':
             const reviewsPerPage = 10;
@@ -256,7 +271,7 @@ bot.on('message', async (msg) => {
 
             if (reviews.length === 0) {
                 newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов');
-                lastMessageId[chatId] = newMessage.message_id;
+                bot.lastMessageId[chatId] = newMessage.message_id;
             } else {
                 const totalPages = Math.ceil(reviews.length / reviewsPerPage);
 
@@ -291,7 +306,7 @@ bot.on('message', async (msg) => {
                         parse_mode: 'Markdown',
                         reply_markup: { inline_keyboard: inlineKeyboard }
                     });
-                    lastMessageId[chatId] = newMessage.message_id;
+                    bot.lastMessageId[chatId] = newMessage.message_id;
                 };
 
                 await showReviewsPage(1);
@@ -300,7 +315,7 @@ bot.on('message', async (msg) => {
         case '/admin':
             if (chatId.toString() !== ADMIN_ID) {
                 newMessage = await bot.sendMessage(chatId, '❌ Доступ только для администратора');
-                lastMessageId[chatId] = newMessage.message_id;
+                bot.lastMessageId[chatId] = newMessage.message_id;
                 return;
             }
             await handleAdmin(bot, msg);
@@ -329,6 +344,13 @@ bot.on('message', async (msg) => {
             await deleteProduct(bot, chatId);
             break;
     }
+});
+
+// Добавляем обработку команды /search
+bot.onText(/\/search (.+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const query = match[1]; // Текст после /search
+    await searchProducts(bot, chatId, query);
 });
 
 bot.on('callback_query', async (callbackQuery) => {
@@ -433,7 +455,7 @@ bot.on('web_app_data', async (msg) => {
                 caption,
                 parse_mode: 'Markdown'
             });
-            lastMessageId[chatId] = newMessage.message_id;
+            bot.lastMessageId[chatId] = newMessage.message_id;
             console.log('Фото успешно отправлено, message_id:', newMessage.message_id);
         } catch (error) {
             console.error('Ошибка при отправке фото:', error.message);
@@ -485,7 +507,7 @@ bot.on('web_app_data', async (msg) => {
             });
 
             const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
-            lastMessageId[chatId] = newMessage.message_id;
+            bot.lastMessageId[chatId] = newMessage.message_id;
         } catch (error) {
             console.error('Ошибка сохранения отзыва:', error.stack);
             await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва');

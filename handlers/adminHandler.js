@@ -3,6 +3,7 @@ const Review = require('../models/review');
 const ExcelJS = require('exceljs');
 const fs = require('fs').promises;
 const path = require('path');
+const axios = require('axios');
 
 // Функция форматирования даты на русском языке с проверкой
 const formatDate = (date) => {
@@ -145,9 +146,20 @@ const addProduct = async (bot, chatId) => {
                         const photo = msg.photo[msg.photo.length - 1];
                         const fileId = photo.file_id;
                         const file = await bot.getFile(fileId);
-                        const fileUrl = `https://api.telegram.org/file/bot${process.env.TELEGRAM_TOKEN}/${file.file_path}`;
+                        const fileUrl = `https://api.telegram.org/file/bot${process.env.BOT_TOKEN}/${file.file_path}`;
 
-                        productData.image = fileUrl;
+                        // Скачиваем изображение
+                        const fileName = `image${Date.now()}.jpg`;
+                        // Если изображения перемещены в newFolder, используем этот путь
+                        const filePath = path.join(__dirname, '../public/images/newFolder', fileName);
+                        const response = await axios({
+                            url: fileUrl,
+                            method: 'GET',
+                            responseType: 'arraybuffer',
+                        });
+                        await fs.writeFile(filePath, response.data);
+
+                        productData.image = `/images/newFolder/${fileName}`;
 
                         try {
                             const product = new Product({
