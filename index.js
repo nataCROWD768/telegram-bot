@@ -277,11 +277,12 @@ bot.on('message', async (msg) => {
                     if (totalPages > 1) {
                         const navigationButtons = [];
                         if (page > 1) {
-                            navigationButtons.push({ text: '⬅️ Назад', callback_data: `reviews_page_${page - 1}` });
+                            navigationButtons.push({ text: '⬅️', callback_data: `reviews_page_${page - 1}` });
                         }
-                        navigationButtons.push({ text: `Страница ${page} из ${totalPages}`, callback_data: 'noop' });
+                        // Добавляем текущую страницу как текст без кнопки
+                        navigationButtons.push({ text: `${page}/${totalPages}`, callback_data: 'noop' });
                         if (page < totalPages) {
-                            navigationButtons.push({ text: 'Вперёд ➡️', callback_data: `reviews_page_${page + 1}` });
+                            navigationButtons.push({ text: '➡️', callback_data: `reviews_page_${page + 1}` });
                         }
                         inlineKeyboard.push(navigationButtons);
                     }
@@ -359,11 +360,12 @@ bot.on('callback_query', async (callbackQuery) => {
         if (totalPages > 1) {
             const navigationButtons = [];
             if (page > 1) {
-                navigationButtons.push({ text: '⬅️ Назад', callback_data: `reviews_page_${page - 1}` });
+                navigationButtons.push({ text: '⬅️', callback_data: `reviews_page_${page - 1}` });
             }
-            navigationButtons.push({ text: `Страница ${page} из ${totalPages}`, callback_data: 'noop' });
+            // Добавляем текущую страницу как текст без кнопки
+            navigationButtons.push({ text: `${page}/${totalPages}`, callback_data: 'noop' });
             if (page < totalPages) {
-                navigationButtons.push({ text: 'Вперёд ➡️', callback_data: `reviews_page_${page + 1}` });
+                navigationButtons.push({ text: '➡️', callback_data: `reviews_page_${page + 1}` });
             }
             inlineKeyboard.push(navigationButtons);
         }
@@ -377,7 +379,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
         bot.answerCallbackQuery(callbackQuery.id);
     } else if (data === 'noop') {
-        bot.answerCallbackQuery(callbackQuery.id); // Пустое действие для кнопки "Страница X из Y"
+        bot.answerCallbackQuery(callbackQuery.id); // Пустое действие для текста страницы
     } else {
         console.log(`Callback: ${callbackQuery.data}`);
         handleCallback(bot, callbackQuery);
