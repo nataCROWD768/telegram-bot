@@ -393,15 +393,16 @@ app.post(`/bot${BOT_TOKEN}`, (req, res) => {
 
 bot.on('web_app_data', async (msg) => {
     const chatId = msg.chat.id;
-    console.log('Получено событие web_app_data от чата:', chatId);
+    console.log('=== Начало обработки web_app_data ===');
+    console.log('Чат ID:', chatId);
     console.log('Сырые данные от Web App:', msg.web_app_data.data);
 
     let data;
     try {
         data = JSON.parse(msg.web_app_data.data);
-        console.log('Распарсенные данные от Web App:', data);
+        console.log('Распарсенные данные:', data);
     } catch (error) {
-        console.error('Ошибка парсинга JSON из web_app_data:', error);
+        console.error('Ошибка парсинга JSON:', error.message);
         await bot.sendMessage(chatId, '❌ Ошибка обработки данных');
         return;
     }
@@ -459,12 +460,12 @@ bot.on('web_app_data', async (msg) => {
         }
     } else if (data.type === 'share') {
         const { productId, name, clubPrice, clientPrice, description, image } = data;
-        console.log('Попытка поделиться продуктом:', { productId, name, clubPrice, clientPrice, description, image });
+        console.log('Обработка шаринга продукта:', { productId, name, clubPrice, clientPrice, description, image });
 
         try {
             const product = await Product.findById(productId);
             if (!product) {
-                console.log('Товар не найден в базе данных:', productId);
+                console.log('Товар не найден в базе:', productId);
                 await bot.sendMessage(chatId, '❌ Товар не найден');
                 return;
             }
@@ -476,20 +477,21 @@ bot.on('web_app_data', async (msg) => {
 📝 *Описание:* ${description || 'Описание отсутствует'}
             `.trim();
 
-            console.log('Отправка карточки продукта в чат:', { chatId, image, caption });
+            console.log('Отправка фото в чат:', { chatId, image, caption });
             const newMessage = await bot.sendPhoto(chatId, image || 'https://via.placeholder.com/300', {
                 caption,
                 parse_mode: 'Markdown'
             });
             lastMessageId[chatId] = newMessage.message_id;
-            console.log('Карточка успешно отправлена, message_id:', newMessage.message_id);
+            console.log('Фото успешно отправлено, message_id:', newMessage.message_id);
         } catch (error) {
-            console.error('Ошибка отправки карточки для шаринга:', error.stack);
+            console.error('Ошибка при отправке фото:', error.message);
             await bot.sendMessage(chatId, '❌ Ошибка при шаринге продукта');
         }
     } else {
-        console.warn('Неизвестный тип данных от Web App:', data.type);
+        console.log('Неизвестный тип данных:', data.type);
     }
+    console.log('=== Конец обработки web_app_data ===');
 });
 
 const startServer = async () => {

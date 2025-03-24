@@ -1,9 +1,3 @@
-// Проверка, является ли устройство мобильным
-function isMobileDevice() {
-    const userAgent = navigator.userAgent || navigator.vendor || window.opera;
-    return /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini/i.test(userAgent.toLowerCase());
-}
-
 // Функция форматирования даты на русском языке с проверкой
 function formatDate(date) {
     if (!date || isNaN(new Date(date).getTime())) {
@@ -251,15 +245,17 @@ function showProductDetail(product, page = 1) {
         }
     });
 
-    // Настройка кнопки "Поделиться" с отладкой
+    // Настройка кнопки "Поделиться" с улучшенной отладкой
     const shareButton = document.querySelector(`.share-btn[data-product-id="${product._id}"]`);
     if (shareButton) {
-        console.log('Кнопка "Поделиться" найдена для продукта:', product._id);
+        console.log('Кнопка "Поделиться" найдена в DOM:', shareButton);
         shareButton.addEventListener('click', () => {
-            console.log('Нажата кнопка "Поделиться" для продукта:', product._id);
+            console.log('Событие клика на кнопке "Поделиться" для продукта:', product._id);
+            console.log('Проверка window.Telegram:', window.Telegram);
             const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
             if (tg) {
-                console.log('Telegram Web App инициализирован:', tg);
+                console.log('Telegram Web App доступен:', tg);
+                console.log('Данные Telegram initDataUnsafe:', tg.initDataUnsafe);
                 const shareData = {
                     type: 'share',
                     productId: product._id,
@@ -270,19 +266,20 @@ function showProductDetail(product, page = 1) {
                     image: product.image || 'https://via.placeholder.com/300'
                 };
                 try {
+                    console.log('Попытка отправить данные через tg.sendData:', shareData);
                     tg.sendData(JSON.stringify(shareData));
-                    console.log('Отправлены данные для шаринга:', shareData);
+                    console.log('Данные успешно отправлены через tg.sendData');
                 } catch (error) {
-                    console.error('Ошибка при отправке данных через tg.sendData:', error);
-                    alert('Ошибка при отправке данных в Telegram');
+                    console.error('Ошибка при вызове tg.sendData:', error);
+                    alert('Ошибка при шаринге продукта');
                 }
             } else {
-                console.warn('Telegram Web App не инициализирован');
-                alert('Функция "Поделиться" доступна только в Telegram Web App.');
+                console.error('Telegram Web App не инициализирован');
+                alert('Функция "Поделиться" работает только в Telegram Web App');
             }
         });
     } else {
-        console.error('Кнопка "Поделиться" не найдена для продукта:', product._id);
+        console.error('Кнопка "Поделиться" не найдена в DOM для продукта:', product._id);
     }
 
     if (totalReviews > reviewsPerPage) {
@@ -503,12 +500,7 @@ async function showReviews(page = 1) {
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
-    if (!isMobileDevice()) {
-        document.getElementById('app-content').style.display = 'none';
-        document.getElementById('mobile-only-message').style.display = 'block';
-        return;
-    }
-
+    // Убрана проверка isMobileDevice, чтобы Web App работал на всех устройствах
     loadProducts();
     connectWebSocket();
 
