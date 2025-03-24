@@ -160,6 +160,7 @@ body {
     font-size: 5px;
     font-weight: 600;
     margin: 0;
+    margin-bottom: 4px; /* Добавляем отступ снизу, равный отступу между ценами и кнопкой */
     color: #2c3e50;
     line-height: 1.2;
     max-height: 45px;
@@ -173,9 +174,9 @@ body {
 .prices {
     display: flex;
     justify-content: space-between;
-    margin-top: auto; /* Привязываем цены к нижней части контента, над кнопкой */
-    margin-bottom: 4px; /* Отступ от кнопки */
-    padding: 0 4px; /* Добавляем внутренние отступы для симметрии */
+    margin-top: auto;
+    margin-bottom: 4px; /* Отступ от кнопки остаётся 4px */
+    padding: 0 4px;
 }
 
 .price-container {
@@ -202,24 +203,24 @@ body {
     font-weight: 600;
     font-size: 6px;
     background-color: #e6f4ea;
-    padding: 2px 4px; /* Увеличиваем отступы для симметрии */
+    padding: 2px 4px;
     border-radius: 3px;
     font-family: 'Merriweather', serif;
     letter-spacing: 0.5px;
-    white-space: nowrap; /* Предотвращаем перенос текста */
+    white-space: nowrap;
 }
 
 .client-price {
     color: #800020;
     text-decoration: none;
-    font-size: 6px; /* Увеличиваем до 6px для一致ности с клубной ценой */
+    font-size: 6px;
     opacity: 0.8;
     background-color: #f9e6e6;
-    padding: 2px 4px; /* Увеличиваем отступы, чтобы обводка помещалась */
+    padding: 2px 4px;
     border-radius: 3px;
     font-family: 'Merriweather', serif;
     letter-spacing: 0.5px;
-    white-space: nowrap; /* Предотвращаем перенос текста */
+    white-space: nowrap;
 }
 
 .rating {
@@ -235,7 +236,7 @@ body {
 }
 
 .card-button {
-    margin-top: 0; /* Убираем автоматический отступ, так как цены теперь над кнопкой */
+    margin-top: 0;
     text-align: center;
     padding: 4px 0;
 }
@@ -249,13 +250,13 @@ body {
     font-weight: 600;
     text-decoration: none;
     padding: 4px 8px;
-    border-radius: 4px; /* Закругляем углы для компактности */
+    border-radius: 4px;
     border: 1px solid #b0b7c0;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     transition: transform 0.2s ease, box-shadow 0.3s ease;
     line-height: 1;
-    width: auto; /* Убираем растяжку на всю ширину */
-    max-width: 70%; /* Ограничиваем максимальную ширину кнопки */
+    width: auto;
+    max-width: 70%;
 }
 
 .card-button a:hover {
@@ -561,6 +562,14 @@ textarea[id^="review-comment-"] {
 
     .card-content {
         padding: 2px;
+    }
+
+    .card-content h3 {
+        margin-bottom: 4px; /* Сохраняем отступ в адаптивности */
+    }
+
+    .prices {
+        margin-bottom: 4px; /* Сохраняем отступ в адаптивности */
     }
 
     .review-container {
