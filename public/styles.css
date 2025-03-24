@@ -3,18 +3,24 @@ body {
     background-color: #f8f9fa;
     margin: 0;
     padding: 0;
+    height: 100vh; /* Растягиваем body на всю высоту экрана */
+    overflow-x: hidden; /* Убираем горизонтальную прокрутку */
 }
 
 .container {
-    width: 390px;
+    width: 100%; /* Растягиваем контейнер на всю доступную ширину */
+    max-width: 480px; /* Ограничиваем максимальную ширину для больших экранов */
     margin: 0 auto;
     padding: 0;
+    height: 100%; /* Растягиваем контейнер по высоте */
+    box-sizing: border-box;
 }
 
 .header {
     position: fixed;
     top: 0;
-    width: 360px;
+    width: 100%; /* Растягиваем header на всю ширину контейнера */
+    max-width: 480px; /* Ограничиваем ширину как у .container */
     background: linear-gradient(135deg, #2a2a72, #009ffd);
     color: white;
     padding: 8px 20px;
@@ -24,6 +30,7 @@ body {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     border-bottom: 1px solid rgba(255, 255, 255, 0.2);
     z-index: 1000;
+    box-sizing: border-box;
 }
 
 .header-title {
@@ -89,12 +96,16 @@ body {
 }
 
 #showcase {
-    margin-top: 50px;
+    margin-top: 50px; /* Отступ под фиксированный header */
+    height: calc(100vh - 50px); /* Растягиваем витрину на оставшуюся высоту */
+    overflow-y: auto; /* Прокрутка только внутри витрины */
+    padding-bottom: 20px; /* Отступ снизу для прокрутки */
+    box-sizing: border-box;
 }
 
 .product-grid {
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(auto-fit, minmax(90px, 1fr)); /* Адаптивная сетка */
     gap: 8px;
     padding: 10px 15px;
 }
@@ -256,8 +267,11 @@ body {
 
 /* Стили для карточки товара */
 #product-detail {
-    margin-top: 50px;
+    margin-top: 50px; /* Отступ под header */
+    height: calc(100vh - 50px); /* Растягиваем карточку на оставшуюся высоту */
+    overflow-y: auto; /* Прокрутка внутри карточки */
     padding: 15px;
+    box-sizing: border-box;
 }
 
 .product-detail-content {
@@ -265,6 +279,8 @@ body {
     border-radius: 10px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
     padding: 15px;
+    min-height: 100%; /* Растягиваем контент на всю высоту */
+    box-sizing: border-box;
 }
 
 .product-detail-image {
@@ -372,8 +388,8 @@ body {
 
 /* Фиксированная ширина для отзывов и формы */
 .review-container {
-    width: 300px; /* Фиксированная ширина, равная форме "Оставить отзыв" */
-    max-width: 100%;
+    width: 100%; /* Растягиваем на всю ширину контейнера */
+    max-width: 300px; /* Ограничиваем максимальную ширину */
     margin: 0 auto 20px; /* Центрирование и отступ снизу */
 }
 
@@ -460,19 +476,6 @@ textarea[id^="review-comment-"] {
     background-color: #3b82f6;
 }
 
-/* Стили для списка отзывов */
-#reviews-section {
-    margin-top: 50px;
-    padding: 15px;
-}
-
-.reviews-list {
-    background: white;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 15px;
-}
-
 /* Стили для пагинации */
 .pagination {
     display: flex;
@@ -534,30 +537,40 @@ textarea[id^="review-comment-"] {
     font-weight: 500;
 }
 
-/* Стили для кнопки "Наверх" */
-.scroll-top-btn {
-    position: fixed;
-    bottom: 15px;
-    right: 15px;
-    background-color: #1e3a8a;
-    color: white;
-    padding: 8px 12px;
-    border-radius: 50%;
-    text-decoration: none;
-    display: none;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.3s ease;
-}
-
-.scroll-top-btn:hover {
-    background-color: #3b82f6;
-}
-
 /* Адаптивность */
-@media (max-width: 320px) {
+@media (max-width: 480px) {
+    .header {
+        padding: 8px 10px; /* Уменьшаем отступы на узких экранах */
+    }
+
+    .search-bar {
+        width: 80px; /* Уменьшаем ширину поиска */
+    }
+
+    #search-input {
+        font-size: 10px; /* Уменьшаем шрифт */
+    }
+
+    .product-grid {
+        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); /* Уменьшаем минимальную ширину карточек */
+        padding: 10px 5px;
+    }
+
+    .product-card {
+        height: 180px; /* Уменьшаем высоту карточек */
+    }
+
+    .card-image {
+        height: 70px; /* Уменьшаем высоту изображения */
+    }
+
+    .card-content {
+        height: 110px;
+    }
+
     .review-container {
-        width: 100%;
-        padding: 5px;
+        max-width: 100%; /* Убираем фиксированную ширину на узких экранах */
+        padding: 0 5px;
     }
 
     .pagination-btn {
