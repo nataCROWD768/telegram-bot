@@ -248,7 +248,12 @@ function showProductDetail(product, page = 1) {
     const shareButton = document.querySelector(`.share-btn[data-product-id="${product._id}"]`);
     if (shareButton) {
         console.log('Кнопка "Поделиться" найдена в DOM:', shareButton);
-        shareButton.addEventListener('click', () => {
+        shareButton.removeEventListener('click', shareButton._clickHandler);
+        shareButton._clickHandler = () => {
+            // Отключаем кнопку и показываем индикатор загрузки
+            shareButton.disabled = true;
+            shareButton.textContent = 'Отправка...';
+
             console.log('Событие клика на кнопке "Поделиться" для продукта:', product._id);
             console.log('Проверка window.Telegram:', window.Telegram);
             const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
@@ -271,12 +276,19 @@ function showProductDetail(product, page = 1) {
                 } catch (error) {
                     console.error('Ошибка при вызове tg.sendData:', error);
                     alert('Ошибка при шаринге продукта');
+                } finally {
+                    // Включаем кнопку обратно
+                    shareButton.disabled = false;
+                    shareButton.textContent = 'Поделиться';
                 }
             } else {
                 console.error('Telegram Web App не инициализирован');
                 alert('Функция "Поделиться" работает только в Telegram Web App');
+                shareButton.disabled = false;
+                shareButton.textContent = 'Поделиться';
             }
-        });
+        };
+        shareButton.addEventListener('click', shareButton._clickHandler);
     } else {
         console.error('Кнопка "Поделиться" не найдена в DOM для продукта:', product._id);
     }
