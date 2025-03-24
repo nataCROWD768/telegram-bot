@@ -250,7 +250,7 @@ bot.on('message', async (msg) => {
             const reviewsPerPage = 10;
             const reviews = await Review.find({ isApproved: true })
                 .populate('productId', 'name')
-                .sort({ createdAt: -1 }); // Сортировка по убыванию даты
+                .sort({ createdAt: -1 });
             console.log('Загруженные подтверждённые отзывы для Telegram:', reviews);
 
             if (reviews.length === 0) {
@@ -293,7 +293,7 @@ bot.on('message', async (msg) => {
                     lastMessageId[chatId] = newMessage.message_id;
                 };
 
-                await showReviewsPage(1); // Показываем первую страницу
+                await showReviewsPage(1);
             }
             break;
         case '/admin':
@@ -339,7 +339,7 @@ bot.on('callback_query', async (callbackQuery) => {
         const reviewsPerPage = 10;
         const reviews = await Review.find({ isApproved: true })
             .populate('productId', 'name')
-            .sort({ createdAt: -1 }); // Сортировка по убыванию даты
+            .sort({ createdAt: -1 });
         const totalPages = Math.ceil(reviews.length / reviewsPerPage);
 
         const start = (page - 1) * reviewsPerPage;
@@ -377,7 +377,7 @@ bot.on('callback_query', async (callbackQuery) => {
 
         bot.answerCallbackQuery(callbackQuery.id);
     } else if (data === 'noop') {
-        bot.answerCallbackQuery(callbackQuery.id); // Пустое действие для текста страницы
+        bot.answerCallbackQuery(callbackQuery.id);
     } else {
         console.log(`Callback: ${callbackQuery.data}`);
         handleCallback(bot, callbackQuery);
@@ -393,8 +393,18 @@ app.post(`/bot${BOT_TOKEN}`, (req, res) => {
 
 bot.on('web_app_data', async (msg) => {
     const chatId = msg.chat.id;
-    const data = JSON.parse(msg.web_app_data.data);
-    console.log('Получены данные от Web App:', data);
+    console.log('Получено событие web_app_data от чата:', chatId);
+    console.log('Сырые данные от Web App:', msg.web_app_data.data);
+
+    let data;
+    try {
+        data = JSON.parse(msg.web_app_data.data);
+        console.log('Распарсенные данные от Web App:', data);
+    } catch (error) {
+        console.error('Ошибка парсинга JSON из web_app_data:', error);
+        await bot.sendMessage(chatId, '❌ Ошибка обработки данных');
+        return;
+    }
 
     if (data.type === 'review') {
         const { productId, rating, comment } = data;
@@ -449,12 +459,12 @@ bot.on('web_app_data', async (msg) => {
         }
     } else if (data.type === 'share') {
         const { productId, name, clubPrice, clientPrice, description, image } = data;
-        console.log('Попытка поделиться продуктом:', { productId, name });
+        console.log('Попытка поделиться продуктом:', { productId, name, clubPrice, clientPrice, description, image });
 
         try {
             const product = await Product.findById(productId);
             if (!product) {
-                console.log('Товар не найден:', productId);
+                console.log('Товар не найден в базе данных:', productId);
                 await bot.sendMessage(chatId, '❌ Товар не найден');
                 return;
             }
@@ -466,15 +476,19 @@ bot.on('web_app_data', async (msg) => {
 📝 *Описание:* ${description || 'Описание отсутствует'}
             `.trim();
 
+            console.log('Отправка карточки продукта в чат:', { chatId, image, caption });
             const newMessage = await bot.sendPhoto(chatId, image || 'https://via.placeholder.com/300', {
                 caption,
                 parse_mode: 'Markdown'
             });
             lastMessageId[chatId] = newMessage.message_id;
+            console.log('Карточка успешно отправлена, message_id:', newMessage.message_id);
         } catch (error) {
             console.error('Ошибка отправки карточки для шаринга:', error.stack);
             await bot.sendMessage(chatId, '❌ Ошибка при шаринге продукта');
         }
+    } else {
+        console.warn('Неизвестный тип данных от Web App:', data.type);
     }
 });
 

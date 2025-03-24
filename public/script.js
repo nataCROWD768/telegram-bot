@@ -142,7 +142,6 @@ function showProductDetail(product, page = 1) {
     const hasReviews = product.reviews && product.reviews.some(review => review.isApproved) && product.averageRating > 0;
     const ratingHtml = hasReviews ? `<div class="product-detail-rating">★ ${product.averageRating.toFixed(1)}</div>` : '';
 
-    // Сортировка подтверждённых отзывов по убыванию даты
     const sortedReviews = product.reviews && product.reviews.length > 0
         ? product.reviews.filter(r => r.isApproved).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         : [];
@@ -252,27 +251,40 @@ function showProductDetail(product, page = 1) {
         }
     });
 
-    // Настройка кнопки "Поделиться"
-    document.querySelector(`.share-btn[data-product-id="${product._id}"]`).addEventListener('click', () => {
-        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-        if (tg) {
-            const shareData = {
-                type: 'share',
-                productId: product._id,
-                name: product.name,
-                clubPrice: product.clubPrice,
-                clientPrice: product.clientPrice,
-                description: product.description,
-                image: product.image || 'https://via.placeholder.com/300'
-            };
-            tg.sendData(JSON.stringify(shareData));
-            console.log('Отправлены данные для шаринга:', shareData);
-        } else {
-            alert('Функция "Поделиться" доступна только в Telegram Web App.');
-        }
-    });
+    // Настройка кнопки "Поделиться" с отладкой
+    const shareButton = document.querySelector(`.share-btn[data-product-id="${product._id}"]`);
+    if (shareButton) {
+        console.log('Кнопка "Поделиться" найдена для продукта:', product._id);
+        shareButton.addEventListener('click', () => {
+            console.log('Нажата кнопка "Поделиться" для продукта:', product._id);
+            const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+            if (tg) {
+                console.log('Telegram Web App инициализирован:', tg);
+                const shareData = {
+                    type: 'share',
+                    productId: product._id,
+                    name: product.name,
+                    clubPrice: product.clubPrice,
+                    clientPrice: product.clientPrice,
+                    description: product.description,
+                    image: product.image || 'https://via.placeholder.com/300'
+                };
+                try {
+                    tg.sendData(JSON.stringify(shareData));
+                    console.log('Отправлены данные для шаринга:', shareData);
+                } catch (error) {
+                    console.error('Ошибка при отправке данных через tg.sendData:', error);
+                    alert('Ошибка при отправке данных в Telegram');
+                }
+            } else {
+                console.warn('Telegram Web App не инициализирован');
+                alert('Функция "Поделиться" доступна только в Telegram Web App.');
+            }
+        });
+    } else {
+        console.error('Кнопка "Поделиться" не найдена для продукта:', product._id);
+    }
 
-    // Добавляем обработчики событий для кнопок пагинации
     if (totalReviews > reviewsPerPage) {
         document.querySelectorAll('#reviews-pagination .pagination-btn').forEach(btn => {
             btn.addEventListener('click', () => {
@@ -287,7 +299,6 @@ function showProductDetail(product, page = 1) {
 function renderPagination(totalPages, currentPage, product) {
     let paginationHtml = '<div class="pagination-container">';
 
-    // Кнопка "Назад"
     paginationHtml += `
         <button class="pagination-btn${currentPage === 1 ? ' disabled' : ''}" 
                 data-page="${currentPage - 1}" 
@@ -296,7 +307,6 @@ function renderPagination(totalPages, currentPage, product) {
         </button>
     `;
 
-    // Ограничение на количество видимых страниц (например, 5)
     const maxVisiblePages = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
@@ -305,7 +315,6 @@ function renderPagination(totalPages, currentPage, product) {
         startPage = Math.max(1, endPage - maxVisiblePages + 1);
     }
 
-    // Первая страница и многоточие
     if (startPage > 1) {
         paginationHtml += `<button class="pagination-btn" data-page="1">1</button>`;
         if (startPage > 2) {
@@ -313,7 +322,6 @@ function renderPagination(totalPages, currentPage, product) {
         }
     }
 
-    // Номера страниц
     for (let i = startPage; i <= endPage; i++) {
         paginationHtml += `
             <button class="pagination-btn${i === currentPage ? ' active' : ''}" 
@@ -323,7 +331,6 @@ function renderPagination(totalPages, currentPage, product) {
         `;
     }
 
-    // Последняя страница и многоточие
     if (endPage < totalPages) {
         if (endPage < totalPages - 1) {
             paginationHtml += `<span class="pagination-ellipsis">...</span>`;
@@ -331,7 +338,6 @@ function renderPagination(totalPages, currentPage, product) {
         paginationHtml += `<button class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
     }
 
-    // Кнопка "Вперёд"
     paginationHtml += `
         <button class="pagination-btn${currentPage === totalPages ? ' disabled' : ''}" 
                 data-page="${currentPage + 1}" 
@@ -362,7 +368,7 @@ function sendReviewToAdmin(review) {
             if (data.success) {
                 console.log('Отзыв сохранён на сервере:', data);
                 alert('Отзыв отправлен на модерацию.');
-                loadProducts(); // Перезагружаем продукты после отправки отзыва
+                loadProducts();
             } else {
                 console.error('Ошибка сохранения отзыва:', data);
                 alert('Ошибка при отправке отзыва');
@@ -517,10 +523,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (window.Telegram && window.Telegram.WebApp) {
         const tg = window.Telegram.WebApp;
+        console.log('Telegram Web App инициализирован при загрузке:', tg);
         tg.MainButton.hide();
         tg.onEvent('message', (msg) => {
             if (msg.text === '/reviews') showReviews();
         });
         tg.expand();
+    } else {
+        console.warn('Telegram Web App не инициализирован при загрузке');
     }
 });
