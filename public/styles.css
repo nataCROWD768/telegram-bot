@@ -147,18 +147,18 @@ body {
 }
 
 .card-content {
-    width: 100%; /* Ограничиваем ширину контента шириной изображения */
+    width: 100%;
     padding: 4px;
     display: flex;
     flex-direction: column;
     position: relative;
     flex-grow: 1;
-    box-sizing: border-box; /* Учитываем padding в ширине */
+    box-sizing: border-box;
 }
 
 .card-content h3 {
     font-family: 'Roboto', sans-serif;
-    font-size: 4px; /* Уменьшаем с 5px до 4px */
+    font-size: 4px;
     font-weight: 600;
     margin: 0;
     margin-bottom: 4px;
@@ -178,7 +178,7 @@ body {
     margin-top: auto;
     margin-bottom: 4px;
     padding: 0 4px;
-    width: 100%; /* Ограничиваем ширину цен шириной .card-content */
+    width: 100%;
     box-sizing: border-box;
 }
 
@@ -204,7 +204,7 @@ body {
 .club-price {
     color: #16a34a;
     font-weight: 600;
-    font-size: 5px; /* Уменьшаем с 6px до 5px */
+    font-size: 5px;
     background-color: #e6f4ea;
     padding: 2px 4px;
     border-radius: 3px;
@@ -216,7 +216,7 @@ body {
 .client-price {
     color: #800020;
     text-decoration: none;
-    font-size: 5px; /* Уменьшаем с 6px до 5px */
+    font-size: 5px;
     opacity: 0.8;
     background-color: #f9e6e6;
     padding: 2px 4px;
@@ -242,7 +242,7 @@ body {
     margin-top: 0;
     text-align: center;
     padding: 4px 0;
-    width: 100%; /* Ограничиваем ширину кнопки шириной .card-content */
+    width: 100%;
     box-sizing: border-box;
 }
 
@@ -251,7 +251,7 @@ body {
     background: #d1d5db;
     color: #2c3e50;
     font-family: 'Roboto', sans-serif;
-    font-size: 4px; /* Уменьшаем с 5px до 4px */
+    font-size: 4px;
     font-weight: 600;
     text-decoration: none;
     padding: 4px 8px;
@@ -330,6 +330,7 @@ body {
     align-items: center;
     gap: 10px;
     margin-bottom: 15px;
+    flex-wrap: wrap; /* Позволяем перенос при необходимости */
 }
 
 .product-detail-prices .price-container {
@@ -370,6 +371,33 @@ body {
     font-size: 8px;
     color: #4b5563;
     margin-top: 2px;
+}
+
+.share-btn {
+    background-color: #3b82f6; /* Синий цвет, как в топ-магазинах */
+    color: white;
+    font-family: 'Roboto', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 6px 12px;
+    border-radius: 20px; /* Закруглённые края */
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.share-btn:hover {
+    background-color: #2563eb; /* Темнее при наведении */
+    transform: scale(1.05);
+}
+
+.share-btn::before {
+    content: "↗️"; /* Иконка "поделиться" */
+    font-size: 14px;
 }
 
 .product-detail-description {
@@ -570,7 +598,7 @@ textarea[id^="review-comment-"] {
     }
 
     .card-content h3 {
-        font-size: 4px; /* Уменьшаем с 5px до 4px */
+        font-size: 4px;
         margin-bottom: 4px;
     }
 
@@ -579,15 +607,15 @@ textarea[id^="review-comment-"] {
     }
 
     .club-price {
-        font-size: 5px; /* Уменьшаем с 6px до 5px */
+        font-size: 5px;
     }
 
     .client-price {
-        font-size: 5px; /* Уменьшаем с 6px до 5px */
+        font-size: 5px;
     }
 
     .card-button a {
-        font-size: 4px; /* Уменьшаем с 5px до 4px */
+        font-size: 4px;
     }
 
     .review-container {

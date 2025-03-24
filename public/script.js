@@ -172,6 +172,7 @@ function showProductDetail(product, page = 1) {
                     <span class="client-price">${product.clientPrice || 0} ₽</span>
                     <span class="price-label">Клиентская цена</span>
                 </div>
+                <button class="share-btn" data-product-id="${product._id}">Поделиться</button>
             </div>
             <div class="product-detail-description">
                 <h4>Описание</h4>
@@ -248,6 +249,26 @@ function showProductDetail(product, page = 1) {
             selectedRating = 0;
         } else {
             alert('Пожалуйста, выберите рейтинг и напишите отзыв.');
+        }
+    });
+
+    // Настройка кнопки "Поделиться"
+    document.querySelector(`.share-btn[data-product-id="${product._id}"]`).addEventListener('click', () => {
+        const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
+        if (tg) {
+            const shareData = {
+                type: 'share',
+                productId: product._id,
+                name: product.name,
+                clubPrice: product.clubPrice,
+                clientPrice: product.clientPrice,
+                description: product.description,
+                image: product.image || '/images/placeholder.jpg'
+            };
+            tg.sendData(JSON.stringify(shareData));
+            console.log('Отправлены данные для шаринга:', shareData);
+        } else {
+            alert('Функция "Поделиться" доступна только в Telegram Web App.');
         }
     });
 

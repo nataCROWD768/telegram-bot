@@ -279,7 +279,6 @@ bot.on('message', async (msg) => {
                         if (page > 1) {
                             navigationButtons.push({ text: '⬅️', callback_data: `reviews_page_${page - 1}` });
                         }
-                        // Добавляем текущую страницу как текст без кнопки
                         navigationButtons.push({ text: `${page}/${totalPages}`, callback_data: 'noop' });
                         if (page < totalPages) {
                             navigationButtons.push({ text: '➡️', callback_data: `reviews_page_${page + 1}` });
@@ -362,7 +361,6 @@ bot.on('callback_query', async (callbackQuery) => {
             if (page > 1) {
                 navigationButtons.push({ text: '⬅️', callback_data: `reviews_page_${page - 1}` });
             }
-            // Добавляем текущую страницу как текст без кнопки
             navigationButtons.push({ text: `${page}/${totalPages}`, callback_data: 'noop' });
             if (page < totalPages) {
                 navigationButtons.push({ text: '➡️', callback_data: `reviews_page_${page + 1}` });
@@ -448,6 +446,39 @@ bot.on('web_app_data', async (msg) => {
         } catch (error) {
             console.error('Ошибка сохранения отзыва:', error.stack);
             await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва');
+        }
+    } else if (data.type === 'share') {
+        const { productId, name, clubPrice, clientPrice, description, image } = data;
+        console.log('Попытка поделиться продуктом:', { productId, name });
+
+        try {
+            const product = await Product.findById(productId);
+            if (!product) {
+                console.log('Товар не найден:', productId);
+                await bot.sendMessage(chatId, '❌ Товар не найден');
+                return;
+            }
+
+            const caption = `
+✨ *${name}* ✨
+💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽
+💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽
+📝 *Описание:* ${description || 'Описание отсутствует'}
+            `.trim();
+
+            const newMessage = await bot.sendPhoto(chatId, image, {
+                caption,
+                parse_mode: 'Markdown',
+                reply_markup: {
+                    inline_keyboard: [
+                        [{ text: 'Открыть витрину', web_app: { url: `${webAppUrl}/index.html` } }]
+                    ]
+                }
+            });
+            lastMessageId[chatId] = newMessage.message_id;
+        } catch (error) {
+            console.error('Ошибка отправки карточки для шаринга:', error.stack);
+            await bot.sendMessage(chatId, '❌ Ошибка при шаринге продукта');
         }
     }
 });
