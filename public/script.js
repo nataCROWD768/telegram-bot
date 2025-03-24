@@ -245,7 +245,6 @@ function showProductDetail(product, page = 1) {
         }
     });
 
-    // Настройка кнопки "Поделиться" с улучшенной отладкой
     const shareButton = document.querySelector(`.share-btn[data-product-id="${product._id}"]`);
     if (shareButton) {
         console.log('Кнопка "Поделиться" найдена в DOM:', shareButton);
@@ -263,7 +262,7 @@ function showProductDetail(product, page = 1) {
                     clubPrice: product.clubPrice,
                     clientPrice: product.clientPrice,
                     description: product.description,
-                    image: product.image || 'https://via.placeholder.com/300'
+                    image: product.image ? `${BASE_URL}${product.image}` : 'https://via.placeholder.com/300'
                 };
                 try {
                     console.log('Попытка отправить данные через tg.sendData:', shareData);
@@ -500,9 +499,8 @@ async function showReviews(page = 1) {
 
 // Инициализация
 document.addEventListener('DOMContentLoaded', () => {
-    // Убрана проверка isMobileDevice, чтобы Web App работал на всех устройствах
     loadProducts();
-    connectWebSocket();
+    // connectWebSocket(); // Отключено, так как WebSocket не поддерживается на Render
 
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', (e) => {

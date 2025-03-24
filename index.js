@@ -439,6 +439,57 @@ bot.on('web_app_data', async (msg) => {
             console.error('Ошибка при отправке фото:', error.message);
             await bot.sendMessage(chatId, '❌ Ошибка при шаринге продукта');
         }
+    } else if (data.type === 'review') {
+        const { productId, rating, comment } = data;
+        console.log('Попытка сохранить отзыв:', { productId, rating, comment });
+        if (!rating || rating < 1 || rating > 5 || !comment || !productId || !mongoose.Types.ObjectId.isValid(productId)) {
+            console.log('Ошибка валидации отзыва:', { productId, rating, comment });
+            await bot.sendMessage(chatId, '❌ Неверный формат отзыва');
+            return;
+        }
+        try {
+            const product = await Product.findById(productId);
+            if (!product) {
+                console.log('Товар не найден:', productId);
+                await bot.sendMessage(chatId, '❌ Товар не найден');
+                return;
+            }
+            const username = msg.from.username ? `@${msg.from.username}` : 'Аноним';
+            const review = new Review({
+                userId: chatId.toString(),
+                username,
+                productId,
+                rating,
+                comment,
+                isApproved: false
+            });
+            await review.save();
+            console.log('Отзыв сохранён:', review);
+
+            const reviews = await Review.find({ productId, isApproved: true });
+            const averageRating = reviews.length > 0
+                ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length
+                : 0;
+            await Product.updateOne({ _id: productId }, { averageRating });
+
+            const message = `Новый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${username}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
+            await bot.sendMessage(ADMIN_ID, message, {
+                reply_markup: {
+                    inline_keyboard: [
+                        [
+                            { text: 'Одобрить', callback_data: `approve_review_${review._id}` },
+                            { text: 'Отклонить', callback_data: `reject_review_${review._id}` }
+                        ]
+                    ]
+                }
+            });
+
+            const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+            lastMessageId[chatId] = newMessage.message_id;
+        } catch (error) {
+            console.error('Ошибка сохранения отзыва:', error.stack);
+            await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва');
+        }
     } else {
         console.log('Неизвестный тип данных:', data.type);
     }
