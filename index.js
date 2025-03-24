@@ -430,6 +430,7 @@ bot.on('web_app_data', async (msg) => {
                 return;
             }
 
+            // Формируем красивое сообщение с карточкой продукта
             const caption = `
 ✨ *${name}* ✨
 💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽
@@ -438,15 +439,15 @@ bot.on('web_app_data', async (msg) => {
             `.trim();
 
             console.log('Отправка фото в чат:', { chatId, image, caption });
-            // Используем file_id для отправки изображения
+            // Используем file_id для отправки изображения с форматированным текстом
             const newMessage = await bot.sendPhoto(chatId, image, {
                 caption,
                 parse_mode: 'Markdown'
             });
             bot.lastMessageId[chatId] = newMessage.message_id;
-            console.log('Фото успешно отправлено, message_id:', newMessage.message_id);
+            console.log('Карточка продукта успешно отправлена, message_id:', newMessage.message_id);
         } catch (error) {
-            console.error('Ошибка при отправке фото:', error.message);
+            console.error('Ошибка при отправке карточки продукта:', error.message);
             await bot.sendMessage(chatId, '❌ Ошибка при шаринге продукта');
         }
     } else if (data.type === 'review') {
