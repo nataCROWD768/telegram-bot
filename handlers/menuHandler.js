@@ -1,5 +1,5 @@
 const handleMainMenu = (bot, chatId) => {
-    const newMessage = bot.sendMessage(chatId, 'Добро пожаловать!', {
+    const newMessage = bot.sendMessage(chatId, 'Выберите действие:', {
         reply_markup: {
             keyboard: [
                 ['Личный кабинет', 'Витрина'],

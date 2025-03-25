@@ -12,7 +12,7 @@ const { showProfile } = require('./handlers/profileHandler');
 const Visit = require('./models/visit');
 const Product = require('./models/product');
 const Review = require('./models/review');
-const { formatDate } = require('./utils'); // Импорт из utils.js
+const { formatDate } = require('./utils');
 
 const app = express();
 const isLocal = process.env.NODE_ENV !== 'production';
@@ -126,7 +126,8 @@ const mainMenuKeyboard = {
     persistent: true
 };
 
-// Убрано: bot.setMyCommands(mainMenuKeyboard);
+// Убрано bot.setMyCommands(mainMenuKeyboard);
+// Опционально: bot.setMyCommands([]); // Пустой список команд
 
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
