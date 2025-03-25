@@ -46,7 +46,6 @@ const setupWebhook = async () => {
     }
 };
 
-// Убрали кэш для мгновенного отображения отзывов
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
@@ -157,9 +156,12 @@ bot.on('message', async (msg) => {
             break;
         case 'Витрина':
             newMessage = await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение', {
-                reply_markup: { inline_keyboard: [[{ text: '🛒 Открыть витрину:', web_app: { url: `${webAppUrl}/index.html` } }], ...mainMenuKeyboard.keyboard] }
+                reply_markup: {
+                    inline_keyboard: [[{ text: '🛒 Открыть витрину:', web_app: { url: `${webAppUrl}/index.html` } }]]
+                }
             });
             bot.lastMessageId[chatId] = newMessage.message_id;
+            await bot.sendMessage(chatId, 'Выберите действие:', { reply_markup: mainMenuKeyboard }); // Возвращаем основное меню
             break;
         case 'Бонусы и продукт':
             newMessage = await bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)', { reply_markup: mainMenuKeyboard });
@@ -230,9 +232,10 @@ async function showReviews(bot, chatId, page = 1) {
 
         const newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`, {
             parse_mode: 'Markdown',
-            reply_markup: { inline_keyboard: inlineKeyboard, ...mainMenuKeyboard }
+            reply_markup: { inline_keyboard: inlineKeyboard }
         });
         bot.lastMessageId[chatId] = newMessage.message_id;
+        await bot.sendMessage(chatId, 'Выберите действие:', { reply_markup: mainMenuKeyboard }); // Возвращаем основное меню
     } catch (error) {
         const newMessage = await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов', { reply_markup: mainMenuKeyboard });
         bot.lastMessageId[chatId] = newMessage.message_id;
