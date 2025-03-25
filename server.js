@@ -112,7 +112,10 @@ app.post('/api/reviews', async (req, res) => {
 });
 
 const mainMenuKeyboard = {
-    keyboard: [['Личный кабинет', 'Витрина'], ['Бонусы и продукт', 'Отзывы']],
+    keyboard: [
+        ['Личный кабинет', 'Витрина'],
+        ['Бонусы и продукт', 'Отзывы']
+    ],
     resize_keyboard: true,
     one_time_keyboard: false,
     persistent: true
@@ -155,10 +158,8 @@ bot.on('message', async (msg) => {
             await showProfile(bot, chatId);
             break;
         case 'Витрина':
-            newMessage = await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение', {
-                reply_markup: {
-                    inline_keyboard: [[{ text: '🛒 Открыть витрину:', web_app: { url: `${webAppUrl}/index.html` } }]]
-                }
+            newMessage = await bot.sendMessage(chatId, `✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение\n\nДля просмотра витрины перейдите по ссылке: ${webAppUrl}/index.html`, {
+                reply_markup: mainMenuKeyboard
             });
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
@@ -223,15 +224,14 @@ async function showReviews(bot, chatId, page = 1) {
             return `Дата: ${formatDate(r.createdAt)}\nТовар: ${productName}\nПользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\nРейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\nКомментарий: ${r.comment}`;
         }).join('\n---\n');
 
-        const inlineKeyboard = totalPages > 1 ? [[
-            ...(page > 1 ? [{ text: '⬅️', callback_data: `reviews_page_${page - 1}` }] : []),
-            { text: `${page}/${totalPages}`, callback_data: 'noop' },
-            ...(page < totalPages ? [{ text: '➡️', callback_data: `reviews_page_${page + 1}` }] : [])
-        ]] : [];
+        let messageText = `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`;
+        if (totalPages > 1) {
+            messageText += `\n\nСтраница ${page} из ${totalPages}. Для переключения используйте /reviews <номер страницы>`;
+        }
 
-        const newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`, {
+        const newMessage = await bot.sendMessage(chatId, messageText, {
             parse_mode: 'Markdown',
-            reply_markup: { inline_keyboard: inlineKeyboard }
+            reply_markup: mainMenuKeyboard
         });
         bot.lastMessageId[chatId] = newMessage.message_id;
     } catch (error) {
@@ -240,19 +240,19 @@ async function showReviews(bot, chatId, page = 1) {
     }
 }
 
+bot.onText(/\/reviews (\d+)/, async (msg, match) => {
+    const chatId = msg.chat.id;
+    const page = parseInt(match[1]);
+    await showReviews(bot, chatId, page);
+});
+
 bot.onText(/\/search (.+)/, async (msg, match) => searchProducts(bot, msg.chat.id, match[1]));
 
 bot.on('callback_query', async (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
     const data = callbackQuery.data;
 
-    if (data.startsWith('reviews_page_')) {
-        const page = parseInt(data.split('_')[2]);
-        await showReviews(bot, chatId, page);
-        bot.answerCallbackQuery(callbackQuery.id);
-    } else if (data === 'noop') {
-        bot.answerCallbackQuery(callbackQuery.id);
-    } else if (data.startsWith('approve_review_') || data.startsWith('reject_review_')) {
+    if (data.startsWith('approve_review_') || data.startsWith('reject_review_')) {
         await handleAdminCallback(bot, callbackQuery);
     } else {
         await handleCallback(bot, callbackQuery);
