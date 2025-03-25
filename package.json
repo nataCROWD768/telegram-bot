@@ -14,6 +14,7 @@
         "express": "^4.21.2",
         "materialize-css": "^1.0.0",
         "mongoose": "^8.12.2",
+        "node-cron": "^3.0.3",
         "node-telegram-bot-api": "^0.66.0",
         "sharp": "^0.33.5",
         "ws": "^8.18.1"

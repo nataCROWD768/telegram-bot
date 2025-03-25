@@ -20,7 +20,8 @@ const BOT_TOKEN = process.env.BOT_TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzl
 const bot = new TelegramBot(BOT_TOKEN, { polling: isLocal });
 const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
-bot.lastMessageId = {};
+// Удаляем bot.lastMessageId, так как он больше не нужен
+// bot.lastMessageId = {};
 
 function escapeMarkdown(text) {
     if (!text) return text;
@@ -41,6 +42,7 @@ mongoose.connect(process.env.MONGODB_URI)
         process.exit(1);
     });
 
+// Код настройки Webhook оставляем без изменений
 const setupWebhook = async () => {
     if (isLocal) {
         console.log('Локальный режим: используется polling');
@@ -68,6 +70,7 @@ const setupWebhook = async () => {
     }
 };
 
+// Остальные маршруты API остаются без изменений
 app.post('/api/share-product', async (req, res) => {
     const { chatId, productId, name, clubPrice, clientPrice, description, image } = req.body;
 
@@ -170,10 +173,13 @@ const mainMenuKeyboard = {
     persistent: true
 };
 
+// Удаляем функцию ensureMainMenu, так как она больше не нужна
+/*
 async function ensureMainMenu(chatId) {
-    const menuMsg = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard }); // Замена на точку
+    const menuMsg = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard });
     bot.lastMessageId[chatId] = menuMsg.message_id;
 }
+*/
 
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
@@ -184,9 +190,10 @@ bot.onText(/\/start/, async (msg) => {
             await Visit.create({ username, userId: chatId });
         }
 
-        await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown' });
-        const menuMsg = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard }); // Замена на точку
-        bot.lastMessageId[chatId] = menuMsg.message_id;
+        await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, {
+            parse_mode: 'Markdown',
+            reply_markup: mainMenuKeyboard
+        });
     } catch (error) {
         console.error('Ошибка при /start:', error);
         await bot.sendMessage(chatId, '❌ Ошибка', { reply_markup: mainMenuKeyboard });
@@ -197,6 +204,9 @@ const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.REN
 
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
+
+    // Удаляем логику удаления предыдущих сообщений
+    /*
     if (bot.lastMessageId[chatId] && bot.lastMessageId[chatId] !== msg.message_id) {
         try {
             await bot.deleteMessage(chatId, bot.lastMessageId[chatId]);
@@ -204,38 +214,30 @@ bot.on('message', async (msg) => {
             if (error.code === 'ETELEGRAM' && error.response?.body?.error_code === 400) delete bot.lastMessageId[chatId];
         }
     }
+    */
 
     if (msg.text === '/start') return;
 
-    let newMessage;
     switch (msg.text) {
         case 'Личный кабинет':
             await showProfile(bot, chatId);
-            await ensureMainMenu(chatId);
             break;
         case 'Витрина':
-            newMessage = await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение', {
+            await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение', {
                 reply_markup: {
                     inline_keyboard: [[{ text: '🛒 Открыть витрину:', web_app: { url: `${webAppUrl}/index.html` } }]]
                 }
             });
-            bot.lastMessageId[chatId] = newMessage.message_id;
-            await ensureMainMenu(chatId);
             break;
         case 'Бонусы и продукт':
-            newMessage = await bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)', { reply_markup: mainMenuKeyboard });
-            bot.lastMessageId[chatId] = newMessage.message_id;
-            await ensureMainMenu(chatId);
+            await bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)', { reply_markup: mainMenuKeyboard });
             break;
         case 'Отзывы':
             await showReviews(bot, chatId);
-            await ensureMainMenu(chatId);
             break;
         case '/admin':
             if (chatId.toString() !== ADMIN_ID) {
-                newMessage = await bot.sendMessage(chatId, '❌ Доступ только для администратора', { reply_markup: mainMenuKeyboard });
-                bot.lastMessageId[chatId] = newMessage.message_id;
-                await ensureMainMenu(chatId);
+                await bot.sendMessage(chatId, '❌ Доступ только для администратора', { reply_markup: mainMenuKeyboard });
                 return;
             }
             await handleAdmin(bot, msg);
@@ -264,8 +266,7 @@ bot.on('message', async (msg) => {
             await deleteProduct(bot, chatId);
             break;
         default:
-            newMessage = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard }); // Замена на точку
-            bot.lastMessageId[chatId] = newMessage.message_id;
+            await bot.sendMessage(chatId, 'Выберите действие из меню:', { reply_markup: mainMenuKeyboard });
             break;
     }
 });
@@ -275,8 +276,7 @@ async function showReviews(bot, chatId, page = 1) {
     try {
         const reviews = await Review.find({ isApproved: true }).populate('productId', 'name').sort({ createdAt: -1 });
         if (!reviews.length) {
-            const newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов', { reply_markup: mainMenuKeyboard });
-            bot.lastMessageId[chatId] = newMessage.message_id;
+            await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов', { reply_markup: mainMenuKeyboard });
             return;
         }
 
@@ -296,15 +296,13 @@ async function showReviews(bot, chatId, page = 1) {
             ...(page < totalPages ? [{ text: '➡️', callback_data: `reviews_page_${page + 1}` }] : [])
         ]] : [];
 
-        const newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`, {
+        await bot.sendMessage(chatId, `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`, {
             parse_mode: 'Markdown',
             reply_markup: { inline_keyboard: inlineKeyboard }
         });
-        bot.lastMessageId[chatId] = newMessage.message_id;
     } catch (error) {
         console.error('Ошибка при загрузке отзывов:', error);
-        const newMessage = await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов', { reply_markup: mainMenuKeyboard });
-        bot.lastMessageId[chatId] = newMessage.message_id;
+        await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов', { reply_markup: mainMenuKeyboard });
     }
 }
 
@@ -312,7 +310,6 @@ bot.onText(/\/reviews (\d+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const page = parseInt(match[1]);
     await showReviews(bot, chatId, page);
-    await ensureMainMenu(chatId);
 });
 
 bot.onText(/\/search (.+)/, async (msg, match) => searchProducts(bot, msg.chat.id, match[1]));
@@ -324,19 +321,18 @@ bot.on('callback_query', async (callbackQuery) => {
     if (data.startsWith('reviews_page_')) {
         const page = parseInt(data.split('_')[2]);
         await showReviews(bot, chatId, page);
-        await ensureMainMenu(chatId);
         bot.answerCallbackQuery(callbackQuery.id);
     } else if (data === 'noop') {
         bot.answerCallbackQuery(callbackQuery.id);
     } else if (data.startsWith('approve_review_') || data.startsWith('reject_review_')) {
         await handleAdminCallback(bot, callbackQuery);
         await bot.sendMessage(chatId, 'Действие выполнено.', { reply_markup: mainMenuKeyboard });
-        await ensureMainMenu(chatId);
     } else {
         await handleCallback(bot, callbackQuery);
     }
 });
 
+// Остальные маршруты и запуск сервера остаются без изменений
 app.get('/api/products', async (req, res) => {
     try {
         const products = await Product.find();
