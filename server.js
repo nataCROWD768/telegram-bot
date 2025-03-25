@@ -63,7 +63,7 @@ const setupWebhook = async () => {
     }
 };
 
-// Новый маршрут для шаринга продукта из Web App с красивым форматированием
+// Новый маршрут для шаринга продукта из Web App с новым форматированием
 app.post('/api/share-product', async (req, res) => {
     const { chatId, productId, name, clubPrice, clientPrice, description, image } = req.body;
 
@@ -75,16 +75,18 @@ app.post('/api/share-product', async (req, res) => {
         const product = await Product.findById(productId);
         if (!product) throw new Error('Товар не найден');
 
+        const botUsername = 'YourBotUsername'; // Замените на имя вашего бота, например, '@MyBot'
         const caption = `
-🌟 *${name.toUpperCase()}* 🌟  
-━━━━━━━━━━━━━━━━━━━━━━━  
+✨ *${name.toUpperCase()}* ✨  
+➖➖➖➖➖➖➖➖➖➖➖➖  
 💎 *Клубная цена:* __${clubPrice.toLocaleString()} ₽__  
 💰 *Клиентская цена:* __${clientPrice.toLocaleString()} ₽__  
-━━━━━━━━━━━━━━━━━━━━━━━  
+➖➖➖➖➖➖➖➖➖➖➖➖  
 📖 *О продукте:*  
 ${description || 'Описание отсутствует'}  
-━━━━━━━━━━━━━━━━━━━━━━━  
-✨ _Добавьте стиль в свою жизнь с этим продуктом!_ ✨
+➖➖➖➖➖➖➖➖➖➖➖➖  
+_Узнайте больше в [${botUsername}](https://t.me/${botUsername})_   
+© Radar GP
         `.trim();
 
         await bot.sendPhoto(chatId, image, {
