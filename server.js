@@ -277,7 +277,7 @@ async function showReviews(bot, chatId, page = 1) {
         const reviewList = paginatedReviews.map(r => {
             const productName = r.productId ? r.productId.name : 'Неизвестный товар';
             return `Дата: ${formatDate(r.createdAt)}\nТовар: ${productName}\nПользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\nРейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\nКомментарий: ${r.comment}`;
-        }).join('\n---\n');
+        }).join('\n➖➖➖➖➖➖➖➖➖➖➖➖\n'); // Заменяем разделитель
 
         const inlineKeyboard = totalPages > 1 ? [[
             ...(page > 1 ? [{ text: '⬅️', callback_data: `reviews_page_${page - 1}` }] : []),
