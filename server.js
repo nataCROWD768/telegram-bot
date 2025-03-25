@@ -63,7 +63,7 @@ const setupWebhook = async () => {
     }
 };
 
-// Новый маршрут для шаринга продукта из Web App
+// Новый маршрут для шаринга продукта из Web App с красивым форматированием
 app.post('/api/share-product', async (req, res) => {
     const { chatId, productId, name, clubPrice, clientPrice, description, image } = req.body;
 
@@ -76,14 +76,15 @@ app.post('/api/share-product', async (req, res) => {
         if (!product) throw new Error('Товар не найден');
 
         const caption = `
-✨ *${name}* ✨
-━━━━━━━━━━━━━━━━━━━
-💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽
-💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽
-━━━━━━━━━━━━━━━━━━━
-📝 *Описание:* 
-${description || 'Описание отсутствует'}
-━━━━━━━━━━━━━━━━━━━
+🌟 *${name.toUpperCase()}* 🌟  
+━━━━━━━━━━━━━━━━━━━━━━━  
+💎 *Клубная цена:* __${clubPrice.toLocaleString()} ₽__  
+💰 *Клиентская цена:* __${clientPrice.toLocaleString()} ₽__  
+━━━━━━━━━━━━━━━━━━━━━━━  
+📖 *О продукте:*  
+${description || 'Описание отсутствует'}  
+━━━━━━━━━━━━━━━━━━━━━━━  
+✨ _Добавьте стиль в свою жизнь с этим продуктом!_ ✨
         `.trim();
 
         await bot.sendPhoto(chatId, image, {
