@@ -70,7 +70,6 @@ const setupWebhook = async () => {
     }
 };
 
-// Остальные маршруты API остаются без изменений
 app.post('/api/share-product', async (req, res) => {
     const { chatId, productId, name, clubPrice, clientPrice, description, image } = req.body;
 
@@ -83,7 +82,6 @@ app.post('/api/share-product', async (req, res) => {
         if (!product) throw new Error('Товар не найден');
 
         const botUsername = 'nataCROWD768_bot';
-        // Убираем escapeMarkdown для name, используем его только для description
         const escapedDescription = escapeMarkdown(description || 'Описание отсутствует');
 
         const caption = `
@@ -98,10 +96,20 @@ ${escapedDescription}
 [© Radar GP Assistant](https://t.me/${botUsername})
         `.trim();
 
-        await bot.sendMessage(chatId, caption, {
-            parse_mode: 'Markdown',
-            reply_markup: mainMenuKeyboard
-        });
+        // Проверяем наличие изображения
+        if (image && image.trim() !== '') {
+            await bot.sendPhoto(chatId, image, {
+                caption,
+                parse_mode: 'Markdown',
+                reply_markup: mainMenuKeyboard
+            });
+        } else {
+            // Если изображения нет, отправляем только текст
+            await bot.sendMessage(chatId, caption, {
+                parse_mode: 'Markdown',
+                reply_markup: mainMenuKeyboard
+            });
+        }
 
         res.json({ success: true });
     } catch (error) {
@@ -167,14 +175,6 @@ const mainMenuKeyboard = {
     one_time_keyboard: false,
     persistent: true
 };
-
-// Удаляем функцию ensureMainMenu, так как она больше не нужна
-/*
-async function ensureMainMenu(chatId) {
-    const menuMsg = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard });
-    bot.lastMessageId[chatId] = menuMsg.message_id;
-}
-*/
 
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
