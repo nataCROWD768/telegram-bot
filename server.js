@@ -22,6 +22,12 @@ const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
 bot.lastMessageId = {};
 
+// Функция для экранирования Markdown-символов
+function escapeMarkdown(text) {
+    if (!text) return text;
+    return text.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
+}
+
 bot.deleteMyCommands()
     .then(() => console.log('Команды бота удалены, кнопка "Меню" скрыта'))
     .catch(err => console.error('Ошибка при удалении команд:', err));
@@ -63,7 +69,7 @@ const setupWebhook = async () => {
     }
 };
 
-// Новый маршрут для шаринга продукта из Web App с текстом © Radar GP как ссылкой
+// Новый маршрут для шаринга продукта с экранированием и логированием
 app.post('/api/share-product', async (req, res) => {
     const { chatId, productId, name, clubPrice, clientPrice, description, image } = req.body;
 
@@ -76,17 +82,29 @@ app.post('/api/share-product', async (req, res) => {
         if (!product) throw new Error('Товар не найден');
 
         const botUsername = '@nataCROWD768_bot'; // Замените на имя вашего бота, например, '@MyBot'
+        const escapedName = escapeMarkdown(name);
+        const escapedDescription = escapeMarkdown(description || 'Описание отсутствует');
+
         const caption = `
-🌟 *${name.toUpperCase()}* 🌟  
+🌟 *${escapedName.toUpperCase()}* 🌟  
 ➖➖➖➖➖➖➖➖➖➖➖➖  
 💎 *Клубная цена:* __${clubPrice.toLocaleString()} ₽__  
 💰 *Клиентская цена:* __${clientPrice.toLocaleString()} ₽__  
 ➖➖➖➖➖➖➖➖➖➖➖➖  
 📖 *О продукте:*  
-${description || 'Описание отсутствует'}  
+${escapedDescription}  
 ➖➖➖➖➖➖➖➖➖➖➖➖  
-✨ _Узнайте о других продуктах в [Radar GP](https://t.me/${botUsername})_ ✨  
+✨ _Узнайте больше в [Radar GP Assistant](https://t.me/${botUsername})_ ✨
         `.trim();
+
+        // Логируем текст для отладки
+        console.log('Отправляемый caption:', caption);
+        console.log('Длина caption:', caption.length);
+
+        // Проверяем длину
+        if (caption.length > 1024) {
+            throw new Error('Caption превышает 1024 символа');
+        }
 
         await bot.sendPhoto(chatId, image, {
             caption,
