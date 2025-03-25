@@ -81,7 +81,7 @@ app.post('/api/share-product', async (req, res) => {
         const product = await Product.findById(productId);
         if (!product) throw new Error('Товар не найден');
 
-        const botUsername = '@nataCROWD768_bot'; // Замените на имя вашего бота, например, '@MyBot'
+        const botUsername = '@nataCROWD768_bot';
         const escapedName = escapeMarkdown(name);
         const escapedDescription = escapeMarkdown(description || 'Описание отсутствует');
 
@@ -94,12 +94,13 @@ app.post('/api/share-product', async (req, res) => {
 📖 *О продукте:*  
 ${escapedDescription}  
 ➖➖➖➖➖➖➖➖➖➖➖➖  
-✨ _Узнайте больше в [Radar GP Assistant](https://t.me/${botUsername})_ ✨
+✨ Узнайте о других продуктах в [Radar GP Assistant](https://t.me/${botUsername}) ✨
         `.trim();
 
         // Логируем текст для отладки
         console.log('Отправляемый caption:', caption);
-        console.log('Длина caption:', caption.length);
+        console.log('Длина caption (символы):', caption.length);
+        console.log('Длина caption (байты):', Buffer.from(caption).length);
 
         // Проверяем длину
         if (caption.length > 1024) {
@@ -115,6 +116,7 @@ ${escapedDescription}
         res.json({ success: true });
     } catch (error) {
         console.error('Ошибка при шаринге продукта:', error.message);
+        console.error('Полная ошибка:', error);
         res.status(500).json({ error: 'Ошибка при отправке продукта' });
     }
 });
