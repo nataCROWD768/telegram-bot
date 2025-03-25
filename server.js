@@ -205,22 +205,11 @@ const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.REN
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
 
-    // Удаляем логику удаления предыдущих сообщений
-    /*
-    if (bot.lastMessageId[chatId] && bot.lastMessageId[chatId] !== msg.message_id) {
-        try {
-            await bot.deleteMessage(chatId, bot.lastMessageId[chatId]);
-        } catch (error) {
-            if (error.code === 'ETELEGRAM' && error.response?.body?.error_code === 400) delete bot.lastMessageId[chatId];
-        }
-    }
-    */
-
     if (msg.text === '/start') return;
 
     switch (msg.text) {
         case 'Личный кабинет':
-            await showProfile(bot, chatId);
+            await showProfile(bot, msg); // Передаем msg вместо chatId
             break;
         case 'Витрина':
             await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение', {
