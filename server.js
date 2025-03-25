@@ -46,18 +46,15 @@ const setupWebhook = async () => {
     const telegramApi = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
     try {
-        // Удаляем старый Webhook
         const deleteResponse = await axios.get(`${telegramApi}/deleteWebhook`);
         console.log('Старый Webhook удалён:', deleteResponse.data);
 
-        // Устанавливаем новый Webhook с правильной сериализацией allowed_updates
-        const allowedUpdates = ["message", "callback_query", "web_app_data"];
+        const allowedUpdates = ["message", "callback_query"];
         const url = `${telegramApi}/setWebhook?url=${encodeURIComponent(WEBHOOK_URL)}&allowed_updates=${encodeURIComponent(JSON.stringify(allowedUpdates))}`;
         const setResponse = await axios.get(url);
         if (!setResponse.data.ok) throw new Error('Webhook setup failed: ' + setResponse.data.description);
         console.log('Webhook успешно настроен:', WEBHOOK_URL, 'с allowed_updates:', allowedUpdates);
 
-        // Проверяем текущий Webhook
         const webhookInfo = await axios.get(`${telegramApi}/getWebhookInfo`);
         console.log('Текущая информация о Webhook:', webhookInfo.data);
     } catch (error) {
@@ -66,88 +63,46 @@ const setupWebhook = async () => {
     }
 };
 
-app.post(`/bot${BOT_TOKEN}`, (req, res) => {
-    console.log('Получен запрос на Webhook:', req.body);
-    bot.processUpdate(req.body);
-    res.sendStatus(200);
-});
+// Новый маршрут для шаринга продукта из Web App
+app.post('/api/share-product', async (req, res) => {
+    const { chatId, productId, name, clubPrice, clientPrice, description, image } = req.body;
 
-bot.on('web_app_data', async (msg) => {
-    const chatId = msg.chat.id;
-    let data;
-    try {
-        data = JSON.parse(msg.web_app_data.data);
-        console.log('Получены данные от Web App:', data);
-    } catch (error) {
-        console.error('Ошибка парсинга данных от Web App:', error);
-        await bot.sendMessage(chatId, '❌ Ошибка обработки данных', { reply_markup: mainMenuKeyboard });
-        await ensureMainMenu(chatId);
-        return;
+    if (!chatId || !productId) {
+        return res.status(400).json({ error: 'chatId и productId обязательны' });
     }
 
-    if (data.type === 'share') {
-        const { productId, name, clubPrice, clientPrice, description, image } = data;
-        try {
-            const product = await Product.findById(productId);
-            if (!product) {
-                console.error(`Продукт с ID ${productId} не найден в коллекции products`);
-                throw new Error('Товар не найден в базе данных');
-            }
-            console.log('Найден продукт в базе:', product);
+    try {
+        const product = await Product.findById(productId);
+        if (!product) throw new Error('Товар не найден');
 
-            const caption = `
+        const caption = `
 ✨ *${name}* ✨
 ━━━━━━━━━━━━━━━━━━━
 💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽
 💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽
 ━━━━━━━━━━━━━━━━━━━
 📝 *Описание:* 
-${description}
+${description || 'Описание отсутствует'}
 ━━━━━━━━━━━━━━━━━━━
-            `.trim();
+        `.trim();
 
-            console.log('Отправка фото с File ID:', image);
-            const newMessage = await bot.sendPhoto(chatId, image, {
-                caption,
-                parse_mode: 'Markdown',
-                reply_markup: mainMenuKeyboard
-            });
-            bot.lastMessageId[chatId] = newMessage.message_id;
-            console.log('Сообщение успешно отправлено, message_id:', newMessage.message_id);
-            await ensureMainMenu(chatId);
-        } catch (error) {
-            console.error('Ошибка при отправке продукта:', error.message);
-            await bot.sendMessage(chatId, `❌ Ошибка при отправке продукта: ${error.message}`, { reply_markup: mainMenuKeyboard });
-            await ensureMainMenu(chatId);
-        }
-    } else if (data.type === 'review') {
-        const { productId, rating, comment } = data;
-        if (!rating || rating < 1 || rating > 5 || !comment || !mongoose.Types.ObjectId.isValid(productId)) {
-            await bot.sendMessage(chatId, '❌ Неверный формат отзыва', { reply_markup: mainMenuKeyboard });
-            await ensureMainMenu(chatId);
-            return;
-        }
-        try {
-            const product = await Product.findById(productId);
-            if (!product) throw new Error('Товар не найден');
-            const username = msg.from.username ? `@${msg.from.username}` : 'Аноним';
-            const review = new Review({ userId: chatId.toString(), username, productId, rating, comment, isApproved: false });
-            await review.save();
+        await bot.sendPhoto(chatId, image, {
+            caption,
+            parse_mode: 'Markdown',
+            reply_markup: mainMenuKeyboard
+        });
 
-            const message = `Новый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${username}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
-            await bot.sendMessage(ADMIN_ID, message, {
-                reply_markup: { inline_keyboard: [[{ text: 'Одобрить', callback_data: `approve_review_${review._id}` }, { text: 'Отклонить', callback_data: `reject_review_${review._id}` }]] }
-            });
-
-            const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.', { reply_markup: mainMenuKeyboard });
-            bot.lastMessageId[chatId] = newMessage.message_id;
-            await ensureMainMenu(chatId);
-        } catch (error) {
-            console.error('Ошибка при сохранении отзыва:', error);
-            await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва', { reply_markup: mainMenuKeyboard });
-            await ensureMainMenu(chatId);
-        }
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Ошибка при шаринге продукта:', error.message);
+        res.status(500).json({ error: 'Ошибка при отправке продукта' });
     }
+});
+
+app.post(`/bot${BOT_TOKEN}`, (req, res) => {
+    console.log('Получен запрос на Webhook:', req.body);
+    bot.processUpdate(req.body);
+    res.sendStatus(200);
 });
 
 const mainMenuKeyboard = {

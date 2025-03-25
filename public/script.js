@@ -1,4 +1,4 @@
-const BASE_URL = 'https://telegram-bot-gmut.onrender.com';
+const BASE_URL = window.location.hostname === 'localhost' ? 'http://localhost:3000' : 'https://telegram-bot-gmut.onrender.com';
 let products = [];
 
 function formatDate(date) {
@@ -177,33 +177,43 @@ function showProductDetail(product, page = 1) {
 
     const shareButton = document.querySelector(`.share-btn[data-product-id="${product._id}"]`);
     if (shareButton) {
-        shareButton.addEventListener('click', () => {
+        shareButton.addEventListener('click', async () => {
             shareButton.disabled = true;
             shareButton.innerHTML = '<span class="share-icon">⏳</span> Отправка...';
+
             const tg = window.Telegram?.WebApp;
-            if (tg) {
-                const shareData = {
-                    type: 'share',
-                    productId: product._id,
-                    name: product.name,
-                    clubPrice: product.clubPrice,
-                    clientPrice: product.clientPrice,
-                    description: product.description || 'Описание отсутствует',
-                    image: product.image
-                };
-                try {
-                    tg.sendData(JSON.stringify(shareData));
-                    setTimeout(() => {
-                        shareButton.disabled = false;
-                        shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
-                    }, 1000);
-                } catch (error) {
-                    alert('Ошибка при шаринге продукта');
-                    shareButton.disabled = false;
-                    shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
-                }
-            } else {
+            if (!tg) {
                 alert('Эта функция работает только в Telegram');
+                shareButton.disabled = false;
+                shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
+                return;
+            }
+
+            const shareData = {
+                chatId: tg.initDataUnsafe?.user?.id, // ID чата пользователя
+                productId: product._id,
+                name: product.name,
+                clubPrice: product.clubPrice,
+                clientPrice: product.clientPrice,
+                description: product.description || 'Описание отсутствует',
+                image: product.image
+            };
+
+            try {
+                const response = await fetch(`${BASE_URL}/api/share-product`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(shareData)
+                });
+
+                if (!response.ok) throw new Error('Ошибка сервера');
+                console.log('Продукт успешно отправлен');
+
+                shareButton.disabled = false;
+                shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
+            } catch (error) {
+                console.error('Ошибка при отправке:', error);
+                alert('Ошибка при шаринге продукта');
                 shareButton.disabled = false;
                 shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
             }
