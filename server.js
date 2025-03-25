@@ -126,7 +126,7 @@ const mainMenuKeyboard = {
 
 // Функция для отправки сообщения с главным меню, чтобы оно не пропадало
 async function ensureMainMenu(chatId) {
-    const menuMsg = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
+    const menuMsg = await bot.sendMessage(chatId, 'Главное меню', { reply_markup: mainMenuKeyboard });
     bot.lastMessageId[chatId] = menuMsg.message_id;
 }
 
@@ -137,8 +137,7 @@ bot.onText(/\/start/, async (msg) => {
         const existingVisit = await Visit.findOne({ userId: chatId });
         if (!existingVisit) {
             await Visit.create({ username, userId: chatId });
-            await bot.sendVideoNote(chatId, welcomeVideo);
-            const welcomeMsg = await bot.sendMessage(chatId, `✨ Добро пожаловать!\n${companyInfo}`, { parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
+            const welcomeMsg = await bot.sendMessage(chatId, 'Главное меню', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = welcomeMsg.message_id;
         } else {
             const returnMsg = await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
@@ -218,8 +217,8 @@ bot.on('message', async (msg) => {
             await deleteProduct(bot, chatId);
             break;
         default:
-            // Если пользователь отправил произвольное сообщение, возвращаем меню без текста
-            newMessage = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard });
+            // Если пользователь отправил произвольное сообщение, возвращаем меню
+            newMessage = await bot.sendMessage(chatId, 'Главное меню', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
     }
