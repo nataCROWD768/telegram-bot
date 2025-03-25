@@ -11,7 +11,7 @@ const { handleCallback, searchProducts } = require('./handlers/productHandler');
 const { showProfile } = require('./handlers/profileHandler');
 const Visit = require('./models/visit');
 const Product = require('./models/product');
-const Review = require('./models/review');
+const Review = require('../models/review');
 const { formatDate } = require('./utils');
 
 const app = express();
@@ -54,7 +54,9 @@ const CACHE_DURATION = 5 * 60 * 1000;
 app.get('/api/products', async (req, res) => {
     try {
         const now = Date.now();
-        if (productCache && now - cacheTimestamp < CACHE_DURATION) return res.json(productCache);
+        if (productCache && now - cacheTimestamp < CACHE_DURATION) {
+            return res.json(productCache);
+        }
 
         const products = await Product.find();
         if (!products.length) return res.status(404).json({ error: 'Товары не найдены' });

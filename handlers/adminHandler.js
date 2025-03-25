@@ -71,12 +71,18 @@ const handleAdminCallback = async (bot, callbackQuery) => {
                 await Product.updateOne({ _id: review.productId }, { averageRating });
             }
 
-            // Сбрасываем кэш продуктов, чтобы новые отзывы отобразились в карточке
-            productCache = null;
+            // Сбрасываем кэш продуктов
+            global.productCache = null; // Явно сбрасываем глобальный кэш
 
             await bot.editMessageText(`Отзыв одобрен!\nТовар: ${productName}\nРейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}\nКомментарий: ${review.comment}`, {
                 chat_id: chatId,
                 message_id: callbackQuery.message.message_id,
+                parse_mode: 'Markdown'
+            });
+
+            // Оповещаем пользователя, оставившего отзыв, что его отзыв опубликован
+            const userChatId = review.userId;
+            await bot.sendMessage(userChatId, `Ваш отзыв на "${productName}" опубликован!\nРейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}\nКомментарий: ${review.comment}`, {
                 parse_mode: 'Markdown'
             });
         } else if (data.startsWith('reject_review_')) {
@@ -86,15 +92,13 @@ const handleAdminCallback = async (bot, callbackQuery) => {
             const productName = review.productId ? review.productId.name : 'Неизвестный товар';
             await Review.deleteOne({ _id: reviewId });
 
-            // Обновляем рейтинг после удаления, если продукт существует
             if (review.productId) {
                 const reviews = await Review.find({ productId: review.productId, isApproved: true });
                 const averageRating = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
                 await Product.updateOne({ _id: review.productId }, { averageRating });
             }
 
-            // Сбрасываем кэш
-            productCache = null;
+            global.productCache = null;
 
             await bot.editMessageText(`Отзыв отклонён и удалён!\nТовар: ${productName}`, {
                 chat_id: chatId,
