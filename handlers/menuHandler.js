@@ -1,12 +1,17 @@
 const handleMainMenu = (bot, chatId) => {
-    bot.sendMessage(chatId, 'Добро пожаловать!', {
+    const newMessage = bot.sendMessage(chatId, 'Добро пожаловать!', {
         reply_markup: {
             keyboard: [
-                ['Отзывы'],
-                ['Назад в меню']
+                ['Личный кабинет', 'Витрина'],
+                ['Бонусы и продукт', 'Отзывы']
             ],
-            resize_keyboard: true
+            resize_keyboard: true,
+            one_time_keyboard: false,
+            persistent: true
         }
+    }).then(msg => {
+        bot.lastMessageId = bot.lastMessageId || {};
+        bot.lastMessageId[chatId] = msg.message_id;
     });
 };
 
