@@ -124,6 +124,12 @@ const mainMenuKeyboard = {
     persistent: true
 };
 
+// Функция для отправки сообщения с главным меню, чтобы оно не пропадало
+async function ensureMainMenu(chatId) {
+    const menuMsg = await bot.sendMessage(chatId, 'Меню:', { reply_markup: mainMenuKeyboard });
+    bot.lastMessageId[chatId] = menuMsg.message_id;
+}
+
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const username = msg.from.username || msg.from.first_name;
@@ -132,14 +138,14 @@ bot.onText(/\/start/, async (msg) => {
         if (!existingVisit) {
             await Visit.create({ username, userId: chatId });
             await bot.sendVideoNote(chatId, welcomeVideo);
-            const welcomeMsg = await bot.sendMessage(chatId, `✨ Добро пожаловать!\n${companyInfo}`, { parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
+            const welcomeMsg = await bot.sendMessage(chatId, `✨ Добро пожаловать!\n${companyInfo}\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.`, { parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = welcomeMsg.message_id;
         } else {
-            const returnMsg = await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
+            const returnMsg = await bot.sendMessage(chatId, `👋 С возвращением, ${username}!\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.`, { parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = returnMsg.message_id;
         }
     } catch (error) {
-        await bot.sendMessage(chatId, '❌ Ошибка', { reply_markup: mainMenuKeyboard });
+        await bot.sendMessage(chatId, '❌ Ошибка\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
     }
 });
 
@@ -159,26 +165,31 @@ bot.on('message', async (msg) => {
     switch (msg.text) {
         case 'Личный кабинет':
             await showProfile(bot, chatId);
+            await ensureMainMenu(chatId);
             break;
         case 'Витрина':
-            newMessage = await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение', {
+            newMessage = await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', {
                 reply_markup: {
                     inline_keyboard: [[{ text: '🛒 Открыть витрину:', web_app: { url: `${webAppUrl}/index.html` } }]]
                 }
             });
             bot.lastMessageId[chatId] = newMessage.message_id;
+            await ensureMainMenu(chatId);
             break;
         case 'Бонусы и продукт':
-            newMessage = await bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)', { reply_markup: mainMenuKeyboard });
+            newMessage = await bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
+            await ensureMainMenu(chatId);
             break;
         case 'Отзывы':
             await showReviews(bot, chatId);
+            await ensureMainMenu(chatId);
             break;
         case '/admin':
             if (chatId.toString() !== ADMIN_ID) {
-                newMessage = await bot.sendMessage(chatId, '❌ Доступ только для администратора', { reply_markup: mainMenuKeyboard });
+                newMessage = await bot.sendMessage(chatId, '❌ Доступ только для администратора\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
                 bot.lastMessageId[chatId] = newMessage.message_id;
+                await ensureMainMenu(chatId);
                 return;
             }
             await handleAdmin(bot, msg);
@@ -208,7 +219,7 @@ bot.on('message', async (msg) => {
             break;
         default:
             // Если пользователь отправил произвольное сообщение, возвращаем меню
-            newMessage = await bot.sendMessage(chatId, 'Выберите действие из меню ниже.', { reply_markup: mainMenuKeyboard });
+            newMessage = await bot.sendMessage(chatId, 'Выберите действие из меню ниже.\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
     }
@@ -219,7 +230,7 @@ async function showReviews(bot, chatId, page = 1) {
     try {
         const reviews = await Review.find({ isApproved: true }).populate('productId', 'name').sort({ createdAt: -1 });
         if (!reviews.length) {
-            const newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов', { reply_markup: mainMenuKeyboard });
+            const newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
             return;
         }
@@ -240,13 +251,13 @@ async function showReviews(bot, chatId, page = 1) {
             ...(page < totalPages ? [{ text: '➡️', callback_data: `reviews_page_${page + 1}` }] : [])
         ]] : [];
 
-        const newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`, {
+        const newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.`, {
             parse_mode: 'Markdown',
             reply_markup: { inline_keyboard: inlineKeyboard }
         });
         bot.lastMessageId[chatId] = newMessage.message_id;
     } catch (error) {
-        const newMessage = await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов', { reply_markup: mainMenuKeyboard });
+        const newMessage = await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
         bot.lastMessageId[chatId] = newMessage.message_id;
     }
 }
@@ -255,6 +266,7 @@ bot.onText(/\/reviews (\d+)/, async (msg, match) => {
     const chatId = msg.chat.id;
     const page = parseInt(match[1]);
     await showReviews(bot, chatId, page);
+    await ensureMainMenu(chatId);
 });
 
 bot.onText(/\/search (.+)/, async (msg, match) => searchProducts(bot, msg.chat.id, match[1]));
@@ -266,13 +278,14 @@ bot.on('callback_query', async (callbackQuery) => {
     if (data.startsWith('reviews_page_')) {
         const page = parseInt(data.split('_')[2]);
         await showReviews(bot, chatId, page);
+        await ensureMainMenu(chatId);
         bot.answerCallbackQuery(callbackQuery.id);
     } else if (data === 'noop') {
         bot.answerCallbackQuery(callbackQuery.id);
     } else if (data.startsWith('approve_review_') || data.startsWith('reject_review_')) {
         await handleAdminCallback(bot, callbackQuery);
-        // После обработки callback отправляем сообщение с mainMenuKeyboard
-        await bot.sendMessage(chatId, 'Действие выполнено.', { reply_markup: mainMenuKeyboard });
+        await bot.sendMessage(chatId, 'Действие выполнено.\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
+        await ensureMainMenu(chatId);
     } else {
         await handleCallback(bot, callbackQuery);
     }
@@ -289,7 +302,8 @@ bot.on('web_app_data', async (msg) => {
     try {
         data = JSON.parse(msg.web_app_data.data);
     } catch (error) {
-        await bot.sendMessage(chatId, '❌ Ошибка обработки данных', { reply_markup: mainMenuKeyboard });
+        await bot.sendMessage(chatId, '❌ Ошибка обработки данных\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
+        await ensureMainMenu(chatId);
         return;
     }
 
@@ -299,16 +313,19 @@ bot.on('web_app_data', async (msg) => {
             const product = await Product.findById(productId);
             if (!product) throw new Error('Товар не найден');
 
-            const caption = `✨ *${name}* ✨\n━━━━━━━━━━━━━━━━━━━\n💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽\n💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽\n━━━━━━━━━━━━━━━━━━━\n📝 *Описание:* \n${description || 'Описание отсутствует'}\n━━━━━━━━━━━━━━━━━━━`.trim();
+            const caption = `✨ *${name}* ✨\n━━━━━━━━━━━━━━━━━━━\n💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽\n💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽\n━━━━━━━━━━━━━━━━━━━\n📝 *Описание:* \n${description || 'Описание отсутствует'}\n━━━━━━━━━━━━━━━━━━━\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.`.trim();
             const newMessage = await bot.sendPhoto(chatId, `${webAppUrl}/api/image/${image}`, { caption, parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
+            await ensureMainMenu(chatId);
         } catch (error) {
-            await bot.sendMessage(chatId, '❌ Ошибка при отправке продукта', { reply_markup: mainMenuKeyboard });
+            await bot.sendMessage(chatId, '❌ Ошибка при отправке продукта\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
+            await ensureMainMenu(chatId);
         }
     } else if (data.type === 'review') {
         const { productId, rating, comment } = data;
         if (!rating || rating < 1 || rating > 5 || !comment || !mongoose.Types.ObjectId.isValid(productId)) {
-            await bot.sendMessage(chatId, '❌ Неверный формат отзыва', { reply_markup: mainMenuKeyboard });
+            await bot.sendMessage(chatId, '❌ Неверный формат отзыва\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
+            await ensureMainMenu(chatId);
             return;
         }
         try {
@@ -323,10 +340,12 @@ bot.on('web_app_data', async (msg) => {
                 reply_markup: { inline_keyboard: [[{ text: 'Одобрить', callback_data: `approve_review_${review._id}` }, { text: 'Отклонить', callback_data: `reject_review_${review._id}` }]] }
             });
 
-            const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.', { reply_markup: mainMenuKeyboard });
+            const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
+            await ensureMainMenu(chatId);
         } catch (error) {
-            await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва', { reply_markup: mainMenuKeyboard });
+            await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва\n\nЕсли меню пропало, отправьте любое сообщение или используйте /start.', { reply_markup: mainMenuKeyboard });
+            await ensureMainMenu(chatId);
         }
     }
 });
