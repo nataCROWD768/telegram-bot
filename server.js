@@ -161,7 +161,6 @@ bot.on('message', async (msg) => {
                 }
             });
             bot.lastMessageId[chatId] = newMessage.message_id;
-            await bot.sendMessage(chatId, 'Выберите действие:', { reply_markup: mainMenuKeyboard }); // Возвращаем основное меню
             break;
         case 'Бонусы и продукт':
             newMessage = await bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)', { reply_markup: mainMenuKeyboard });
@@ -235,7 +234,6 @@ async function showReviews(bot, chatId, page = 1) {
             reply_markup: { inline_keyboard: inlineKeyboard }
         });
         bot.lastMessageId[chatId] = newMessage.message_id;
-        await bot.sendMessage(chatId, 'Выберите действие:', { reply_markup: mainMenuKeyboard }); // Возвращаем основное меню
     } catch (error) {
         const newMessage = await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов', { reply_markup: mainMenuKeyboard });
         bot.lastMessageId[chatId] = newMessage.message_id;
