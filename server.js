@@ -126,7 +126,7 @@ const mainMenuKeyboard = {
 
 // Функция для отправки сообщения с главным меню, чтобы оно не пропадало
 async function ensureMainMenu(chatId) {
-    const menuMsg = await bot.sendMessage(chatId, 'Главное меню', { reply_markup: mainMenuKeyboard });
+    const menuMsg = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
     bot.lastMessageId[chatId] = menuMsg.message_id;
 }
 
@@ -137,7 +137,7 @@ bot.onText(/\/start/, async (msg) => {
         const existingVisit = await Visit.findOne({ userId: chatId });
         if (!existingVisit) {
             await Visit.create({ username, userId: chatId });
-            const welcomeMsg = await bot.sendMessage(chatId, 'Главное меню', { reply_markup: mainMenuKeyboard });
+            const welcomeMsg = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = welcomeMsg.message_id;
         } else {
             const returnMsg = await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
@@ -218,7 +218,7 @@ bot.on('message', async (msg) => {
             break;
         default:
             // Если пользователь отправил произвольное сообщение, возвращаем меню
-            newMessage = await bot.sendMessage(chatId, 'Главное меню', { reply_markup: mainMenuKeyboard });
+            newMessage = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
     }
@@ -313,7 +313,7 @@ bot.on('web_app_data', async (msg) => {
             if (!product) throw new Error('Товар не найден');
 
             const caption = `✨ *${name}* ✨\n━━━━━━━━━━━━━━━━━━━\n💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽\n💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽\n━━━━━━━━━━━━━━━━━━━\n📝 *Описание:* \n${description || 'Описание отсутствует'}\n━━━━━━━━━━━━━━━━━━━`.trim();
-            const newMessage = await bot.sendPhoto(chatId, `${webAppUrl}/api/image/${image}`, { caption, parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
+            const newMessage = await bot.sendMessage(chatId, `${webAppUrl}/api/image/${image}`, { caption, parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
             await ensureMainMenu(chatId);
         } catch (error) {
