@@ -20,7 +20,10 @@ const BOT_TOKEN = process.env.BOT_TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzl
 const bot = new TelegramBot(BOT_TOKEN, { polling: isLocal });
 const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
-bot.setMyCommands([]);
+bot.setMyCommands([
+    { command: '/start', description: 'Запустить бота и показать главное меню' },
+    { command: '/reviews', description: 'Показать отзывы (укажите номер страницы, например, /reviews 2)' }
+]);
 
 bot.lastMessageId = {};
 
@@ -158,8 +161,10 @@ bot.on('message', async (msg) => {
             await showProfile(bot, chatId);
             break;
         case 'Витрина':
-            newMessage = await bot.sendMessage(chatId, `✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение\n\nДля просмотра витрины перейдите по ссылке: ${webAppUrl}/index.html`, {
-                reply_markup: mainMenuKeyboard
+            newMessage = await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение', {
+                reply_markup: {
+                    inline_keyboard: [[{ text: '🛒 Открыть витрину:', web_app: { url: `${webAppUrl}/index.html` } }]]
+                }
             });
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
@@ -201,6 +206,11 @@ bot.on('message', async (msg) => {
             if (chatId.toString() !== ADMIN_ID) return;
             await deleteProduct(bot, chatId);
             break;
+        default:
+            // Если пользователь отправил произвольное сообщение, возвращаем меню
+            newMessage = await bot.sendMessage(chatId, 'Выберите действие из меню ниже.', { reply_markup: mainMenuKeyboard });
+            bot.lastMessageId[chatId] = newMessage.message_id;
+            break;
     }
 });
 
@@ -224,14 +234,15 @@ async function showReviews(bot, chatId, page = 1) {
             return `Дата: ${formatDate(r.createdAt)}\nТовар: ${productName}\nПользователь: ${r.username.startsWith('@') ? r.username : '@' + r.username}\nРейтинг: ${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)}\nКомментарий: ${r.comment}`;
         }).join('\n---\n');
 
-        let messageText = `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`;
-        if (totalPages > 1) {
-            messageText += `\n\nСтраница ${page} из ${totalPages}. Для переключения используйте /reviews <номер страницы>`;
-        }
+        const inlineKeyboard = totalPages > 1 ? [[
+            ...(page > 1 ? [{ text: '⬅️', callback_data: `reviews_page_${page - 1}` }] : []),
+            { text: `${page}/${totalPages}`, callback_data: 'noop' },
+            ...(page < totalPages ? [{ text: '➡️', callback_data: `reviews_page_${page + 1}` }] : [])
+        ]] : [];
 
-        const newMessage = await bot.sendMessage(chatId, messageText, {
+        const newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`, {
             parse_mode: 'Markdown',
-            reply_markup: mainMenuKeyboard
+            reply_markup: { inline_keyboard: inlineKeyboard }
         });
         bot.lastMessageId[chatId] = newMessage.message_id;
     } catch (error) {
@@ -252,8 +263,16 @@ bot.on('callback_query', async (callbackQuery) => {
     const chatId = callbackQuery.message.chat.id;
     const data = callbackQuery.data;
 
-    if (data.startsWith('approve_review_') || data.startsWith('reject_review_')) {
+    if (data.startsWith('reviews_page_')) {
+        const page = parseInt(data.split('_')[2]);
+        await showReviews(bot, chatId, page);
+        bot.answerCallbackQuery(callbackQuery.id);
+    } else if (data === 'noop') {
+        bot.answerCallbackQuery(callbackQuery.id);
+    } else if (data.startsWith('approve_review_') || data.startsWith('reject_review_')) {
         await handleAdminCallback(bot, callbackQuery);
+        // После обработки callback отправляем сообщение с mainMenuKeyboard
+        await bot.sendMessage(chatId, 'Действие выполнено.', { reply_markup: mainMenuKeyboard });
     } else {
         await handleCallback(bot, callbackQuery);
     }
