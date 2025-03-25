@@ -37,18 +37,35 @@ mongoose.connect(process.env.MONGODB_URI)
     });
 
 const setupWebhook = async () => {
-    if (isLocal) return;
+    if (isLocal) {
+        console.log('Локальный режим: используется polling');
+        return;
+    }
     const appName = process.env.RENDER_APP_NAME || 'telegram-bot-gmut';
     const WEBHOOK_URL = `https://${appName}.onrender.com/bot${BOT_TOKEN}`;
     const telegramApi = `https://api.telegram.org/bot${BOT_TOKEN}`;
 
     try {
+        // Удаляем старый Webhook
         await axios.get(`${telegramApi}/deleteWebhook`);
-        const setResponse = await axios.get(`${telegramApi}/setWebhook?url=${WEBHOOK_URL}&allowed_updates=["message","callback_query","web_app_data"]`);
+        console.log('Старый Webhook удалён');
+
+        // Устанавливаем новый Webhook
+        const allowedUpdates = ["message", "callback_query", "web_app_data"];
+        const setResponse = await axios.get(`${telegramApi}/setWebhook`, {
+            params: {
+                url: WEBHOOK_URL,
+                allowed_updates: allowedUpdates
+            }
+        });
         if (!setResponse.data.ok) throw new Error('Webhook setup failed');
-        console.log('Webhook успешно настроен');
+        console.log('Webhook успешно настроен:', WEBHOOK_URL, 'с allowed_updates:', allowedUpdates);
+
+        // Проверяем текущий Webhook
+        const webhookInfo = await axios.get(`${telegramApi}/getWebhookInfo`);
+        console.log('Текущая информация о Webhook:', webhookInfo.data);
     } catch (error) {
-        console.error('Ошибка настройки Webhook:', error);
+        console.error('Ошибка настройки Webhook:', error.response ? error.response.data : error.message);
         process.exit(1);
     }
 };
