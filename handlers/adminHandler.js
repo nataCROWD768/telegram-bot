@@ -63,24 +63,43 @@ const handleAdminCallback = async (bot, callbackQuery) => {
             const review = await Review.findByIdAndUpdate(reviewId, { isApproved: true }, { new: true }).populate('productId', 'name');
             if (!review) throw new Error('Отзыв не найден');
             const productName = review.productId ? review.productId.name : 'Неизвестный товар';
+
+            // Обновляем средний рейтинг продукта
             if (review.productId) {
                 const reviews = await Review.find({ productId: review.productId, isApproved: true });
                 const averageRating = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
                 await Product.updateOne({ _id: review.productId }, { averageRating });
             }
-            await bot.editMessageText(`Отзыв одобрен!\nТовар: ${productName}`, { chat_id: chatId, message_id: callbackQuery.message.message_id });
+
+            // Сбрасываем кэш продуктов, чтобы новые отзывы отобразились в карточке
+            productCache = null;
+
+            await bot.editMessageText(`Отзыв одобрен!\nТовар: ${productName}\nРейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}\nКомментарий: ${review.comment}`, {
+                chat_id: chatId,
+                message_id: callbackQuery.message.message_id,
+                parse_mode: 'Markdown'
+            });
         } else if (data.startsWith('reject_review_')) {
             const reviewId = data.split('_')[2];
             const review = await Review.findById(reviewId).populate('productId', 'name');
             if (!review) throw new Error('Отзыв не найден');
             const productName = review.productId ? review.productId.name : 'Неизвестный товар';
             await Review.deleteOne({ _id: reviewId });
+
+            // Обновляем рейтинг после удаления, если продукт существует
             if (review.productId) {
                 const reviews = await Review.find({ productId: review.productId, isApproved: true });
                 const averageRating = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
                 await Product.updateOne({ _id: review.productId }, { averageRating });
             }
-            await bot.editMessageText(`Отзыв отклонён и удалён!\nТовар: ${productName}`, { chat_id: chatId, message_id: callbackQuery.message.message_id });
+
+            // Сбрасываем кэш
+            productCache = null;
+
+            await bot.editMessageText(`Отзыв отклонён и удалён!\nТовар: ${productName}`, {
+                chat_id: chatId,
+                message_id: callbackQuery.message.message_id
+            });
         }
         bot.answerCallbackQuery(callbackQuery.id);
     } catch (error) {

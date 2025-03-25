@@ -306,10 +306,6 @@ bot.on('web_app_data', async (msg) => {
             const review = new Review({ userId: chatId.toString(), username, productId, rating, comment, isApproved: false });
             await review.save();
 
-            const reviews = await Review.find({ productId, isApproved: true });
-            const averageRating = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
-            await Product.updateOne({ _id: productId }, { averageRating });
-
             const message = `Новый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${username}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
             await bot.sendMessage(ADMIN_ID, message, {
                 reply_markup: { inline_keyboard: [[{ text: 'Одобрить', callback_data: `approve_review_${review._id}` }, { text: 'Отклонить', callback_data: `reject_review_${review._id}` }]] }
@@ -317,7 +313,7 @@ bot.on('web_app_data', async (msg) => {
 
             const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
             bot.lastMessageId[chatId] = newMessage.message_id;
-            productCache = null;
+            productCache = null; // Сбрасываем кэш после нового отзыва
         } catch (error) {
             await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва');
         }
