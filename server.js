@@ -30,8 +30,11 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => {})
-    .catch(err => process.exit(1));
+    .then(() => console.log('Подключение к MongoDB успешно'))
+    .catch(err => {
+        console.error('Ошибка подключения к MongoDB:', err);
+        process.exit(1);
+    });
 
 const setupWebhook = async () => {
     if (isLocal) return;
@@ -43,7 +46,9 @@ const setupWebhook = async () => {
         await axios.get(`${telegramApi}/deleteWebhook`);
         const setResponse = await axios.get(`${telegramApi}/setWebhook?url=${WEBHOOK_URL}&allowed_updates=["message","callback_query","web_app_data"]`);
         if (!setResponse.data.ok) throw new Error('Webhook setup failed');
+        console.log('Webhook успешно настроен');
     } catch (error) {
+        console.error('Ошибка настройки Webhook:', error);
         process.exit(1);
     }
 };
@@ -61,6 +66,7 @@ app.get('/api/products', async (req, res) => {
 
         res.json({ products: productsWithReviews, total: products.length });
     } catch (error) {
+        console.error('Ошибка загрузки продуктов:', error);
         res.status(500).json({ error: 'Ошибка загрузки товаров' });
     }
 });
@@ -76,6 +82,7 @@ app.get('/api/image/:fileId', async (req, res) => {
         res.set('Cache-Control', 'public, max-age=86400');
         response.data.pipe(res);
     } catch (error) {
+        console.error('Ошибка загрузки изображения:', error);
         res.status(500).json({ error: 'Не удалось загрузить изображение' });
     }
 });
@@ -89,6 +96,7 @@ app.get('/api/reviews', async (req, res) => {
         }));
         res.json({ reviews: formattedReviews, total: formattedReviews.length });
     } catch (error) {
+        console.error('Ошибка загрузки отзывов:', error);
         res.status(500).json({ error: 'Ошибка загрузки отзывов' });
     }
 });
@@ -109,6 +117,7 @@ app.post('/api/reviews', async (req, res) => {
 
         res.json({ success: true, review });
     } catch (error) {
+        console.error('Ошибка сохранения отзыва:', error);
         res.status(500).json({ success: false, error: 'Ошибка сохранения отзыва' });
     }
 });
@@ -141,6 +150,7 @@ bot.onText(/\/start/, async (msg) => {
         const menuMsg = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
         bot.lastMessageId[chatId] = menuMsg.message_id;
     } catch (error) {
+        console.error('Ошибка при /start:', error);
         await bot.sendMessage(chatId, '❌ Ошибка', { reply_markup: mainMenuKeyboard });
     }
 });
@@ -256,6 +266,7 @@ async function showReviews(bot, chatId, page = 1) {
         });
         bot.lastMessageId[chatId] = newMessage.message_id;
     } catch (error) {
+        console.error('Ошибка при загрузке отзывов:', error);
         const newMessage = await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов', { reply_markup: mainMenuKeyboard });
         bot.lastMessageId[chatId] = newMessage.message_id;
     }
@@ -300,7 +311,9 @@ bot.on('web_app_data', async (msg) => {
     let data;
     try {
         data = JSON.parse(msg.web_app_data.data);
+        console.log('Получены данные от Web App:', data);
     } catch (error) {
+        console.error('Ошибка парсинга данных от Web App:', error);
         await bot.sendMessage(chatId, '❌ Ошибка обработки данных', { reply_markup: mainMenuKeyboard });
         await ensureMainMenu(chatId);
         return;
@@ -310,7 +323,7 @@ bot.on('web_app_data', async (msg) => {
         const { productId, name, clubPrice, clientPrice, description, image } = data;
         try {
             const product = await Product.findById(productId);
-            if (!product) throw new Error('Товар не найден');
+            if (!product) throw new Error('Товар не найден в базе данных');
 
             const caption = `
 ✨ *${name}* ✨
@@ -323,17 +336,18 @@ ${description}
 ━━━━━━━━━━━━━━━━━━━
             `.trim();
 
-            // Используем Telegram File ID напрямую
+            console.log('Отправка фото с File ID:', image);
             const newMessage = await bot.sendPhoto(chatId, image, {
                 caption,
                 parse_mode: 'Markdown',
                 reply_markup: mainMenuKeyboard
             });
             bot.lastMessageId[chatId] = newMessage.message_id;
+            console.log('Сообщение успешно отправлено, message_id:', newMessage.message_id);
             await ensureMainMenu(chatId);
         } catch (error) {
-            console.error('Ошибка при отправке фото:', error);
-            await bot.sendMessage(chatId, '❌ Ошибка при отправке продукта', { reply_markup: mainMenuKeyboard });
+            console.error('Ошибка при отправке продукта:', error.message);
+            await bot.sendMessage(chatId, `❌ Ошибка при отправке продукта: ${error.message}`, { reply_markup: mainMenuKeyboard });
             await ensureMainMenu(chatId);
         }
     } else if (data.type === 'review') {
@@ -359,6 +373,7 @@ ${description}
             bot.lastMessageId[chatId] = newMessage.message_id;
             await ensureMainMenu(chatId);
         } catch (error) {
+            console.error('Ошибка при сохранении отзыва:', error);
             await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва', { reply_markup: mainMenuKeyboard });
             await ensureMainMenu(chatId);
         }
@@ -369,7 +384,7 @@ const startServer = async () => {
     await setupWebhook();
     app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')));
     const PORT = process.env.PORT || 3000;
-    app.listen(PORT, () => {});
+    app.listen(PORT, () => console.log(`Сервер запущен на порту ${PORT}`));
 };
 
 startServer();
