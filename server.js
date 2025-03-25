@@ -126,7 +126,7 @@ const mainMenuKeyboard = {
     persistent: true
 };
 
-bot.setMyCommands(mainMenuKeyboard);
+// Убрано: bot.setMyCommands(mainMenuKeyboard);
 
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
