@@ -261,7 +261,7 @@ bot.on('message', async (msg) => {
 });
 
 async function showReviews(bot, chatId, page = 1) {
-    const reviewsPerPage = 10;
+    const reviewsPerPage = 5;
     try {
         const reviews = await Review.find({ isApproved: true }).populate('productId', 'name').sort({ createdAt: -1 });
         if (!reviews.length) {
