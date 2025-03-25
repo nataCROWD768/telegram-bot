@@ -1,4 +1,4 @@
-const handleMainMenu = (bot, chatId) => {
+const handleMenuMenu = (bot, chatId) => {
     bot.sendMessage(chatId, 'Добро пожаловать!', {
         reply_markup: {
             keyboard: [
@@ -10,4 +10,4 @@ const handleMainMenu = (bot, chatId) => {
     });
 };
 
-module.exports = { handleMainMenu };
+module.exports = { handleMenuMenu };
