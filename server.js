@@ -323,8 +323,8 @@ ${description}
 ━━━━━━━━━━━━━━━━━━━
             `.trim();
 
-            const fileUrl = `${webAppUrl}/api/image/${image}`;
-            const newMessage = await bot.sendPhoto(chatId, fileUrl, {
+            // Используем Telegram File ID напрямую
+            const newMessage = await bot.sendPhoto(chatId, image, {
                 caption,
                 parse_mode: 'Markdown',
                 reply_markup: mainMenuKeyboard
@@ -332,6 +332,7 @@ ${description}
             bot.lastMessageId[chatId] = newMessage.message_id;
             await ensureMainMenu(chatId);
         } catch (error) {
+            console.error('Ошибка при отправке фото:', error);
             await bot.sendMessage(chatId, '❌ Ошибка при отправке продукта', { reply_markup: mainMenuKeyboard });
             await ensureMainMenu(chatId);
         }
