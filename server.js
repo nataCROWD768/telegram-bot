@@ -85,8 +85,7 @@ app.post('/api/share-product', async (req, res) => {
 📖 *О продукте:*  
 ${description || 'Описание отсутствует'}  
 ➖➖➖➖➖➖➖➖➖➖➖➖  
-✨ _Узнайте о других продуктах в [${botUsername}](https://t.me/${botUsername})_ ✨  
-[Radar GP](https://t.me/${botUsername})
+✨ _Узнайте о других продуктах в [Radar GP](https://t.me/${botUsername})_ ✨  
         `.trim();
 
         await bot.sendPhoto(chatId, image, {
