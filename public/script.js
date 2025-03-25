@@ -171,7 +171,7 @@ function showProductDetail(product, page = 1) {
             stars.forEach(s => s.classList.remove('filled'));
             selectedRating = 0;
         } else {
-            alert('Пожалуйста, выберите рейтинг и нап + напишите отзыв.');
+            alert('Пожалуйста, выберите рейтинг и напишите отзыв.');
         }
     });
 
@@ -182,23 +182,32 @@ function showProductDetail(product, page = 1) {
             shareButton.innerHTML = '<span class="share-icon">⏳</span> Отправка...';
             const tg = window.Telegram?.WebApp;
             if (tg) {
-                const shareData = {
-                    type: 'share',
-                    productId: product._id,
-                    name: product.name,
-                    clubPrice: product.clubPrice,
-                    clientPrice: product.clientPrice,
-                    description: product.description || 'Описание отсутствует',
-                    image: product.image
-                };
+                // Формируем текст сообщения
+                const messageText = `
+✨ *${product.name}* ✨
+━━━━━━━━━━━━━━━━━━━
+💎 *Клубная цена:* ${product.clubPrice.toLocaleString()} ₽
+💰 *Клиентская цена:* ${product.clientPrice.toLocaleString()} ₽
+━━━━━━━━━━━━━━━━━━━
+📝 *Описание:* 
+${product.description || 'Описание отсутствует'}
+━━━━━━━━━━━━━━━━━━━
+🖼️ Изображение: ${BASE_URL}/api/image/${product.image}
+                `.trim();
+
+                // Кодируем текст для URL
+                const encodedMessage = encodeURIComponent(messageText);
+                const telegramLink = `tg://msg?text=${encodedMessage}`;
+
                 try {
-                    tg.sendData(JSON.stringify(shareData));
+                    // Открываем Telegram с готовым сообщением
+                    tg.openTelegramLink(telegramLink);
                     setTimeout(() => {
                         shareButton.disabled = false;
                         shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
                     }, 1000);
                 } catch (error) {
-                    alert('Ошибка при шаринге продукта');
+                    alert('Ошибка при открытии Telegram');
                     shareButton.disabled = false;
                     shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
                 }
