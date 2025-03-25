@@ -83,11 +83,11 @@ app.post('/api/share-product', async (req, res) => {
         if (!product) throw new Error('Товар не найден');
 
         const botUsername = 'nataCROWD768_bot';
-        const escapedName = escapeMarkdown(name);
+        // Убираем escapeMarkdown для name, используем его только для description
         const escapedDescription = escapeMarkdown(description || 'Описание отсутствует');
 
         const caption = `
-✨ *${escapedName.toUpperCase()}* ✨  
+✨ *${name.toUpperCase()}* ✨  
 ➖➖➖➖➖➖➖➖➖➖➖➖  
 💎 *Клубная цена:* __${clubPrice.toLocaleString()} ₽__  
 💰 *Клиентская цена:* __${clientPrice.toLocaleString()} ₽__  
@@ -98,16 +98,7 @@ ${escapedDescription}
 [© Radar GP Assistant](https://t.me/${botUsername})
         `.trim();
 
-        console.log('Отправляемый caption:', caption);
-        console.log('Длина caption (символы):', caption.length);
-        console.log('Длина caption (байты):', Buffer.from(caption).length);
-
-        if (caption.length > 1024) {
-            throw new Error('Caption превышает 1024 символа');
-        }
-
-        await bot.sendPhoto(chatId, image, {
-            caption,
+        await bot.sendMessage(chatId, caption, {
             parse_mode: 'Markdown',
             reply_markup: mainMenuKeyboard
         });
@@ -115,10 +106,14 @@ ${escapedDescription}
         res.json({ success: true });
     } catch (error) {
         console.error('Ошибка при шаринге продукта:', error.message);
-        console.error('Полная ошибка:', error);
         res.status(500).json({ error: 'Ошибка при отправке продукта' });
     }
 });
+
+function escapeMarkdown(text) {
+    if (!text) return text;
+    return text.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
+}
 
 app.post('/api/reviews', async (req, res) => {
     const { productId, username, rating, comment, isApproved } = req.body;
