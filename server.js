@@ -81,7 +81,7 @@ app.post('/api/share-product', async (req, res) => {
         const product = await Product.findById(productId);
         if (!product) throw new Error('Товар не найден');
 
-        const botUsername = '@nataCROWD768_bot';
+        const botUsername = 'nataCROWD768_bot';
         const escapedName = escapeMarkdown(name);
         const escapedDescription = escapeMarkdown(description || 'Описание отсутствует');
 
@@ -94,7 +94,7 @@ app.post('/api/share-product', async (req, res) => {
 📖 *О продукте:*  
 ${escapedDescription}  
 ➖➖➖➖➖➖➖➖➖➖➖➖  
-✨ Узнайте о других продуктах в [Radar GP Assistant](https://t.me/${botUsername}) ✨
+✨ [© Radar GP Assistant](https://t.me/${botUsername}) ✨
         `.trim();
 
         // Логируем текст для отладки
