@@ -1,7 +1,7 @@
 const BASE_URL = 'https://telegram-bot-gmut.onrender.com';
 let products = [];
 
-function formatDate(date) { // Можно вынести в utils.js на клиенте
+function formatDate(date) {
     if (!date || isNaN(new Date(date).getTime())) return 'Дата неизвестна';
     const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
     const d = new Date(date);
@@ -171,7 +171,7 @@ function showProductDetail(product, page = 1) {
             stars.forEach(s => s.classList.remove('filled'));
             selectedRating = 0;
         } else {
-            alert('Пожалуйста, выберите рейтинг и напишите отзыв.');
+            alert('Пожалуйста, выберите рейтинг и нап + напишите отзыв.');
         }
     });
 
@@ -182,7 +182,15 @@ function showProductDetail(product, page = 1) {
             shareButton.innerHTML = '<span class="share-icon">⏳</span> Отправка...';
             const tg = window.Telegram?.WebApp;
             if (tg) {
-                const shareData = { type: 'share', productId: product._id, name: product.name, clubPrice: product.clubPrice, clientPrice: product.clientPrice, description: product.description, image: product.image };
+                const shareData = {
+                    type: 'share',
+                    productId: product._id,
+                    name: product.name,
+                    clubPrice: product.clubPrice,
+                    clientPrice: product.clientPrice,
+                    description: product.description || 'Описание отсутствует',
+                    image: product.image
+                };
                 try {
                     tg.sendData(JSON.stringify(shareData));
                     setTimeout(() => {

@@ -22,7 +22,6 @@ const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
 bot.lastMessageId = {};
 
-// Удаляем команды бота, чтобы убрать кнопку "Меню"
 bot.deleteMyCommands()
     .then(() => console.log('Команды бота удалены, кнопка "Меню" скрыта'))
     .catch(err => console.error('Ошибка при удалении команд:', err));
@@ -124,7 +123,6 @@ const mainMenuKeyboard = {
     persistent: true
 };
 
-// Функция для отправки сообщения с главным меню, чтобы оно не пропадало
 async function ensureMainMenu(chatId) {
     const menuMsg = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
     bot.lastMessageId[chatId] = menuMsg.message_id;
@@ -134,16 +132,12 @@ bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const username = msg.from.username || msg.from.first_name;
     try {
-        // Сохраняем визит пользователя
         const existingVisit = await Visit.findOne({ userId: chatId });
         if (!existingVisit) {
             await Visit.create({ username, userId: chatId });
         }
 
-        // Отправляем приветственное сообщение без клавиатуры
         await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown' });
-
-        // Отправляем сообщение с главным меню
         const menuMsg = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
         bot.lastMessageId[chatId] = menuMsg.message_id;
     } catch (error) {
@@ -163,7 +157,6 @@ bot.on('message', async (msg) => {
         }
     }
 
-    // Пропускаем обработку, если это команда /start, так как она уже обработана в bot.onText(/\/start/, ...)
     if (msg.text === '/start') {
         return;
     }
@@ -225,7 +218,6 @@ bot.on('message', async (msg) => {
             await deleteProduct(bot, chatId);
             break;
         default:
-            // Если пользователь отправил произвольное сообщение, возвращаем меню
             newMessage = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
@@ -320,8 +312,23 @@ bot.on('web_app_data', async (msg) => {
             const product = await Product.findById(productId);
             if (!product) throw new Error('Товар не найден');
 
-            const caption = `✨ *${name}* ✨\n━━━━━━━━━━━━━━━━━━━\n💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽\n💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽\n━━━━━━━━━━━━━━━━━━━\n📝 *Описание:* \n${description || 'Описание отсутствует'}\n━━━━━━━━━━━━━━━━━━━`.trim();
-            const newMessage = await bot.sendMessage(chatId, `${webAppUrl}/api/image/${image}`, { caption, parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
+            const caption = `
+✨ *${name}* ✨
+━━━━━━━━━━━━━━━━━━━
+💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽
+💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽
+━━━━━━━━━━━━━━━━━━━
+📝 *Описание:* 
+${description}
+━━━━━━━━━━━━━━━━━━━
+            `.trim();
+
+            const fileUrl = `${webAppUrl}/api/image/${image}`;
+            const newMessage = await bot.sendPhoto(chatId, fileUrl, {
+                caption,
+                parse_mode: 'Markdown',
+                reply_markup: mainMenuKeyboard
+            });
             bot.lastMessageId[chatId] = newMessage.message_id;
             await ensureMainMenu(chatId);
         } catch (error) {
@@ -342,7 +349,7 @@ bot.on('web_app_data', async (msg) => {
             const review = new Review({ userId: chatId.toString(), username, productId, rating, comment, isApproved: false });
             await review.save();
 
-            const message = `Новый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${username}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
+            const message = `NEWНовый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${username}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
             await bot.sendMessage(ADMIN_ID, message, {
                 reply_markup: { inline_keyboard: [[{ text: 'Одобрить', callback_data: `approve_review_${review._id}` }, { text: 'Отклонить', callback_data: `reject_review_${review._id}` }]] }
             });
