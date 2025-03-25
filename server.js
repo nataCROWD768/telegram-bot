@@ -117,7 +117,6 @@ ${escapedDescription}
     }
 });
 
-// Новый маршрут для обработки отзывов из Web App
 app.post('/api/reviews', async (req, res) => {
     const { productId, username, rating, comment, isApproved } = req.body;
 
@@ -127,7 +126,7 @@ app.post('/api/reviews', async (req, res) => {
 
     try {
         const review = new Review({
-            userId: `web_user_${Date.now()}`, // Уникальный ID для Web App пользователей
+            userId: `web_user_${Date.now()}`,
             username,
             productId,
             rating,
@@ -172,7 +171,7 @@ const mainMenuKeyboard = {
 };
 
 async function ensureMainMenu(chatId) {
-    const menuMsg = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
+    const menuMsg = await bot.sendMessage(chatId, '', { reply_markup: mainMenuKeyboard }); // Замена на пустую строку
     bot.lastMessageId[chatId] = menuMsg.message_id;
 }
 
@@ -186,7 +185,7 @@ bot.onText(/\/start/, async (msg) => {
         }
 
         await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown' });
-        const menuMsg = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
+        const menuMsg = await bot.sendMessage(chatId, '', { reply_markup: mainMenuKeyboard }); // Замена на пустую строку
         bot.lastMessageId[chatId] = menuMsg.message_id;
     } catch (error) {
         console.error('Ошибка при /start:', error);
@@ -265,7 +264,7 @@ bot.on('message', async (msg) => {
             await deleteProduct(bot, chatId);
             break;
         default:
-            newMessage = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
+            newMessage = await bot.sendMessage(chatId, '', { reply_markup: mainMenuKeyboard }); // Замена на пустую строку
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
     }
