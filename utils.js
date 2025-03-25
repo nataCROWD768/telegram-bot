@@ -1,7 +1,14 @@
 const formatDate = (date) => {
-    if (!date || isNaN(new Date(date).getTime())) return 'Дата неизвестна';
-    const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
-    const d = new Date(date);
-    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}, ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
+    const moscowTime = new Date(date).toLocaleString('ru-RU', {
+        timeZone: 'Europe/Moscow',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    return moscowTime; // Формат: "ДД.ММ.ГГГГ, ЧЧ:ММ:СС"
 };
+
 module.exports = { formatDate };

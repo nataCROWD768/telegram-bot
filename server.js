@@ -11,7 +11,7 @@ const { handleCallback, searchProducts } = require('./handlers/productHandler');
 const { showProfile } = require('./handlers/profileHandler');
 const Visit = require('./models/visit');
 const Product = require('./models/product');
-const Review = require('../models/review');
+const Review = require('./models/review');
 const { formatDate } = require('./utils');
 
 const app = express();
@@ -20,7 +20,6 @@ const BOT_TOKEN = process.env.BOT_TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzl
 const bot = new TelegramBot(BOT_TOKEN, { polling: isLocal });
 const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
-// Очищаем команды, чтобы убрать их из меню
 bot.setMyCommands([]);
 
 bot.lastMessageId = {};
@@ -47,17 +46,9 @@ const setupWebhook = async () => {
     }
 };
 
-let productCache = null;
-let cacheTimestamp = 0;
-const CACHE_DURATION = 5 * 60 * 1000;
-
+// Убрали кэш для мгновенного отображения отзывов
 app.get('/api/products', async (req, res) => {
     try {
-        const now = Date.now();
-        if (productCache && now - cacheTimestamp < CACHE_DURATION) {
-            return res.json(productCache);
-        }
-
         const products = await Product.find();
         if (!products.length) return res.status(404).json({ error: 'Товары не найдены' });
 
@@ -67,11 +58,8 @@ app.get('/api/products', async (req, res) => {
             return { ...product.toObject(), reviews, averageRating };
         }));
 
-        productCache = { products: productsWithReviews, total: products.length };
-        cacheTimestamp = now;
-        res.json(productCache);
+        res.json({ products: productsWithReviews, total: products.length });
     } catch (error) {
-        productCache = null;
         res.status(500).json({ error: 'Ошибка загрузки товаров' });
     }
 });
@@ -139,15 +127,14 @@ bot.onText(/\/start/, async (msg) => {
         if (!existingVisit) {
             await Visit.create({ username, userId: chatId });
             await bot.sendVideoNote(chatId, welcomeVideo);
-            const welcomeMsg = await bot.sendMessage(chatId, `✨ Добро пожаловать!\n${companyInfo}`, { parse_mode: 'Markdown' });
+            const welcomeMsg = await bot.sendMessage(chatId, `✨ Добро пожаловать!\n${companyInfo}`, { parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = welcomeMsg.message_id;
         } else {
-            const returnMsg = await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown' });
+            const returnMsg = await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = returnMsg.message_id;
         }
-        await handleMainMenu(bot, chatId);
     } catch (error) {
-        await bot.sendMessage(chatId, '❌ Ошибка');
+        await bot.sendMessage(chatId, '❌ Ошибка', { reply_markup: mainMenuKeyboard });
     }
 });
 
@@ -170,12 +157,12 @@ bot.on('message', async (msg) => {
             break;
         case 'Витрина':
             newMessage = await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение', {
-                reply_markup: { inline_keyboard: [[{ text: '🛒 Открыть витрину:', web_app: { url: `${webAppUrl}/index.html` } }]] }
+                reply_markup: { inline_keyboard: [[{ text: '🛒 Открыть витрину:', web_app: { url: `${webAppUrl}/index.html` } }], ...mainMenuKeyboard.keyboard] }
             });
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
         case 'Бонусы и продукт':
-            newMessage = await bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)');
+            newMessage = await bot.sendMessage(chatId, 'ℹ️ Информация о бонусах (в разработке)', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
         case 'Отзывы':
@@ -183,7 +170,7 @@ bot.on('message', async (msg) => {
             break;
         case '/admin':
             if (chatId.toString() !== ADMIN_ID) {
-                newMessage = await bot.sendMessage(chatId, '❌ Доступ только для администратора');
+                newMessage = await bot.sendMessage(chatId, '❌ Доступ только для администратора', { reply_markup: mainMenuKeyboard });
                 bot.lastMessageId[chatId] = newMessage.message_id;
                 return;
             }
@@ -220,7 +207,7 @@ async function showReviews(bot, chatId, page = 1) {
     try {
         const reviews = await Review.find({ isApproved: true }).populate('productId', 'name').sort({ createdAt: -1 });
         if (!reviews.length) {
-            const newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов');
+            const newMessage = await bot.sendMessage(chatId, '📝 Пока нет подтверждённых отзывов', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
             return;
         }
@@ -243,11 +230,11 @@ async function showReviews(bot, chatId, page = 1) {
 
         const newMessage = await bot.sendMessage(chatId, `📝 Подтверждённые отзывы (${start + 1}-${end} из ${reviews.length}):\n\n${reviewList}`, {
             parse_mode: 'Markdown',
-            reply_markup: { inline_keyboard: inlineKeyboard }
+            reply_markup: { inline_keyboard: inlineKeyboard, ...mainMenuKeyboard }
         });
         bot.lastMessageId[chatId] = newMessage.message_id;
     } catch (error) {
-        const newMessage = await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов');
+        const newMessage = await bot.sendMessage(chatId, '❌ Ошибка при загрузке отзывов', { reply_markup: mainMenuKeyboard });
         bot.lastMessageId[chatId] = newMessage.message_id;
     }
 }
@@ -282,7 +269,7 @@ bot.on('web_app_data', async (msg) => {
     try {
         data = JSON.parse(msg.web_app_data.data);
     } catch (error) {
-        await bot.sendMessage(chatId, '❌ Ошибка обработки данных');
+        await bot.sendMessage(chatId, '❌ Ошибка обработки данных', { reply_markup: mainMenuKeyboard });
         return;
     }
 
@@ -293,15 +280,15 @@ bot.on('web_app_data', async (msg) => {
             if (!product) throw new Error('Товар не найден');
 
             const caption = `✨ *${name}* ✨\n━━━━━━━━━━━━━━━━━━━\n💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽\n💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽\n━━━━━━━━━━━━━━━━━━━\n📝 *Описание:* \n${description || 'Описание отсутствует'}\n━━━━━━━━━━━━━━━━━━━`.trim();
-            const newMessage = await bot.sendPhoto(chatId, `${webAppUrl}/api/image/${image}`, { caption, parse_mode: 'Markdown' });
+            const newMessage = await bot.sendPhoto(chatId, `${webAppUrl}/api/image/${image}`, { caption, parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
         } catch (error) {
-            await bot.sendMessage(chatId, '❌ Ошибка при отправке продукта');
+            await bot.sendMessage(chatId, '❌ Ошибка при отправке продукта', { reply_markup: mainMenuKeyboard });
         }
     } else if (data.type === 'review') {
         const { productId, rating, comment } = data;
         if (!rating || rating < 1 || rating > 5 || !comment || !mongoose.Types.ObjectId.isValid(productId)) {
-            await bot.sendMessage(chatId, '❌ Неверный формат отзыва');
+            await bot.sendMessage(chatId, '❌ Неверный формат отзыва', { reply_markup: mainMenuKeyboard });
             return;
         }
         try {
@@ -316,11 +303,10 @@ bot.on('web_app_data', async (msg) => {
                 reply_markup: { inline_keyboard: [[{ text: 'Одобрить', callback_data: `approve_review_${review._id}` }, { text: 'Отклонить', callback_data: `reject_review_${review._id}` }]] }
             });
 
-            const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
+            const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
-            productCache = null;
         } catch (error) {
-            await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва');
+            await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва', { reply_markup: mainMenuKeyboard });
         }
     }
 });
