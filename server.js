@@ -205,11 +205,16 @@ const webAppUrl = isLocal ? 'http://localhost:3000' : `https://${process.env.REN
 bot.on('message', async (msg) => {
     const chatId = msg.chat.id;
 
+    // Проверяем, что сообщение пришло из приватного чата
+    if (msg.chat.type !== 'private') {
+        return; // Игнорируем сообщения из групп и супергрупп
+    }
+
     if (msg.text === '/start') return;
 
     switch (msg.text) {
         case 'Личный кабинет':
-            await showProfile(bot, msg); // Передаем msg вместо chatId
+            await showProfile(bot, msg);
             break;
         case 'Витрина':
             await bot.sendMessage(chatId, '✅ В новой МОДЕЛИ ПАРТНЕРСКОЙ ПРОГРАММЫ (клубная система)\nв конечную стоимость продукта не входит:\n\n- прибыль компании\n- маркетинговое вознаграждение', {
