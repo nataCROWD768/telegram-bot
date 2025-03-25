@@ -20,6 +20,9 @@ const BOT_TOKEN = process.env.BOT_TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzl
 const bot = new TelegramBot(BOT_TOKEN, { polling: isLocal });
 const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
+// Очищаем команды, чтобы убрать их из меню
+bot.setMyCommands([]);
+
 bot.lastMessageId = {};
 
 app.use(express.json());
@@ -313,7 +316,7 @@ bot.on('web_app_data', async (msg) => {
 
             const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.');
             bot.lastMessageId[chatId] = newMessage.message_id;
-            productCache = null; // Сбрасываем кэш после нового отзыва
+            productCache = null;
         } catch (error) {
             await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва');
         }
