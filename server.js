@@ -171,7 +171,7 @@ const mainMenuKeyboard = {
 };
 
 async function ensureMainMenu(chatId) {
-    const menuMsg = await bot.sendMessage(chatId, '', { reply_markup: mainMenuKeyboard }); // Замена на пустую строку
+    const menuMsg = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard }); // Замена на точку
     bot.lastMessageId[chatId] = menuMsg.message_id;
 }
 
@@ -185,7 +185,7 @@ bot.onText(/\/start/, async (msg) => {
         }
 
         await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown' });
-        const menuMsg = await bot.sendMessage(chatId, '', { reply_markup: mainMenuKeyboard }); // Замена на пустую строку
+        const menuMsg = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard }); // Замена на точку
         bot.lastMessageId[chatId] = menuMsg.message_id;
     } catch (error) {
         console.error('Ошибка при /start:', error);
@@ -264,7 +264,7 @@ bot.on('message', async (msg) => {
             await deleteProduct(bot, chatId);
             break;
         default:
-            newMessage = await bot.sendMessage(chatId, '', { reply_markup: mainMenuKeyboard }); // Замена на пустую строку
+            newMessage = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard }); // Замена на точку
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
     }
