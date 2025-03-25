@@ -71,20 +71,24 @@ const handleAdminCallback = async (bot, callbackQuery) => {
                 await Product.updateOne({ _id: review.productId }, { averageRating });
             }
 
-            // Сбрасываем кэш продуктов
-            global.productCache = null; // Явно сбрасываем глобальный кэш
-
             await bot.editMessageText(`Отзыв одобрен!\nТовар: ${productName}\nРейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}\nКомментарий: ${review.comment}`, {
                 chat_id: chatId,
                 message_id: callbackQuery.message.message_id,
                 parse_mode: 'Markdown'
             });
 
-            // Оповещаем пользователя, оставившего отзыв, что его отзыв опубликован
+            // Оповещаем пользователя, если это Telegram-пользователь
             const userChatId = review.userId;
-            await bot.sendMessage(userChatId, `Ваш отзыв на "${productName}" опубликован!\nРейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}\nКомментарий: ${review.comment}`, {
-                parse_mode: 'Markdown'
-            });
+            if (!userChatId.startsWith('web_user_')) { // Проверяем, что это не Web App пользователь
+                try {
+                    await bot.sendMessage(userChatId, `Ваш отзыв на "${productName}" опубликован!\nРейтинг: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}\nКомментарий: ${review.comment}`, {
+                        parse_mode: 'Markdown'
+                    });
+                } catch (notificationError) {
+                    console.log(`Не удалось уведомить пользователя ${userChatId}: ${notificationError.message}`);
+                    // Игнорируем ошибку, чтобы не прерывать выполнение
+                }
+            }
         } else if (data.startsWith('reject_review_')) {
             const reviewId = data.split('_')[2];
             const review = await Review.findById(reviewId).populate('productId', 'name');
@@ -97,8 +101,6 @@ const handleAdminCallback = async (bot, callbackQuery) => {
                 const averageRating = reviews.length ? reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length : 0;
                 await Product.updateOne({ _id: review.productId }, { averageRating });
             }
-
-            global.productCache = null;
 
             await bot.editMessageText(`Отзыв отклонён и удалён!\nТовар: ${productName}`, {
                 chat_id: chatId,
