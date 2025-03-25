@@ -306,8 +306,36 @@ bot.on('web_app_data', async (msg) => {
         return;
     }
 
-    // Обрабатываем только отзывы, шаринг теперь на стороне клиента
-    if (data.type === 'review') {
+    if (data.type === 'share') {
+        const { productId, name, clubPrice, clientPrice, description, image } = data;
+        try {
+            const product = await Product.findById(productId);
+            if (!product) throw new Error('Товар не найден');
+
+            const caption = `
+✨ *${name}* ✨
+━━━━━━━━━━━━━━━━━━━
+💎 *Клубная цена:* ${clubPrice.toLocaleString()} ₽
+💰 *Клиентская цена:* ${clientPrice.toLocaleString()} ₽
+━━━━━━━━━━━━━━━━━━━
+📝 *Описание:* 
+${description}
+━━━━━━━━━━━━━━━━━━━
+            `.trim();
+
+            const fileUrl = `${webAppUrl}/api/image/${image}`;
+            const newMessage = await bot.sendPhoto(chatId, fileUrl, {
+                caption,
+                parse_mode: 'Markdown',
+                reply_markup: mainMenuKeyboard
+            });
+            bot.lastMessageId[chatId] = newMessage.message_id;
+            await ensureMainMenu(chatId);
+        } catch (error) {
+            await bot.sendMessage(chatId, '❌ Ошибка при отправке продукта', { reply_markup: mainMenuKeyboard });
+            await ensureMainMenu(chatId);
+        }
+    } else if (data.type === 'review') {
         const { productId, rating, comment } = data;
         if (!rating || rating < 1 || rating > 5 || !comment || !mongoose.Types.ObjectId.isValid(productId)) {
             await bot.sendMessage(chatId, '❌ Неверный формат отзыва', { reply_markup: mainMenuKeyboard });
