@@ -218,7 +218,7 @@ bot.on('message', async (msg) => {
             break;
         default:
             // Если пользователь отправил произвольное сообщение, возвращаем меню
-            newMessage = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard });
+            newMessage = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
     }
