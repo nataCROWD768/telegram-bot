@@ -134,15 +134,18 @@ bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const username = msg.from.username || msg.from.first_name;
     try {
+        // Сохраняем визит пользователя
         const existingVisit = await Visit.findOne({ userId: chatId });
         if (!existingVisit) {
             await Visit.create({ username, userId: chatId });
-            const welcomeMsg = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
-            bot.lastMessageId[chatId] = welcomeMsg.message_id;
-        } else {
-            const returnMsg = await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown', reply_markup: mainMenuKeyboard });
-            bot.lastMessageId[chatId] = returnMsg.message_id;
         }
+
+        // Отправляем приветственное сообщение без клавиатуры
+        await bot.sendMessage(chatId, `👋 С возвращением, ${username}!`, { parse_mode: 'Markdown' });
+
+        // Отправляем сообщение с главным меню
+        const menuMsg = await bot.sendMessage(chatId, 'Главное меню:', { reply_markup: mainMenuKeyboard });
+        bot.lastMessageId[chatId] = menuMsg.message_id;
     } catch (error) {
         await bot.sendMessage(chatId, '❌ Ошибка', { reply_markup: mainMenuKeyboard });
     }
