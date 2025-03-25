@@ -190,7 +190,7 @@ function showProductDetail(product, page = 1) {
             }
 
             const shareData = {
-                chatId: tg.initDataUnsafe?.user?.id, // ID чата пользователя
+                chatId: tg.initDataUnsafe?.user?.id,
                 productId: product._id,
                 name: product.name,
                 clubPrice: product.clubPrice,
@@ -260,16 +260,24 @@ function sendReviewToAdmin(review) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productId: review.productId, username: review.user, rating: review.rating, comment: review.comment, isApproved: false })
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP ошибка: ${response.status}`);
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
                 alert('Отзыв отправлен на модерацию.');
                 loadProducts();
             } else {
-                alert('Ошибка при отправке отзыва');
+                alert(`Ошибка: ${data.error || 'Неизвестная ошибка'}`);
             }
         })
-        .catch(() => alert('Ошибка сервера'));
+        .catch(error => {
+            console.error('Ошибка при отправке отзыва:', error);
+            alert(`Ошибка сервера: ${error.message}`);
+        });
 }
 
 async function showReviews(page = 1) {

@@ -22,7 +22,6 @@ const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
 bot.lastMessageId = {};
 
-// Функция для экранирования Markdown-символов
 function escapeMarkdown(text) {
     if (!text) return text;
     return text.replace(/([_*[\]()~`>#+\-=|{}.!])/g, '\\$1');
@@ -69,7 +68,6 @@ const setupWebhook = async () => {
     }
 };
 
-// Новый маршрут для шаринга продукта с экранированием и логированием
 app.post('/api/share-product', async (req, res) => {
     const { chatId, productId, name, clubPrice, clientPrice, description, image } = req.body;
 
@@ -97,12 +95,10 @@ ${escapedDescription}
 [© Radar GP Assistant](https://t.me/${botUsername})
         `.trim();
 
-        // Логируем текст для отладки
         console.log('Отправляемый caption:', caption);
         console.log('Длина caption (символы):', caption.length);
         console.log('Длина caption (байты):', Buffer.from(caption).length);
 
-        // Проверяем длину
         if (caption.length > 1024) {
             throw new Error('Caption превышает 1024 символа');
         }
@@ -118,6 +114,47 @@ ${escapedDescription}
         console.error('Ошибка при шаринге продукта:', error.message);
         console.error('Полная ошибка:', error);
         res.status(500).json({ error: 'Ошибка при отправке продукта' });
+    }
+});
+
+// Новый маршрут для обработки отзывов из Web App
+app.post('/api/reviews', async (req, res) => {
+    const { productId, username, rating, comment, isApproved } = req.body;
+
+    if (!productId || !username || !rating || !comment) {
+        return res.status(400).json({ success: false, error: 'Все поля обязательны' });
+    }
+
+    try {
+        const review = new Review({
+            userId: `web_user_${Date.now()}`, // Уникальный ID для Web App пользователей
+            username,
+            productId,
+            rating,
+            comment,
+            isApproved: isApproved || false
+        });
+
+        await review.save();
+
+        const adminId = process.env.ADMIN_ID || '942851377';
+        const product = await Product.findById(productId);
+        const productName = product ? product.name : 'Неизвестный товар';
+        await bot.sendMessage(adminId, `Новый отзыв на модерации:\nТовар: ${productName}\nПользователь: ${username}\nРейтинг: ${rating}\nКомментарий: ${comment}`, {
+            reply_markup: {
+                inline_keyboard: [
+                    [
+                        { text: 'Одобрить', callback_data: `approve_review_${review._id}` },
+                        { text: 'Отклонить', callback_data: `reject_review_${review._id}` }
+                    ]
+                ]
+            }
+        });
+
+        res.json({ success: true, message: 'Отзыв отправлен на модерацию' });
+    } catch (error) {
+        console.error('Ошибка при сохранении отзыва:', error);
+        res.status(500).json({ success: false, error: 'Ошибка сервера' });
     }
 });
 
