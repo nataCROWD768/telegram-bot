@@ -1,16 +1,11 @@
-const Product = require('../models/product');
+const handleCallback = async (bot, callbackQuery) => {
+  const chatId = callbackQuery.message.chat.id;
+  // Заглушка: пока просто подтверждаем callback
+  bot.answerCallbackQuery(callbackQuery.id, { text: 'Действие пока не реализовано' });
+};
 
-async function searchProducts(bot, chatId, query) {
-  try {
-    const products = await Product.find({
-      $or: [{ name: { $regex: query, $options: 'i' } }, { description: { $regex: query, $options: 'i' } }]
-    });
-    if (!products.length) return await bot.sendMessage(chatId, 'Товары не найдены');
-    const productList = products.map(p => `${p.name} - ${p.clubPrice} руб.`).join('\n');
-    await bot.sendMessage(chatId, `Найденные товары:\n${productList}`);
-  } catch (error) {
-    await bot.sendMessage(chatId, '❌ Ошибка при поиске товаров');
-  }
-}
+const searchProducts = async (bot, chatId, query) => {
+  await bot.sendMessage(chatId, `Поиск товаров по запросу: ${query} (в разработке)`);
+};
 
-module.exports = { searchProducts };
+module.exports = { handleCallback, searchProducts };

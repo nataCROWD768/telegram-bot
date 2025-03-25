@@ -126,9 +126,6 @@ const mainMenuKeyboard = {
     persistent: true
 };
 
-// Убрано bot.setMyCommands(mainMenuKeyboard);
-// Опционально: bot.setMyCommands([]); // Пустой список команд
-
 bot.onText(/\/start/, async (msg) => {
     const chatId = msg.chat.id;
     const username = msg.from.username || msg.from.first_name;
@@ -262,9 +259,10 @@ bot.on('callback_query', async (callbackQuery) => {
         bot.answerCallbackQuery(callbackQuery.id);
     } else if (data === 'noop') {
         bot.answerCallbackQuery(callbackQuery.id);
+    } else if (data.startsWith('approve_review_') || data.startsWith('reject_review_')) {
+        await handleAdminCallback(bot, callbackQuery);
     } else {
         await handleCallback(bot, callbackQuery);
-        await handleAdminCallback(bot, callbackQuery);
     }
 });
 
