@@ -351,33 +351,6 @@ ${description}
             await bot.sendMessage(chatId, `❌ Ошибка при отправке продукта: ${error.message}`, { reply_markup: mainMenuKeyboard });
             await ensureMainMenu(chatId);
         }
-    } else if (data.type === 'review') {
-        const { productId, rating, comment } = data;
-        if (!rating || rating < 1 || rating > 5 || !comment || !mongoose.Types.ObjectId.isValid(productId)) {
-            await bot.sendMessage(chatId, '❌ Неверный формат отзыва', { reply_markup: mainMenuKeyboard });
-            await ensureMainMenu(chatId);
-            return;
-        }
-        try {
-            const product = await Product.findById(productId);
-            if (!product) throw new Error('Товар не найден');
-            const username = msg.from.username ? `@${msg.from.username}` : 'Аноним';
-            const review = new Review({ userId: chatId.toString(), username, productId, rating, comment, isApproved: false });
-            await review.save();
-
-            const message = `Новый отзыв на модерации:\nТовар: ${product.name}\nПользователь: ${username}\nРейтинг: ${rating}\nКомментарий: ${comment}`;
-            await bot.sendMessage(ADMIN_ID, message, {
-                reply_markup: { inline_keyboard: [[{ text: 'Одобрить', callback_data: `approve_review_${review._id}` }, { text: 'Отклонить', callback_data: `reject_review_${review._id}` }]] }
-            });
-
-            const newMessage = await bot.sendMessage(chatId, 'Спасибо за ваш отзыв! Он будет опубликован после модерации.', { reply_markup: mainMenuKeyboard });
-            bot.lastMessageId[chatId] = newMessage.message_id;
-            await ensureMainMenu(chatId);
-        } catch (error) {
-            console.error('Ошибка при сохранении отзыва:', error);
-            await bot.sendMessage(chatId, '❌ Ошибка при сохранении отзыва', { reply_markup: mainMenuKeyboard });
-            await ensureMainMenu(chatId);
-        }
     }
 });
 

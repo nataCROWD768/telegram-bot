@@ -8,6 +8,6 @@ const productSchema = new mongoose.Schema({
   image: String,
   stock: { type: Number, default: 0 },
   averageRating: { type: Number, default: 0 }
-});
+}, { collection: 'products' }); // Явно указываем коллекцию
 
 module.exports = mongoose.model('Product', productSchema);
