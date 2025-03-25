@@ -218,8 +218,8 @@ bot.on('message', async (msg) => {
             await deleteProduct(bot, chatId);
             break;
         default:
-            // Если пользователь отправил произвольное сообщение, возвращаем меню
-            newMessage = await bot.sendMessage(chatId, 'Выберите действие из меню ниже.', { reply_markup: mainMenuKeyboard });
+            // Если пользователь отправил произвольное сообщение, возвращаем меню без текста
+            newMessage = await bot.sendMessage(chatId, '.', { reply_markup: mainMenuKeyboard });
             bot.lastMessageId[chatId] = newMessage.message_id;
             break;
     }
