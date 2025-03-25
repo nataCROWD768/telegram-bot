@@ -20,12 +20,12 @@ const BOT_TOKEN = process.env.BOT_TOKEN || '7998254262:AAEPpbNdFxiTttY4aLrkdNVzl
 const bot = new TelegramBot(BOT_TOKEN, { polling: isLocal });
 const ADMIN_ID = process.env.ADMIN_ID || '942851377';
 
-bot.setMyCommands([
-    { command: '/start', description: 'Запустить бота и показать главное меню' },
-    { command: '/reviews', description: 'Показать отзывы (укажите номер страницы, например, /reviews 2)' }
-]);
-
 bot.lastMessageId = {};
+
+// Удаляем команды бота, чтобы убрать кнопку "Меню"
+bot.deleteMyCommands()
+    .then(() => console.log('Команды бота удалены, кнопка "Меню" скрыта'))
+    .catch(err => console.error('Ошибка при удалении команд:', err));
 
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
@@ -161,6 +161,11 @@ bot.on('message', async (msg) => {
         } catch (error) {
             if (error.code === 'ETELEGRAM' && error.response?.body?.error_code === 400) delete bot.lastMessageId[chatId];
         }
+    }
+
+    // Пропускаем обработку, если это команда /start, так как она уже обработана в bot.onText(/\/start/, ...)
+    if (msg.text === '/start') {
+        return;
     }
 
     let newMessage;
