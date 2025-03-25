@@ -1,78 +1,25 @@
-// Функция форматирования даты на русском языке с проверкой
-function formatDate(date) {
-    if (!date || isNaN(new Date(date).getTime())) {
-        return 'Дата неизвестна';
-    }
-    const months = [
-        'января', 'февраля', 'марта', 'апреля', 'мая', 'июня',
-        'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'
-    ];
-    const d = new Date(date);
-    const day = d.getDate();
-    const month = months[d.getMonth()];
-    const year = d.getFullYear();
-    const hours = d.getHours().toString().padStart(2, '0');
-    const minutes = d.getMinutes().toString().padStart(2, '0');
-    return `${day} ${month} ${year}, ${hours}:${minutes}`;
-}
-
-// Глобальные переменные
-let products = [];
-let pendingReviews = [];
-let ws;
-
 const BASE_URL = 'https://telegram-bot-gmut.onrender.com';
+let products = [];
 
-// Подключение к WebSocket (оставлено в комментариях, так как отключено на Render)
-function connectWebSocket() {
-    ws = new WebSocket('wss://telegram-bot-gmut.onrender.com');
-    ws.onopen = () => console.log('Подключено к WebSocket');
-    ws.onmessage = (event) => {
-        const message = JSON.parse(event.data);
-        console.log('Получено сообщение WebSocket:', message);
-        if (message.type === 'update_products') {
-            products = message.data;
-            console.log('Обновлены продукты через WebSocket:', products);
-            renderProducts(products);
-            const productDetail = document.getElementById('product-detail');
-            if (productDetail.style.display === 'block') {
-                const productId = document.querySelector('.submit-btn').getAttribute('data-id');
-                const product = products.find(p => p._id === productId);
-                showProductDetail(product);
-            }
-            const reviewsSection = document.getElementById('reviews-section');
-            if (reviewsSection.style.display === 'block') {
-                showReviews();
-            }
-        }
-    };
-    ws.onclose = () => {
-        console.log('WebSocket отключён, переподключение...');
-        setTimeout(connectWebSocket, 5000);
-    };
-    ws.onerror = (error) => console.error('Ошибка WebSocket:', error);
+function formatDate(date) { // Можно вынести в utils.js на клиенте
+    if (!date || isNaN(new Date(date).getTime())) return 'Дата неизвестна';
+    const months = ['января', 'февраля', 'марта', 'апреля', 'мая', 'июня', 'июля', 'августа', 'сентября', 'октября', 'ноября', 'декабря'];
+    const d = new Date(date);
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}, ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`;
 }
 
-// Загрузка продуктов с бэкенда
 async function loadProducts() {
     try {
-        console.log(`Попытка загрузить продукты с ${BASE_URL}/api/products`);
         const response = await fetch(`${BASE_URL}/api/products`);
-        if (!response.ok) {
-            const errorText = await response.text();
-            throw new Error(`Не удалось загрузить продукты. Статус: ${response.status}, Текст: ${errorText}`);
-        }
+        if (!response.ok) throw new Error('Не удалось загрузить продукты');
         const data = await response.json();
         products = data.products;
-        console.log('Продукты и отзывы загружены:', products);
         renderProducts(products);
     } catch (error) {
-        console.error('Ошибка при загрузке продуктов:', error.message);
         alert('Не удалось загрузить продукты. Попробуйте позже.');
     }
 }
 
-// Рендеринг списка продуктов
 function renderProducts(productArray) {
     const productList = document.getElementById('product-list');
     productList.innerHTML = '';
@@ -116,7 +63,6 @@ function renderProducts(productArray) {
     });
 }
 
-// Отображение карточки продукта с пагинацией отзывов
 function showProductDetail(product, page = 1) {
     const showcase = document.getElementById('showcase');
     const productDetail = document.getElementById('product-detail');
@@ -135,11 +81,7 @@ function showProductDetail(product, page = 1) {
 
     const hasReviews = product.reviews && product.reviews.some(review => review.isApproved) && product.averageRating > 0;
     const ratingHtml = hasReviews ? `<div class="product-detail-rating">★ ${product.averageRating.toFixed(1)}</div>` : '';
-
-    const sortedReviews = product.reviews && product.reviews.length > 0
-        ? product.reviews.filter(r => r.isApproved).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
-        : [];
-
+    const sortedReviews = product.reviews && product.reviews.length > 0 ? product.reviews.filter(r => r.isApproved).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
     const reviewsPerPage = 10;
     const totalReviews = sortedReviews.length;
     const totalPages = Math.ceil(totalReviews / reviewsPerPage);
@@ -182,11 +124,7 @@ function showProductDetail(product, page = 1) {
                         <p>${review.comment}</p>
                     </div>
                 `).join('') : '<p>Пока нет отзывов.</p>'}
-                ${totalReviews > reviewsPerPage ? `
-                    <div class="pagination" id="reviews-pagination">
-                        ${renderPagination(totalPages, page, product)}
-                    </div>
-                ` : ''}
+                ${totalReviews > reviewsPerPage ? `<div class="pagination" id="reviews-pagination">${renderPagination(totalPages, page, product)}</div>` : ''}
             </div>
             <div class="product-detail-review-form review-container">
                 <h4>Оставить отзыв</h4>
@@ -218,26 +156,16 @@ function showProductDetail(product, page = 1) {
         star.addEventListener('click', () => {
             selectedRating = parseInt(star.getAttribute('data-value'));
             stars.forEach(s => s.classList.remove('filled'));
-            for (let i = 0; i < selectedRating; i++) {
-                stars[i].classList.add('filled');
-            }
+            for (let i = 0; i < selectedRating; i++) stars[i].classList.add('filled');
         });
     });
 
     document.querySelector(`.submit-btn[data-id="${product._id}"]`).addEventListener('click', () => {
         const comment = document.getElementById(`review-comment-${product._id}`).value;
         if (selectedRating > 0 && comment.trim() !== '') {
-            const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
-            const username = tg && tg.initDataUnsafe && tg.initDataUnsafe.user
-                ? (tg.initDataUnsafe.user.username ? `@${tg.initDataUnsafe.user.username}` : 'Аноним')
-                : 'Аноним';
-
-            const review = {
-                productId: product._id,
-                user: username,
-                rating: selectedRating,
-                comment: comment
-            };
+            const tg = window.Telegram?.WebApp;
+            const username = tg && tg.initDataUnsafe?.user ? (tg.initDataUnsafe.user.username ? `@${tg.initDataUnsafe.user.username}` : 'Аноним') : 'Аноним';
+            const review = { productId: product._id, user: username, rating: selectedRating, comment };
             sendReviewToAdmin(review);
             document.getElementById(`review-comment-${product._id}`).value = '';
             stars.forEach(s => s.classList.remove('filled'));
@@ -247,38 +175,26 @@ function showProductDetail(product, page = 1) {
         }
     });
 
-    // Обработка кнопки "Поделиться"
     const shareButton = document.querySelector(`.share-btn[data-product-id="${product._id}"]`);
     if (shareButton) {
         shareButton.addEventListener('click', () => {
             shareButton.disabled = true;
             shareButton.innerHTML = '<span class="share-icon">⏳</span> Отправка...';
-
             const tg = window.Telegram?.WebApp;
             if (tg) {
-                const shareData = {
-                    type: 'share',
-                    productId: product._id,
-                    name: product.name,
-                    clubPrice: product.clubPrice,
-                    clientPrice: product.clientPrice,
-                    description: product.description,
-                    image: product.image
-                };
+                const shareData = { type: 'share', productId: product._id, name: product.name, clubPrice: product.clubPrice, clientPrice: product.clientPrice, description: product.description, image: product.image };
                 try {
                     tg.sendData(JSON.stringify(shareData));
                     setTimeout(() => {
                         shareButton.disabled = false;
                         shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
-                    }, 1000); // Имитация задержки для UX
+                    }, 1000);
                 } catch (error) {
-                    console.error('Ошибка при отправке данных:', error);
                     alert('Ошибка при шаринге продукта');
                     shareButton.disabled = false;
                     shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
                 }
             } else {
-                console.error('Telegram Web App не доступен');
                 alert('Эта функция работает только в Telegram');
                 shareButton.disabled = false;
                 shareButton.innerHTML = '<span class="share-icon">📤</span> Поделиться';
@@ -296,92 +212,48 @@ function showProductDetail(product, page = 1) {
     }
 }
 
-// Функция рендеринга пагинации
 function renderPagination(totalPages, currentPage, product) {
     let paginationHtml = '<div class="pagination-container">';
-
-    paginationHtml += `
-        <button class="pagination-btn${currentPage === 1 ? ' disabled' : ''}" 
-                data-page="${currentPage - 1}" 
-                ${currentPage === 1 ? 'disabled' : ''}>
-            ←
-        </button>
-    `;
-
+    paginationHtml += `<button class="pagination-btn${currentPage === 1 ? ' disabled' : ''}" data-page="${currentPage - 1}" ${currentPage === 1 ? 'disabled' : ''}>←</button>`;
     const maxVisiblePages = 5;
     let startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2));
     let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-    if (endPage - startPage + 1 < maxVisiblePages) {
-        startPage = Math.max(1, endPage - maxVisiblePages + 1);
-    }
+    if (endPage - startPage + 1 < maxVisiblePages) startPage = Math.max(1, endPage - maxVisiblePages + 1);
 
     if (startPage > 1) {
         paginationHtml += `<button class="pagination-btn" data-page="1">1</button>`;
-        if (startPage > 2) {
-            paginationHtml += `<span class="pagination-ellipsis">...</span>`;
-        }
+        if (startPage > 2) paginationHtml += `<span class="pagination-ellipsis">...</span>`;
     }
 
-    for (let i = startPage; i <= endPage; i++) {
-        paginationHtml += `
-            <button class="pagination-btn${i === currentPage ? ' active' : ''}" 
-                    data-page="${i}">
-                ${i}
-            </button>
-        `;
-    }
-
+    for (let i = startPage; i <= endPage; i++) paginationHtml += `<button class="pagination-btn${i === currentPage ? ' active' : ''}" data-page="${i}">${i}</button>`;
     if (endPage < totalPages) {
-        if (endPage < totalPages - 1) {
-            paginationHtml += `<span class="pagination-ellipsis">...</span>`;
-        }
+        if (endPage < totalPages - 1) paginationHtml += `<span class="pagination-ellipsis">...</span>`;
         paginationHtml += `<button class="pagination-btn" data-page="${totalPages}">${totalPages}</button>`;
     }
 
-    paginationHtml += `
-        <button class="pagination-btn${currentPage === totalPages ? ' disabled' : ''}" 
-                data-page="${currentPage + 1}" 
-                ${currentPage === totalPages ? 'disabled' : ''}>
-            →
-        </button>
-    `;
-
+    paginationHtml += `<button class="pagination-btn${currentPage === totalPages ? ' disabled' : ''}" data-page="${currentPage + 1}" ${currentPage === totalPages ? 'disabled' : ''}>→</button>`;
     paginationHtml += '</div>';
     return paginationHtml;
 }
 
-// Отправка отзыва на сервер
 function sendReviewToAdmin(review) {
     fetch(`${BASE_URL}/api/reviews`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            productId: review.productId,
-            username: review.user,
-            rating: review.rating,
-            comment: review.comment,
-            isApproved: false
-        })
+        body: JSON.stringify({ productId: review.productId, username: review.user, rating: review.rating, comment: review.comment, isApproved: false })
     })
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                console.log('Отзыв сохранён на сервере:', data);
                 alert('Отзыв отправлен на модерацию.');
                 loadProducts();
             } else {
-                console.error('Ошибка сохранения отзыва:', data);
                 alert('Ошибка при отправке отзыва');
             }
         })
-        .catch(error => {
-            console.error('Ошибка отправки отзыва на сервер:', error);
-            alert('Ошибка сервера');
-        });
+        .catch(() => alert('Ошибка сервера'));
 }
 
-// Отображение списка отзывов с пагинацией
 async function showReviews(page = 1) {
     const showcase = document.getElementById('showcase');
     const productDetail = document.getElementById('product-detail');
@@ -405,7 +277,6 @@ async function showReviews(page = 1) {
         if (!response.ok) throw new Error('Не удалось загрузить отзывы');
         const data = await response.json();
         const allReviews = data.reviews;
-        console.log('Все подтверждённые отзывы для отображения:', allReviews);
 
         const reviewsPerPage = 10;
         const totalReviews = allReviews.length;
@@ -436,10 +307,7 @@ async function showReviews(page = 1) {
             const maxVisiblePages = 5;
             let startPage = Math.max(1, page - Math.floor(maxVisiblePages / 2));
             let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
-
-            if (endPage - startPage + 1 < maxVisiblePages) {
-                startPage = Math.max(1, endPage - maxVisiblePages + 1);
-            }
+            if (endPage - startPage + 1 < maxVisiblePages) startPage = Math.max(1, endPage - maxVisiblePages + 1);
 
             if (startPage > 1) {
                 const firstPage = document.createElement('button');
@@ -447,13 +315,7 @@ async function showReviews(page = 1) {
                 firstPage.className = 'pagination-btn';
                 firstPage.addEventListener('click', () => showReviews(1));
                 paginationContainer.appendChild(firstPage);
-
-                if (startPage > 2) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.textContent = '...';
-                    ellipsis.className = 'pagination-ellipsis';
-                    paginationContainer.appendChild(ellipsis);
-                }
+                if (startPage > 2) paginationContainer.appendChild(Object.assign(document.createElement('span'), { textContent: '...', className: 'pagination-ellipsis' }));
             }
 
             for (let i = startPage; i <= endPage; i++) {
@@ -465,13 +327,7 @@ async function showReviews(page = 1) {
             }
 
             if (endPage < totalPages) {
-                if (endPage < totalPages - 1) {
-                    const ellipsis = document.createElement('span');
-                    ellipsis.textContent = '...';
-                    ellipsis.className = 'pagination-ellipsis';
-                    paginationContainer.appendChild(ellipsis);
-                }
-
+                if (endPage < totalPages - 1) paginationContainer.appendChild(Object.assign(document.createElement('span'), { textContent: '...', className: 'pagination-ellipsis' }));
                 const lastPage = document.createElement('button');
                 lastPage.textContent = totalPages;
                 lastPage.className = 'pagination-btn';
@@ -497,34 +353,23 @@ async function showReviews(page = 1) {
             backBtn.style.display = 'none';
         };
     } catch (error) {
-        console.error('Ошибка загрузки отзывов:', error);
         reviewsList.innerHTML = '<p>Ошибка загрузки отзывов.</p>';
     }
 }
 
-// Инициализация
 document.addEventListener('DOMContentLoaded', () => {
     loadProducts();
-    // connectWebSocket(); // Отключено, так как WebSocket не поддерживается на Render
-
     const searchInput = document.getElementById('search-input');
     searchInput.addEventListener('input', (e) => {
         const searchTerm = e.target.value.toLowerCase();
-        const filteredProducts = products.filter(product =>
-            product.name.toLowerCase().includes(searchTerm)
-        );
+        const filteredProducts = products.filter(product => product.name.toLowerCase().includes(searchTerm));
         renderProducts(filteredProducts);
     });
 
-    if (window.Telegram && window.Telegram.WebApp) {
+    if (window.Telegram?.WebApp) {
         const tg = window.Telegram.WebApp;
-        console.log('Telegram Web App инициализирован при загрузке:', tg);
         tg.MainButton.hide();
-        tg.onEvent('message', (msg) => {
-            if (msg.text === '/reviews') showReviews();
-        });
+        tg.onEvent('message', (msg) => { if (msg.text === '/reviews') showReviews(); });
         tg.expand();
-    } else {
-        console.warn('Telegram Web App не инициализирован при загрузке');
     }
 });

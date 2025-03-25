@@ -8,17 +8,10 @@ const showProfile = async (bot, chatId) => {
       bot.lastMessageId[chatId] = errorMsg.message_id;
       return;
     }
-    const profileText = `
-            👤 **Личный кабинет**
-            ━━━━━━━━━━━━━━━━
-            **Имя:** ${visit.username}
-            **ID:** ${visit.userId}
-            ━━━━━━━━━━━━━━━━
-        `;
+    const profileText = `👤 **Личный кабинет**\n━━━━━━━━━━━━━━━━\n**Имя:** ${visit.username}\n**ID:** ${visit.userId}\n━━━━━━━━━━━━━━━━`;
     const newMessage = await bot.sendMessage(chatId, profileText, { parse_mode: 'Markdown' });
     bot.lastMessageId[chatId] = newMessage.message_id;
   } catch (error) {
-    console.error('Ошибка профиля:', error);
     const errorMsg = await bot.sendMessage(chatId, '❌ Ошибка');
     bot.lastMessageId[chatId] = errorMsg.message_id;
   }
