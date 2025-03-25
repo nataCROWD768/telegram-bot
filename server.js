@@ -86,7 +86,7 @@ app.post('/api/share-product', async (req, res) => {
         const escapedDescription = escapeMarkdown(description || 'Описание отсутствует');
 
         const caption = `
-🌟 *${escapedName.toUpperCase()}* 🌟  
+✨ *${escapedName.toUpperCase()}* ✨  
 ➖➖➖➖➖➖➖➖➖➖➖➖  
 💎 *Клубная цена:* __${clubPrice.toLocaleString()} ₽__  
 💰 *Клиентская цена:* __${clientPrice.toLocaleString()} ₽__  
@@ -94,7 +94,7 @@ app.post('/api/share-product', async (req, res) => {
 📖 *О продукте:*  
 ${escapedDescription}  
 ➖➖➖➖➖➖➖➖➖➖➖➖  
-✨ [© Radar GP Assistant](https://t.me/${botUsername}) ✨
+[© Radar GP Assistant](https://t.me/${botUsername})
         `.trim();
 
         // Логируем текст для отладки
